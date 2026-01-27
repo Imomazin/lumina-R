@@ -123,25 +123,25 @@ export function Sidebar() {
           <p className="px-3 mb-2 text-2xs font-semibold text-navy-600 uppercase tracking-wider">
             Main
           </p>
-          <NavItem to="/" icon={<LayoutDashboard className="w-5 h-5" />} label="Dashboard" />
+          <NavItem to="/dashboard" icon={<LayoutDashboard className="w-5 h-5" />} label="Dashboard" />
           <NavItem
-            to="/risk-register"
+            to="/dashboard/risk-register"
             icon={<ClipboardList className="w-5 h-5" />}
             label="Risk Register"
           />
           <NavItem
-            to="/risk-indicators"
+            to="/dashboard/risk-indicators"
             icon={<Activity className="w-5 h-5" />}
             label="Risk Indicators"
             badge={1}
           />
           <NavItem
-            to="/risk-appetite"
+            to="/dashboard/risk-appetite"
             icon={<PieChart className="w-5 h-5" />}
             label="Risk Appetite"
           />
           <NavItem
-            to="/risk-matrix"
+            to="/dashboard/risk-matrix"
             icon={<BarChart3 className="w-5 h-5" />}
             label="Risk Matrix"
           />
@@ -153,17 +153,17 @@ export function Sidebar() {
             Tools
           </p>
           <NavItem
-            to="/risk-tools"
+            to="/dashboard/risk-tools"
             icon={<Wrench className="w-5 h-5" />}
             label="Risk Tools"
           />
           <NavItem
-            to="/analytics"
+            to="/dashboard/analytics"
             icon={<BarChart3 className="w-5 h-5" />}
             label="Analytics"
           />
           <NavItem
-            to="/case-studies"
+            to="/dashboard/case-studies"
             icon={<FileText className="w-5 h-5" />}
             label="Case Studies"
           />
@@ -175,18 +175,18 @@ export function Sidebar() {
             Intelligence
           </p>
           <NavItem
-            to="/alerts"
+            to="/dashboard/alerts"
             icon={<Bell className="w-5 h-5" />}
             label="Alerts"
             badge={3}
           />
           <NavItem
-            to="/reports"
+            to="/dashboard/reports"
             icon={<FileText className="w-5 h-5" />}
             label="Reports"
           />
           <NavItem
-            to="/ai-advisor"
+            to="/dashboard/ai-advisor"
             icon={<Bot className="w-5 h-5" />}
             label="AI Risk Advisor"
           />
@@ -198,18 +198,18 @@ export function Sidebar() {
             System
           </p>
           <NavItem
-            to="/integrations"
+            to="/dashboard/integrations"
             icon={<Plug className="w-5 h-5" />}
             label="API Gateway"
           />
           <NavItem
-            to="/admin"
+            to="/dashboard/admin"
             icon={<Settings className="w-5 h-5" />}
             label="Admin"
             children={[
-              { to: '/admin/users', label: 'Users' },
-              { to: '/admin/settings', label: 'Settings' },
-              { to: '/admin/audit', label: 'Audit Log' },
+              { to: '/dashboard/admin/users', label: 'Users' },
+              { to: '/dashboard/admin/settings', label: 'Settings' },
+              { to: '/dashboard/admin/audit', label: 'Audit Log' },
             ]}
           />
         </div>
@@ -226,7 +226,7 @@ export function Sidebar() {
             3 new risk patterns detected requiring attention.
           </p>
           <NavLink
-            to="/ai-advisor"
+            to="/dashboard/ai-advisor"
             className="block w-full text-center py-2 px-3 rounded-lg bg-accent-primary/20 text-accent-primary text-sm font-medium hover:bg-accent-primary/30 transition-colors"
           >
             View Analysis

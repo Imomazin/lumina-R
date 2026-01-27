@@ -2,6 +2,7 @@ import { createBrowserRouter, Navigate } from 'react-router-dom';
 import { MainLayout } from './layout';
 
 // Pages
+import Landing from '../pages/Landing';
 import Dashboard from '../pages/Dashboard';
 import RiskRegister from '../pages/RiskRegister';
 import RiskIndicators from '../pages/RiskIndicators';
@@ -17,8 +18,14 @@ import Integrations from '../pages/ApiGateway';
 import Admin from '../pages/Admin';
 
 export const router = createBrowserRouter([
+  // Landing page (no layout)
   {
     path: '/',
+    element: <Landing />,
+  },
+  // Dashboard and app routes (with layout)
+  {
+    path: '/dashboard',
     element: <MainLayout />,
     children: [
       {
@@ -81,10 +88,11 @@ export const router = createBrowserRouter([
         path: 'tools/*',
         element: <RiskTools />,
       },
-      {
-        path: '*',
-        element: <Navigate to="/" replace />,
-      },
     ],
+  },
+  // Catch-all redirect to landing
+  {
+    path: '*',
+    element: <Navigate to="/" replace />,
   },
 ]);

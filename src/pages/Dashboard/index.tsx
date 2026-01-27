@@ -7,9 +7,13 @@ import {
   ArrowRight,
   Calendar,
   Zap,
+  Shield,
+  CheckCircle,
+  XCircle,
+  Clock,
 } from 'lucide-react';
 import { PageHeader, SectionCard, MetricCard, RiskCard } from '../../components';
-import { RiskHeatMap, RiskTrendChart, CategoryDistributionChart } from '../../components/charts';
+import { RiskTrendChart, CategoryDistributionChart } from '../../components/charts';
 import { RiskAdvisorPanel } from '../../ai';
 import { risks, kris, riskAppetite, integrations, caseStudies } from '../../data';
 import { cn } from '../../utils';
@@ -98,17 +102,87 @@ export default function Dashboard() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Left Column - Heat Map & Trends */}
         <div className="lg:col-span-2 space-y-6">
-          {/* Risk Heat Map */}
+          {/* Risk Exposure Summary */}
           <SectionCard
-            title="Risk Heat Map"
-            subtitle="Probability vs Impact distribution"
-            actions={
-              <Link to="/risk-matrix" className="text-sm text-accent-primary hover:text-accent-primary/80 flex items-center gap-1">
-                View Full Matrix <ArrowRight className="w-4 h-4" />
-              </Link>
-            }
+            title="Risk Exposure Summary"
+            subtitle="Current exposure by severity level"
           >
-            <RiskHeatMap risks={risks} />
+            <div className="space-y-5">
+              {/* Overall Risk Score */}
+              <div className="flex items-center justify-between p-4 rounded-xl bg-gradient-to-r from-navy-800/50 to-navy-800/30 border border-navy-700/50">
+                <div className="flex items-center gap-4">
+                  <div className="p-3 rounded-xl bg-accent-primary/20">
+                    <Shield className="w-6 h-6 text-accent-primary" />
+                  </div>
+                  <div>
+                    <p className="text-sm text-navy-400">Overall Risk Score</p>
+                    <p className="text-2xl font-bold text-navy-100">
+                      {(risks.reduce((sum, r) => sum + r.riskScore, 0) / risks.length).toFixed(0)}
+                      <span className="text-sm font-normal text-navy-400 ml-1">/ 100</span>
+                    </p>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <span className="px-3 py-1 rounded-full bg-amber-500/15 text-amber-300 text-sm font-medium">
+                    Moderate
+                  </span>
+                </div>
+              </div>
+
+              {/* Severity Breakdown */}
+              <div className="space-y-3">
+                {[
+                  { label: 'Critical', count: risks.filter(r => r.severity === 'critical').length, color: 'bg-red-500', textColor: 'text-red-400', max: totalRisks },
+                  { label: 'High', count: risks.filter(r => r.severity === 'high').length, color: 'bg-orange-500', textColor: 'text-orange-400', max: totalRisks },
+                  { label: 'Medium', count: risks.filter(r => r.severity === 'medium').length, color: 'bg-amber-500', textColor: 'text-amber-400', max: totalRisks },
+                  { label: 'Low', count: risks.filter(r => r.severity === 'low').length, color: 'bg-emerald-500', textColor: 'text-emerald-400', max: totalRisks },
+                ].map((item) => (
+                  <div key={item.label} className="space-y-1.5">
+                    <div className="flex items-center justify-between">
+                      <span className={cn('text-sm font-medium', item.textColor)}>{item.label}</span>
+                      <span className="text-sm text-navy-300">{item.count} risks</span>
+                    </div>
+                    <div className="h-2 rounded-full bg-navy-800/50 overflow-hidden">
+                      <div
+                        className={cn('h-full rounded-full transition-all duration-500', item.color)}
+                        style={{ width: `${(item.count / item.max) * 100}%` }}
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Status Indicators */}
+              <div className="grid grid-cols-3 gap-3 pt-2">
+                <div className="flex items-center gap-2 p-3 rounded-lg bg-navy-800/30">
+                  <CheckCircle className="w-4 h-4 text-emerald-400" />
+                  <div>
+                    <p className="text-xs text-navy-400">Mitigated</p>
+                    <p className="text-sm font-semibold text-navy-100">
+                      {risks.filter(r => r.status === 'mitigated').length}
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2 p-3 rounded-lg bg-navy-800/30">
+                  <Clock className="w-4 h-4 text-amber-400" />
+                  <div>
+                    <p className="text-xs text-navy-400">In Progress</p>
+                    <p className="text-sm font-semibold text-navy-100">
+                      {risks.filter(r => r.status === 'active').length}
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2 p-3 rounded-lg bg-navy-800/30">
+                  <XCircle className="w-4 h-4 text-red-400" />
+                  <div>
+                    <p className="text-xs text-navy-400">Escalated</p>
+                    <p className="text-sm font-semibold text-navy-100">
+                      {risks.filter(r => r.status === 'escalated').length}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
           </SectionCard>
 
           {/* Risk Trend */}
@@ -124,7 +198,7 @@ export default function Dashboard() {
             title="Active Risks"
             subtitle="Highest scoring risks requiring attention"
             actions={
-              <Link to="/risk-register" className="text-sm text-accent-primary hover:text-accent-primary/80 flex items-center gap-1">
+              <Link to="/dashboard/risk-register" className="text-sm text-accent-primary hover:text-accent-primary/80 flex items-center gap-1">
                 View All <ArrowRight className="w-4 h-4" />
               </Link>
             }
@@ -187,7 +261,7 @@ export default function Dashboard() {
           title="Success Stories"
           subtitle="How organizations transformed their risk management"
           actions={
-            <Link to="/case-studies" className="text-sm text-accent-primary hover:text-accent-primary/80 flex items-center gap-1">
+            <Link to="/dashboard/case-studies" className="text-sm text-accent-primary hover:text-accent-primary/80 flex items-center gap-1">
               View All <ArrowRight className="w-4 h-4" />
             </Link>
           }
@@ -224,7 +298,7 @@ export default function Dashboard() {
           title="Platform Integrations"
           subtitle={`${connectedIntegrations.length} of ${integrations.length} connected`}
           actions={
-            <Link to="/integrations" className="text-sm text-accent-primary hover:text-accent-primary/80 flex items-center gap-1">
+            <Link to="/dashboard/integrations" className="text-sm text-accent-primary hover:text-accent-primary/80 flex items-center gap-1">
               Manage <ArrowRight className="w-4 h-4" />
             </Link>
           }

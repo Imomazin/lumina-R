@@ -13,31 +13,31 @@ import { cn } from '../../utils';
 
 // Page-specific tabs configuration
 const pageTabs: Record<string, { label: string; path: string }[]> = {
-  '/': [
-    { label: 'Overview', path: '/' },
-    { label: 'Risk Tools', path: '/risk-tools' },
-    { label: 'KRIs', path: '/risk-indicators' },
-    { label: 'Appetite', path: '/risk-appetite' },
-    { label: 'Case Studies', path: '/case-studies' },
-    { label: 'Matrix', path: '/risk-matrix' },
+  '/dashboard': [
+    { label: 'Overview', path: '/dashboard' },
+    { label: 'Risk Tools', path: '/dashboard/risk-tools' },
+    { label: 'KRIs', path: '/dashboard/risk-indicators' },
+    { label: 'Appetite', path: '/dashboard/risk-appetite' },
+    { label: 'Case Studies', path: '/dashboard/case-studies' },
+    { label: 'Matrix', path: '/dashboard/risk-matrix' },
   ],
-  '/risk-register': [
-    { label: 'All Risks', path: '/risk-register' },
-    { label: 'Active', path: '/risk-register?status=active' },
-    { label: 'Escalated', path: '/risk-register?status=escalated' },
-    { label: 'Monitoring', path: '/risk-register?status=monitoring' },
+  '/dashboard/risk-register': [
+    { label: 'All Risks', path: '/dashboard/risk-register' },
+    { label: 'Active', path: '/dashboard/risk-register?status=active' },
+    { label: 'Escalated', path: '/dashboard/risk-register?status=escalated' },
+    { label: 'Monitoring', path: '/dashboard/risk-register?status=monitoring' },
   ],
-  '/risk-indicators': [
-    { label: 'All KRIs', path: '/risk-indicators' },
-    { label: 'Financial', path: '/risk-indicators?category=financial' },
-    { label: 'Operational', path: '/risk-indicators?category=operational' },
-    { label: 'Compliance', path: '/risk-indicators?category=compliance' },
-    { label: 'Cyber', path: '/risk-indicators?category=cyber' },
+  '/dashboard/risk-indicators': [
+    { label: 'All KRIs', path: '/dashboard/risk-indicators' },
+    { label: 'Financial', path: '/dashboard/risk-indicators?category=financial' },
+    { label: 'Operational', path: '/dashboard/risk-indicators?category=operational' },
+    { label: 'Compliance', path: '/dashboard/risk-indicators?category=compliance' },
+    { label: 'Cyber', path: '/dashboard/risk-indicators?category=cyber' },
   ],
-  '/analytics': [
-    { label: 'Overview', path: '/analytics' },
-    { label: 'Trends', path: '/analytics/trends' },
-    { label: 'Forecasts', path: '/analytics/forecasts' },
+  '/dashboard/analytics': [
+    { label: 'Overview', path: '/dashboard/analytics' },
+    { label: 'Trends', path: '/dashboard/analytics/trends' },
+    { label: 'Forecasts', path: '/dashboard/analytics/forecasts' },
   ],
 };
 
@@ -47,9 +47,12 @@ export function TopNav() {
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
 
-  // Get the base path for tab matching
-  const basePath = '/' + location.pathname.split('/')[1];
-  const currentTabs = pageTabs[basePath] || pageTabs['/'];
+  // Get the base path for tab matching - handle /dashboard prefix
+  const pathParts = location.pathname.split('/').filter(Boolean);
+  const basePath = pathParts.length > 1
+    ? '/' + pathParts.slice(0, 2).join('/')
+    : '/dashboard';
+  const currentTabs = pageTabs[basePath] || pageTabs['/dashboard'];
 
   const notifications = [
     {
@@ -86,7 +89,7 @@ export function TopNav() {
               to={tab.path}
               className={cn(
                 'px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200',
-                location.pathname === tab.path || (tab.path === '/' && location.pathname === '/')
+                location.pathname === tab.path || (tab.path === '/dashboard' && location.pathname === '/dashboard')
                   ? 'bg-navy-800/80 text-navy-100'
                   : 'text-navy-400 hover:text-navy-200 hover:bg-navy-800/40'
               )}
@@ -175,7 +178,7 @@ export function TopNav() {
                   </div>
                   <div className="px-4 py-3 border-t border-navy-700 bg-navy-800/50">
                     <Link
-                      to="/alerts"
+                      to="/dashboard/alerts"
                       className="text-sm text-accent-primary hover:text-accent-primary/80 font-medium"
                       onClick={() => setIsNotificationsOpen(false)}
                     >
@@ -188,9 +191,12 @@ export function TopNav() {
           </div>
 
           {/* Settings */}
-          <button className="p-2 rounded-lg text-navy-400 hover:text-navy-200 hover:bg-navy-800/50 transition-colors">
+          <Link
+            to="/dashboard/admin"
+            className="p-2 rounded-lg text-navy-400 hover:text-navy-200 hover:bg-navy-800/50 transition-colors"
+          >
             <Settings className="w-5 h-5" />
-          </button>
+          </Link>
 
           {/* Profile Dropdown */}
           <div className="relative">
@@ -223,20 +229,28 @@ export function TopNav() {
                       <User className="w-4 h-4" />
                       Profile
                     </button>
-                    <button className="w-full flex items-center gap-3 px-4 py-2 text-sm text-navy-300 hover:bg-navy-800/50 transition-colors">
+                    <Link
+                      to="/dashboard/admin"
+                      className="w-full flex items-center gap-3 px-4 py-2 text-sm text-navy-300 hover:bg-navy-800/50 transition-colors"
+                      onClick={() => setIsProfileOpen(false)}
+                    >
                       <Settings className="w-4 h-4" />
                       Settings
-                    </button>
+                    </Link>
                     <button className="w-full flex items-center gap-3 px-4 py-2 text-sm text-navy-300 hover:bg-navy-800/50 transition-colors">
                       <HelpCircle className="w-4 h-4" />
                       Help & Support
                     </button>
                   </div>
                   <div className="border-t border-navy-700 py-2">
-                    <button className="w-full flex items-center gap-3 px-4 py-2 text-sm text-risk-critical hover:bg-navy-800/50 transition-colors">
+                    <Link
+                      to="/"
+                      className="w-full flex items-center gap-3 px-4 py-2 text-sm text-risk-critical hover:bg-navy-800/50 transition-colors"
+                      onClick={() => setIsProfileOpen(false)}
+                    >
                       <LogOut className="w-4 h-4" />
                       Sign Out
-                    </button>
+                    </Link>
                   </div>
                 </div>
               </>

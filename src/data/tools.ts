@@ -7,7 +7,7 @@ export const riskTools: RiskTool[] = [
     description: 'Visualize risk exposure across probability and impact dimensions',
     icon: 'Grid3X3',
     category: 'analysis',
-    route: '/risk-matrix',
+    route: '/dashboard/risk-matrix',
   },
   {
     id: 'tool-bowtie',
@@ -15,7 +15,7 @@ export const riskTools: RiskTool[] = [
     description: 'Map causes, controls, and consequences for key risks',
     icon: 'GitBranch',
     category: 'analysis',
-    route: '/tools/bowtie',
+    route: '/dashboard/tools/bowtie',
     isNew: true,
   },
   {
@@ -24,7 +24,7 @@ export const riskTools: RiskTool[] = [
     description: 'Probabilistic modeling for risk quantification',
     icon: 'Dice5',
     category: 'analysis',
-    route: '/tools/monte-carlo',
+    route: '/dashboard/tools/monte-carlo',
     isPremium: true,
   },
   {
@@ -33,7 +33,7 @@ export const riskTools: RiskTool[] = [
     description: 'Model impact of adverse scenarios on risk profile',
     icon: 'Layers',
     category: 'analysis',
-    route: '/tools/scenario',
+    route: '/dashboard/tools/scenario',
   },
   {
     id: 'tool-register',
@@ -41,7 +41,7 @@ export const riskTools: RiskTool[] = [
     description: 'Centralized repository of all identified risks',
     icon: 'ClipboardList',
     category: 'assessment',
-    route: '/risk-register',
+    route: '/dashboard/risk-register',
   },
   {
     id: 'tool-kri',
@@ -49,7 +49,7 @@ export const riskTools: RiskTool[] = [
     description: 'Monitor key risk indicators and thresholds',
     icon: 'Activity',
     category: 'monitoring',
-    route: '/risk-indicators',
+    route: '/dashboard/risk-indicators',
   },
   {
     id: 'tool-control',
@@ -57,7 +57,7 @@ export const riskTools: RiskTool[] = [
     description: 'Evaluate control effectiveness and gaps',
     icon: 'ShieldCheck',
     category: 'assessment',
-    route: '/tools/controls',
+    route: '/dashboard/tools/controls',
   },
   {
     id: 'tool-rcsa',
@@ -65,7 +65,7 @@ export const riskTools: RiskTool[] = [
     description: 'Risk and control self-assessment workflows',
     icon: 'CheckSquare',
     category: 'assessment',
-    route: '/tools/rcsa',
+    route: '/dashboard/tools/rcsa',
   },
   {
     id: 'tool-loss',
@@ -73,7 +73,7 @@ export const riskTools: RiskTool[] = [
     description: 'Track and analyze operational loss events',
     icon: 'Database',
     category: 'monitoring',
-    route: '/tools/loss-events',
+    route: '/dashboard/tools/loss-events',
   },
   {
     id: 'tool-appetite',
@@ -81,7 +81,7 @@ export const riskTools: RiskTool[] = [
     description: 'Define and monitor risk appetite statements',
     icon: 'Gauge',
     category: 'monitoring',
-    route: '/risk-appetite',
+    route: '/dashboard/risk-appetite',
   },
   {
     id: 'tool-compliance',
@@ -89,7 +89,7 @@ export const riskTools: RiskTool[] = [
     description: 'Monitor regulatory obligations and deadlines',
     icon: 'Scale',
     category: 'compliance',
-    route: '/tools/compliance',
+    route: '/dashboard/tools/compliance',
   },
   {
     id: 'tool-vendor',
@@ -97,7 +97,7 @@ export const riskTools: RiskTool[] = [
     description: 'Assess and monitor third-party risk exposure',
     icon: 'Building2',
     category: 'assessment',
-    route: '/tools/vendor',
+    route: '/dashboard/tools/vendor',
     isNew: true,
   },
   {
@@ -106,7 +106,7 @@ export const riskTools: RiskTool[] = [
     description: 'Evaluate cybersecurity posture and vulnerabilities',
     icon: 'Shield',
     category: 'analysis',
-    route: '/tools/cyber',
+    route: '/dashboard/tools/cyber',
   },
   {
     id: 'tool-financial',
@@ -114,7 +114,7 @@ export const riskTools: RiskTool[] = [
     description: 'Quantify market, credit, and liquidity risks',
     icon: 'TrendingUp',
     category: 'analysis',
-    route: '/tools/financial',
+    route: '/dashboard/tools/financial',
     isPremium: true,
   },
   {
@@ -123,7 +123,7 @@ export const riskTools: RiskTool[] = [
     description: 'Assess and manage operational risk events',
     icon: 'Settings',
     category: 'assessment',
-    route: '/tools/operational',
+    route: '/dashboard/tools/operational',
   },
   {
     id: 'tool-strategic',
@@ -131,7 +131,7 @@ export const riskTools: RiskTool[] = [
     description: 'Visualize emerging strategic threats and opportunities',
     icon: 'Target',
     category: 'analysis',
-    route: '/tools/strategic',
+    route: '/dashboard/tools/strategic',
     isNew: true,
   },
 ];

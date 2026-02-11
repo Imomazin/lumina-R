@@ -9,6 +9,9 @@ import RiskIndicators from '../pages/RiskIndicators';
 import RiskTools from '../pages/RiskTools';
 import RiskAppetite from '../pages/RiskAppetite';
 import RiskMatrix from '../pages/RiskMatrix';
+import RiskWorkspace from '../pages/RiskWorkspace';
+import MonteCarloSimulation from '../pages/MonteCarloSimulation';
+import BowTieAnalysis from '../pages/BowTieAnalysis';
 import CaseStudies from '../pages/CaseStudies';
 import Analytics from '../pages/Analytics';
 import Alerts from '../pages/Alerts';
@@ -51,6 +54,18 @@ export const router = createBrowserRouter([
       {
         path: 'risk-matrix',
         element: <RiskMatrix />,
+      },
+      {
+        path: 'risk-workspace',
+        element: <RiskWorkspace />,
+      },
+      {
+        path: 'tools/monte-carlo',
+        element: <MonteCarloSimulation />,
+      },
+      {
+        path: 'tools/bowtie',
+        element: <BowTieAnalysis />,
       },
       {
         path: 'case-studies',

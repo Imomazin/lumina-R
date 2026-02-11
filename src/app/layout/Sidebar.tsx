@@ -15,6 +15,7 @@ import {
   ChevronRight,
   Sparkles,
   Shield,
+  Upload,
 } from 'lucide-react';
 import { useState } from 'react';
 import { cn } from '../../utils';
@@ -144,6 +145,11 @@ export function Sidebar() {
             to="/dashboard/risk-matrix"
             icon={<BarChart3 className="w-5 h-5" />}
             label="Risk Matrix"
+          />
+          <NavItem
+            to="/dashboard/risk-workspace"
+            icon={<Upload className="w-5 h-5" />}
+            label="Risk Workspace"
           />
         </div>
 

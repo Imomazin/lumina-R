@@ -1,9 +1,7 @@
-import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight, Shield, Activity, BarChart3, Zap } from 'lucide-react';
 
 export default function Landing() {
-  const [email, setEmail] = useState('');
 
   return (
     <div className="min-h-screen bg-[#0a0a0b] text-white overflow-hidden">
@@ -58,25 +56,24 @@ export default function Landing() {
               and deliver resilience with confidence.
             </p>
 
-            {/* CTA Form */}
-            <div className="flex flex-col sm:flex-row gap-3 max-w-md">
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="you@company.com"
-                className="flex-1 px-4 py-3 rounded-lg bg-white/5 border border-white/10 text-white placeholder-gray-500 focus:outline-none focus:border-red-500/50 focus:ring-1 focus:ring-red-500/50 transition-all"
-              />
+            {/* CTA Buttons */}
+            <div className="flex flex-col sm:flex-row gap-4">
+              <Link
+                to="/risk"
+                className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-lg bg-gradient-to-r from-red-500 to-red-700 text-white font-semibold hover:from-red-600 hover:to-red-800 transition-all shadow-lg shadow-red-500/20"
+              >
+                Start Risk Assessment <ArrowRight className="w-5 h-5" />
+              </Link>
               <Link
                 to="/dashboard"
-                className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-lg bg-white text-black font-medium hover:bg-gray-100 transition-colors whitespace-nowrap"
+                className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-lg bg-white/10 text-white font-medium hover:bg-white/20 transition-colors border border-white/10"
               >
-                Get Started <ArrowRight className="w-4 h-4" />
+                Go to Dashboard
               </Link>
             </div>
 
             <p className="text-sm text-gray-500">
-              Free to start. No credit card required.
+              Start with AI-guided risk assessment or explore the dashboard
             </p>
           </div>
 

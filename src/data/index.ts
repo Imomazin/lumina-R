@@ -4,3 +4,4 @@ export * from './appetite';
 export * from './caseStudies';
 export * from './tools';
 export * from './integrations';
+export * from './controls';

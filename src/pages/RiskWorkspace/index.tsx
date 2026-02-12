@@ -1,5 +1,6 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import { useDropzone } from 'react-dropzone';
+import { useNavigate } from 'react-router-dom';
 import {
   Upload,
   FileSpreadsheet,
@@ -15,12 +16,18 @@ import {
   Eye,
   HelpCircle,
   Loader2,
+  Sparkles,
+  AlertTriangle,
+  TrendingUp,
+  Shield,
+  Target,
+  BarChart3,
 } from 'lucide-react';
 import { PageHeader, SectionCard } from '../../components';
 import { cn } from '../../utils';
 import type { UploadSession } from '../../types';
 
-type UploadStep = 'upload' | 'parsing' | 'mapping' | 'validation' | 'clarification' | 'complete';
+type UploadStep = 'upload' | 'parsing' | 'mapping' | 'validation' | 'clarification' | 'gap_detection' | 'complete';
 
 interface DetectedColumn {
   originalName: string;
@@ -46,6 +53,16 @@ interface ClarificationQuestion {
   selectedOption?: string;
 }
 
+interface DataGap {
+  id: string;
+  field: string;
+  label: string;
+  description: string;
+  severity: 'critical' | 'high' | 'medium';
+  icon: React.ElementType;
+  advisorPhase?: string;
+}
+
 const canonicalFields = [
   { key: 'title', label: 'Risk Title', required: true },
   { key: 'description', label: 'Description', required: true },
@@ -60,6 +77,10 @@ const canonicalFields = [
   { key: 'mitigationPlan', label: 'Mitigation Plan', required: false },
   { key: 'controls', label: 'Controls', required: false },
   { key: 'linkedObjectiveIds', label: 'Linked Objectives', required: false },
+  { key: 'riskAppetite', label: 'Risk Appetite', required: false },
+  { key: 'constraintMapping', label: 'Constraint Mapping', required: false },
+  { key: 'kri', label: 'Key Risk Indicators', required: false },
+  { key: 'kci', label: 'Key Control Indicators', required: false },
 ];
 
 const fileTypeIcons: Record<string, React.ElementType> = {
@@ -72,6 +93,7 @@ const fileTypeIcons: Record<string, React.ElementType> = {
 };
 
 export default function RiskWorkspace() {
+  const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState<UploadStep>('upload');
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [session, setSession] = useState<Partial<UploadSession>>({});
@@ -79,8 +101,33 @@ export default function RiskWorkspace() {
   const [columnMappings, setColumnMappings] = useState<Record<string, string>>({});
   const [validationIssues, setValidationIssues] = useState<ValidationIssue[]>([]);
   const [clarificationQuestions, setClarificationQuestions] = useState<ClarificationQuestion[]>([]);
+  const [dataGaps, setDataGaps] = useState<DataGap[]>([]);
   const [previewData, setPreviewData] = useState<Record<string, string>[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [gapsResolved, setGapsResolved] = useState<Set<string>>(new Set());
+
+  // Calculate overall mapping confidence score
+  const overallConfidence = useMemo(() => {
+    if (detectedColumns.length === 0) return 0;
+    const mappedColumns = detectedColumns.filter(col => columnMappings[col.originalName]);
+    if (mappedColumns.length === 0) return 0;
+    const totalConfidence = mappedColumns.reduce((sum, col) => sum + col.confidence, 0);
+    return Math.round(totalConfidence / mappedColumns.length);
+  }, [detectedColumns, columnMappings]);
+
+  // Calculate mapping completeness
+  const mappingCompleteness = useMemo(() => {
+    const requiredFields = canonicalFields.filter(f => f.required);
+    const mappedRequired = requiredFields.filter(f =>
+      Object.values(columnMappings).includes(f.key)
+    );
+    return Math.round((mappedRequired.length / requiredFields.length) * 100);
+  }, [columnMappings]);
+
+  // Calculate readiness score (combination of confidence and completeness)
+  const readinessScore = useMemo(() => {
+    return Math.round((overallConfidence * 0.6) + (mappingCompleteness * 0.4));
+  }, [overallConfidence, mappingCompleteness]);
 
   const onDrop = useCallback(async (acceptedFiles: File[]) => {
     const file = acceptedFiles[0];
@@ -204,9 +251,94 @@ export default function RiskWorkspace() {
     setIsProcessing(false);
 
     if (issues.filter((i) => i.severity === 'error').length === 0 && questions.length === 0) {
-      setCurrentStep('complete');
+      // Check for data gaps before completing
+      await detectDataGaps();
     } else if (questions.length > 0) {
       setCurrentStep('clarification');
+    }
+  };
+
+  const detectDataGaps = async () => {
+    setIsProcessing(true);
+    await new Promise((resolve) => setTimeout(resolve, 800));
+
+    // Analyze mapped data for missing risk intelligence components
+    const mappedFields = Object.values(columnMappings);
+    const gaps: DataGap[] = [];
+
+    // Check for Risk Appetite
+    if (!mappedFields.includes('riskAppetite')) {
+      gaps.push({
+        id: 'gap_risk_appetite',
+        field: 'riskAppetite',
+        label: 'Risk Appetite',
+        description: 'No risk appetite levels defined. Required for proper risk scoring and threshold alerts.',
+        severity: 'critical',
+        icon: TrendingUp,
+        advisorPhase: 'constraint_architecture',
+      });
+    }
+
+    // Check for Constraint Mapping
+    if (!mappedFields.includes('constraintMapping')) {
+      gaps.push({
+        id: 'gap_constraints',
+        field: 'constraintMapping',
+        label: 'Constraint Framework',
+        description: 'Risks not linked to organizational constraints. Required for impact assessment.',
+        severity: 'critical',
+        icon: Shield,
+        advisorPhase: 'constraint_architecture',
+      });
+    }
+
+    // Check for Objectives linkage
+    if (!mappedFields.includes('linkedObjectiveIds')) {
+      gaps.push({
+        id: 'gap_objectives',
+        field: 'linkedObjectiveIds',
+        label: 'Strategic Objectives',
+        description: 'Risks not linked to business objectives. Recommended for strategic alignment.',
+        severity: 'high',
+        icon: Target,
+        advisorPhase: 'context_establishment',
+      });
+    }
+
+    // Check for KRIs
+    if (!mappedFields.includes('kri')) {
+      gaps.push({
+        id: 'gap_kri',
+        field: 'kri',
+        label: 'Key Risk Indicators',
+        description: 'No KRIs defined for monitoring. Required for proactive risk management.',
+        severity: 'high',
+        icon: BarChart3,
+        advisorPhase: 'kri_builder',
+      });
+    }
+
+    // Check for Controls/KCIs
+    if (!mappedFields.includes('kci') && !mappedFields.includes('controls')) {
+      gaps.push({
+        id: 'gap_controls',
+        field: 'kci',
+        label: 'Controls & KCIs',
+        description: 'No control indicators mapped. Required for control effectiveness monitoring.',
+        severity: 'medium',
+        icon: Shield,
+        advisorPhase: 'kci_builder',
+      });
+    }
+
+    setDataGaps(gaps);
+    setIsProcessing(false);
+
+    if (gaps.filter(g => g.severity === 'critical').length > 0) {
+      setCurrentStep('gap_detection');
+    } else {
+      setCurrentStep('complete');
+      setSession((prev) => ({ ...prev, status: 'complete' }));
     }
   };
 
@@ -222,6 +354,20 @@ export default function RiskWorkspace() {
     await new Promise((resolve) => setTimeout(resolve, 1000));
 
     setIsProcessing(false);
+    // After clarifications, check for data gaps
+    await detectDataGaps();
+  };
+
+  const launchAdvisorForGap = (gap: DataGap) => {
+    // Navigate to AI Advisor with the specific phase
+    navigate(`/dashboard/ai-advisor?phase=${gap.advisorPhase}&returnTo=workspace`);
+  };
+
+  const markGapResolved = (gapId: string) => {
+    setGapsResolved(prev => new Set([...prev, gapId]));
+  };
+
+  const proceedWithGaps = () => {
     setCurrentStep('complete');
     setSession((prev) => ({ ...prev, status: 'complete' }));
   };
@@ -234,7 +380,9 @@ export default function RiskWorkspace() {
     setColumnMappings({});
     setValidationIssues([]);
     setClarificationQuestions([]);
+    setDataGaps([]);
     setPreviewData([]);
+    setGapsResolved(new Set());
   };
 
   const steps: { id: UploadStep; label: string; description: string }[] = [
@@ -243,10 +391,23 @@ export default function RiskWorkspace() {
     { id: 'mapping', label: 'Map', description: 'Map columns' },
     { id: 'validation', label: 'Validate', description: 'Check data' },
     { id: 'clarification', label: 'Clarify', description: 'Resolve issues' },
+    { id: 'gap_detection', label: 'Gaps', description: 'Fill gaps' },
     { id: 'complete', label: 'Complete', description: 'Import risks' },
   ];
 
   const stepIndex = steps.findIndex((s) => s.id === currentStep);
+
+  const getConfidenceColor = (score: number) => {
+    if (score >= 80) return 'text-emerald-400';
+    if (score >= 60) return 'text-amber-400';
+    return 'text-red-400';
+  };
+
+  const getConfidenceBg = (score: number) => {
+    if (score >= 80) return 'bg-emerald-500';
+    if (score >= 60) return 'bg-amber-500';
+    return 'bg-red-500';
+  };
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -264,6 +425,59 @@ export default function RiskWorkspace() {
           </div>
         }
       />
+
+      {/* Overall Mapping Confidence Score - Prominent Display */}
+      {currentStep === 'mapping' && detectedColumns.length > 0 && (
+        <div className="glass-card p-6 border-2 border-accent-primary/30">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <div className={cn(
+                'w-16 h-16 rounded-xl flex items-center justify-center',
+                overallConfidence >= 80 ? 'bg-emerald-500/20' :
+                overallConfidence >= 60 ? 'bg-amber-500/20' : 'bg-red-500/20'
+              )}>
+                <span className={cn('text-2xl font-bold', getConfidenceColor(overallConfidence))}>
+                  {overallConfidence}%
+                </span>
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold text-navy-100">Mapping Confidence Score</h3>
+                <p className="text-sm text-navy-400">
+                  Based on {detectedColumns.filter(c => columnMappings[c.originalName]).length} of {detectedColumns.length} columns mapped
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-6">
+              {/* Readiness Score */}
+              <div className="text-center">
+                <div className={cn('text-xl font-bold', getConfidenceColor(readinessScore))}>
+                  {readinessScore}%
+                </div>
+                <p className="text-xs text-navy-500">Import Readiness</p>
+              </div>
+
+              {/* Completeness */}
+              <div className="text-center">
+                <div className={cn('text-xl font-bold', getConfidenceColor(mappingCompleteness))}>
+                  {mappingCompleteness}%
+                </div>
+                <p className="text-xs text-navy-500">Required Fields</p>
+              </div>
+
+              {/* Visual Progress */}
+              <div className="w-32">
+                <div className="h-2 bg-navy-800 rounded-full overflow-hidden">
+                  <div
+                    className={cn('h-full transition-all duration-500', getConfidenceBg(overallConfidence))}
+                    style={{ width: `${overallConfidence}%` }}
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Progress Steps */}
       <div className="glass-card p-4">
@@ -299,7 +513,7 @@ export default function RiskWorkspace() {
               {index < steps.length - 1 && (
                 <div
                   className={cn(
-                    'w-12 md:w-24 h-0.5 mx-2',
+                    'w-8 md:w-16 h-0.5 mx-2',
                     index < stepIndex ? 'bg-emerald-500' : 'bg-navy-800'
                   )}
                 />
@@ -427,21 +641,17 @@ export default function RiskWorkspace() {
                         </select>
                       </div>
 
-                      {/* Confidence */}
+                      {/* Confidence Badge */}
                       {col.suggestedMapping && (
-                        <div className="w-16 text-right">
-                          <span
-                            className={cn(
-                              'text-xs font-medium',
-                              col.confidence >= 80
-                                ? 'text-emerald-400'
-                                : col.confidence >= 60
-                                ? 'text-amber-400'
-                                : 'text-navy-500'
-                            )}
-                          >
-                            {col.confidence}%
-                          </span>
+                        <div className={cn(
+                          'px-2 py-1 rounded-lg text-xs font-medium',
+                          col.confidence >= 80
+                            ? 'bg-emerald-500/20 text-emerald-400'
+                            : col.confidence >= 60
+                            ? 'bg-amber-500/20 text-amber-400'
+                            : 'bg-red-500/20 text-red-400'
+                        )}>
+                          {col.confidence}% confidence
                         </div>
                       )}
                     </div>
@@ -615,10 +825,170 @@ export default function RiskWorkspace() {
                 </>
               ) : (
                 <>
-                  Finalize Import
+                  Continue
                   <ChevronRight className="w-4 h-4 ml-2" />
                 </>
               )}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Gap Detection Step */}
+      {currentStep === 'gap_detection' && (
+        <div className="space-y-6">
+          {/* Gap Detection Alert */}
+          <div className="glass-card p-6 border-2 border-amber-500/30 bg-amber-500/5">
+            <div className="flex items-start gap-4">
+              <div className="w-12 h-12 rounded-xl bg-amber-500/20 flex items-center justify-center">
+                <AlertTriangle className="w-6 h-6 text-amber-400" />
+              </div>
+              <div className="flex-1">
+                <h3 className="text-lg font-semibold text-navy-100">Missing Risk Intelligence Data</h3>
+                <p className="text-sm text-navy-400 mt-1">
+                  Your upload is missing critical data for comprehensive risk analysis.
+                  Use the AI Risk Advisor to fill these gaps before proceeding.
+                </p>
+              </div>
+              <div className="text-right">
+                <div className="text-2xl font-bold text-amber-400">
+                  {dataGaps.filter(g => !gapsResolved.has(g.id)).length}
+                </div>
+                <p className="text-xs text-navy-500">Gaps remaining</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Data Gaps List */}
+          <SectionCard
+            title="Data Gaps Detected"
+            subtitle="Click 'Launch Advisor' to fill missing data through guided questions"
+          >
+            <div className="space-y-4">
+              {dataGaps.map((gap) => {
+                const isResolved = gapsResolved.has(gap.id);
+                const GapIcon = gap.icon;
+
+                return (
+                  <div
+                    key={gap.id}
+                    className={cn(
+                      'p-4 rounded-xl border transition-all',
+                      isResolved
+                        ? 'bg-emerald-500/10 border-emerald-500/30'
+                        : gap.severity === 'critical'
+                        ? 'bg-red-500/10 border-red-500/30'
+                        : gap.severity === 'high'
+                        ? 'bg-amber-500/10 border-amber-500/30'
+                        : 'bg-navy-800/30 border-navy-700/50'
+                    )}
+                  >
+                    <div className="flex items-center gap-4">
+                      <div className={cn(
+                        'w-10 h-10 rounded-lg flex items-center justify-center',
+                        isResolved
+                          ? 'bg-emerald-500/20'
+                          : gap.severity === 'critical'
+                          ? 'bg-red-500/20'
+                          : gap.severity === 'high'
+                          ? 'bg-amber-500/20'
+                          : 'bg-navy-700/50'
+                      )}>
+                        {isResolved ? (
+                          <CheckCircle className="w-5 h-5 text-emerald-400" />
+                        ) : (
+                          <GapIcon className={cn(
+                            'w-5 h-5',
+                            gap.severity === 'critical' ? 'text-red-400' :
+                            gap.severity === 'high' ? 'text-amber-400' : 'text-navy-400'
+                          )} />
+                        )}
+                      </div>
+
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2">
+                          <h4 className="text-sm font-medium text-navy-200">{gap.label}</h4>
+                          {!isResolved && (
+                            <span className={cn(
+                              'px-1.5 py-0.5 rounded text-2xs font-medium uppercase',
+                              gap.severity === 'critical' ? 'bg-red-500/20 text-red-400' :
+                              gap.severity === 'high' ? 'bg-amber-500/20 text-amber-400' :
+                              'bg-navy-700 text-navy-400'
+                            )}>
+                              {gap.severity}
+                            </span>
+                          )}
+                          {isResolved && (
+                            <span className="px-1.5 py-0.5 rounded text-2xs font-medium bg-emerald-500/20 text-emerald-400">
+                              RESOLVED
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-xs text-navy-500 mt-1">{gap.description}</p>
+                      </div>
+
+                      <div className="flex items-center gap-2">
+                        {isResolved ? (
+                          <button className="btn-secondary text-sm py-1.5 px-3 opacity-50 cursor-not-allowed">
+                            <CheckCircle className="w-4 h-4 mr-1" />
+                            Completed
+                          </button>
+                        ) : (
+                          <>
+                            <button
+                              onClick={() => launchAdvisorForGap(gap)}
+                              className="btn-primary text-sm py-1.5 px-3 flex items-center gap-1"
+                            >
+                              <Sparkles className="w-4 h-4" />
+                              Launch Advisor
+                            </button>
+                            <button
+                              onClick={() => markGapResolved(gap.id)}
+                              className="btn-secondary text-sm py-1.5 px-3"
+                              title="Mark as already provided"
+                            >
+                              Skip
+                            </button>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Analytics Block Warning */}
+            {dataGaps.some(g => g.severity === 'critical' && !gapsResolved.has(g.id)) && (
+              <div className="mt-6 p-4 rounded-xl bg-red-500/10 border border-red-500/30">
+                <div className="flex items-center gap-3">
+                  <AlertTriangle className="w-5 h-5 text-red-400" />
+                  <div>
+                    <p className="text-sm font-medium text-red-400">Analytics Blocked</p>
+                    <p className="text-xs text-navy-400">
+                      Advanced analytics (Monte Carlo, Bow-Tie) require critical gaps to be resolved.
+                      Fill missing data to unlock full analysis capabilities.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+          </SectionCard>
+
+          <div className="flex justify-between">
+            <button
+              onClick={proceedWithGaps}
+              className="btn-secondary"
+            >
+              Proceed with Warnings
+            </button>
+            <button
+              onClick={proceedWithGaps}
+              disabled={dataGaps.some(g => g.severity === 'critical' && !gapsResolved.has(g.id))}
+              className="btn-primary"
+            >
+              Complete Import
+              <ChevronRight className="w-4 h-4 ml-2" />
             </button>
           </div>
         </div>
@@ -636,10 +1006,26 @@ export default function RiskWorkspace() {
               Successfully imported {previewData.length} risks from {uploadedFile?.name}
             </p>
 
+            {/* Import Summary Stats */}
+            <div className="flex justify-center gap-6 mb-6">
+              <div className="text-center">
+                <div className="text-2xl font-bold text-emerald-400">{overallConfidence}%</div>
+                <p className="text-xs text-navy-500">Mapping Confidence</p>
+              </div>
+              <div className="text-center">
+                <div className="text-2xl font-bold text-accent-primary">{previewData.length}</div>
+                <p className="text-xs text-navy-500">Risks Imported</p>
+              </div>
+              <div className="text-center">
+                <div className="text-2xl font-bold text-amber-400">{gapsResolved.size}</div>
+                <p className="text-xs text-navy-500">Gaps Resolved</p>
+              </div>
+            </div>
+
             <div className="flex justify-center gap-3">
-              <button className="btn-secondary">
+              <button onClick={() => navigate('/dashboard')} className="btn-secondary">
                 <Eye className="w-4 h-4 mr-2" />
-                View in Register
+                View Dashboard
               </button>
               <button className="btn-secondary">
                 <Download className="w-4 h-4 mr-2" />

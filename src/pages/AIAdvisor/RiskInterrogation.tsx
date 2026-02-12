@@ -41,72 +41,69 @@ import type {
   SimulationType,
 } from '../../types';
 
-// Phase configuration
+// Phase configuration - 8 steps per spec (Step 1-8, Step 0 is context selection in RiskLanding)
 const phases: {
   id: AdvisorPhase;
+  step: number;
   label: string;
   description: string;
   icon: React.ElementType;
 }[] = [
   {
-    id: 'context_establishment',
-    label: 'Context',
-    description: 'Define objectives and scope',
-    icon: Target,
-  },
-  {
     id: 'constraint_architecture',
+    step: 1,
     label: 'Constraints',
     description: 'Set boundaries and limits',
     icon: Sliders,
   },
   {
+    id: 'context_establishment',
+    step: 2,
+    label: 'Objectives',
+    description: 'Define objectives and success metrics',
+    icon: Target,
+  },
+  {
     id: 'risk_universe',
+    step: 3,
     label: 'Risk Universe',
     description: 'Identify potential risks',
     icon: AlertTriangle,
   },
   {
     id: 'likelihood_impact',
-    label: 'Assessment',
-    description: 'Evaluate likelihood & impact',
+    step: 4,
+    label: 'Calibration',
+    description: 'Likelihood & impact assessment',
     icon: Activity,
   },
   {
     id: 'kri_builder',
+    step: 5,
     label: 'KRI Builder',
     description: 'Define key risk indicators',
-    icon: Activity,
+    icon: BarChart3,
   },
   {
     id: 'kci_builder',
+    step: 6,
     label: 'Controls',
     description: 'Map controls to risks',
     icon: Shield,
   },
   {
     id: 'risk_scoring',
-    label: 'Scoring',
-    description: 'Calculate risk scores',
-    icon: Calculator,
-  },
-  {
-    id: 'register_generation',
-    label: 'Register',
-    description: 'Generate risk register',
-    icon: FileText,
+    step: 7,
+    label: 'Risk Profile',
+    description: 'Confirm risk profile',
+    icon: CheckCircle,
   },
   {
     id: 'tool_selection',
+    step: 8,
     label: 'Analytics',
-    description: 'Select analysis tools',
+    description: 'Advanced analytics library',
     icon: Wrench,
-  },
-  {
-    id: 'simulation',
-    label: 'Simulation',
-    description: 'Run simulations',
-    icon: Play,
   },
 ];
 
@@ -248,29 +245,20 @@ const simulationTools: { id: SimulationType; name: string; description: string; 
 export default function RiskInterrogation() {
   const [currentPhaseIndex, setCurrentPhaseIndex] = useState(0);
   const [phaseValidation, setPhaseValidation] = useState<Record<AdvisorPhase, boolean>>({
-    context_establishment: false,
     constraint_architecture: false,
+    context_establishment: false,
     risk_universe: false,
     likelihood_impact: false,
     kri_builder: false,
     kci_builder: false,
     risk_scoring: false,
-    register_generation: false,
     tool_selection: false,
+    register_generation: false,
     simulation: false,
     complete: false,
   });
 
-  // Phase 1: Context
-  const [objective, setObjective] = useState<Partial<Objective>>({
-    name: '',
-    type: 'project',
-    timeHorizon: { value: 12, unit: 'months' },
-    primaryObjectives: [''],
-    criticalityLevel: 3,
-  });
-
-  // Phase 2: Constraints
+  // Step 1: Constraints (6 constraint cards)
   const [constraints, setConstraints] = useState<Partial<Constraint>[]>(
     constraintTemplates.map((t, i) => ({
       id: `const-${i}`,
@@ -286,27 +274,35 @@ export default function RiskInterrogation() {
   );
   const [riskAppetiteScalar, setRiskAppetiteScalar] = useState(5);
 
-  // Phase 3: Risk Universe
+  // Step 2: Objectives
+  const [objective, setObjective] = useState<Partial<Objective>>({
+    name: '',
+    type: 'project',
+    timeHorizon: { value: 12, unit: 'months' },
+    primaryObjectives: [''],
+    criticalityLevel: 3,
+  });
+
+  // Step 3: Risk Universe
   const [riskDrafts, setRiskDrafts] = useState<RiskDraft[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<RiskCategory>('strategic');
 
-  // Phase 4: Likelihood & Impact
+  // Step 4: Likelihood & Impact
   const [riskAssessments, setRiskAssessments] = useState<RiskAssessment[]>([]);
   const [assessmentRiskIndex, setAssessmentRiskIndex] = useState(0);
 
-  // Phase 5: KRI Builder
+  // Step 5: KRI Builder
   const [kriDrafts, setKriDrafts] = useState<KRIDraft[]>([]);
 
-  // Phase 6: KCI Builder
+  // Step 6: KCI Builder
   const [kciDrafts, setKciDrafts] = useState<KCIDraft[]>([]);
 
-  // Phase 7: Risk Scoring
+  // Step 7: Risk Profile (includes scoring + approval)
   const [calculatedScores, setCalculatedScores] = useState<CalculatedRiskScore[]>([]);
+  const [riskProfileApproved, setRiskProfileApproved] = useState(false);
 
-  // Phase 9: Tool Selection
+  // Step 8: Analytics Library
   const [selectedTools, setSelectedTools] = useState<SimulationType[]>([]);
-
-  // Phase 10: Simulation
   const [simulationRunning, setSimulationRunning] = useState(false);
   const [simulationComplete, setSimulationComplete] = useState(false);
 
@@ -379,16 +375,22 @@ export default function RiskInterrogation() {
     setCalculatedScores(scores);
   }, [riskAssessments, kciDrafts]);
 
+  // Calculate constraint completion percentage
+  const constraintCompletion = Math.round(
+    (constraints.filter((c) => c.targetValue && c.targetValue > 0).length / constraints.length) * 100
+  );
+
   const canProceed = useCallback(() => {
     switch (currentPhase.id) {
+      case 'constraint_architecture':
+        // All 6 constraints must have values (100% completion)
+        return constraintCompletion === 100;
       case 'context_establishment':
         return (
           objective.name &&
           objective.name.length > 0 &&
           objective.primaryObjectives?.some((o) => o.length > 0)
         );
-      case 'constraint_architecture':
-        return constraints.every((c) => c.targetValue && c.targetValue > 0);
       case 'risk_universe':
         return riskDrafts.length > 0;
       case 'likelihood_impact':
@@ -401,17 +403,15 @@ export default function RiskInterrogation() {
       case 'kci_builder':
         return kciDrafts.length > 0;
       case 'risk_scoring':
-        return calculatedScores.length > 0;
-      case 'register_generation':
-        return true;
+        // Must approve risk profile to proceed
+        return riskProfileApproved;
       case 'tool_selection':
-        return selectedTools.length > 0;
-      case 'simulation':
-        return simulationComplete;
+        // Final step - can always complete
+        return selectedTools.length > 0 || simulationComplete;
       default:
         return true;
     }
-  }, [currentPhase.id, objective, constraints, riskDrafts, riskAssessments, kriDrafts, kciDrafts, calculatedScores, selectedTools, simulationComplete]);
+  }, [currentPhase.id, constraintCompletion, objective, constraints, riskDrafts, riskAssessments, kriDrafts, kciDrafts, riskProfileApproved, selectedTools, simulationComplete]);
 
   const handleNext = () => {
     if (currentPhaseIndex < phases.length - 1 && canProceed()) {
@@ -733,6 +733,33 @@ export default function RiskInterrogation() {
       case 'constraint_architecture':
         return (
           <div className="space-y-6">
+            {/* Completion Progress Bar */}
+            <div className="p-4 rounded-xl bg-navy-800/50 border border-navy-700/50">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-sm font-medium text-navy-200">Risk Foundation Completion</span>
+                <span className={cn(
+                  'text-sm font-bold',
+                  constraintCompletion === 100 ? 'text-emerald-400' : 'text-amber-400'
+                )}>
+                  {constraintCompletion}%
+                </span>
+              </div>
+              <div className="h-2 rounded-full bg-navy-700 overflow-hidden">
+                <div
+                  className={cn(
+                    'h-full rounded-full transition-all duration-500',
+                    constraintCompletion === 100 ? 'bg-emerald-500' : 'bg-amber-500'
+                  )}
+                  style={{ width: `${constraintCompletion}%` }}
+                />
+              </div>
+              {constraintCompletion < 100 && (
+                <p className="text-xs text-navy-500 mt-2">
+                  Complete all 6 constraints to proceed to objective definition
+                </p>
+              )}
+            </div>
+
             <div className="p-4 rounded-xl bg-amber-500/10 border border-amber-500/30">
               <div className="flex items-start gap-3">
                 <Lock className="w-5 h-5 text-amber-400 mt-0.5" />
@@ -1602,12 +1629,30 @@ export default function RiskInterrogation() {
                   </table>
                 </div>
 
-                <button
-                  onClick={calculateScores}
-                  className="text-sm text-accent-primary hover:text-accent-primary/80 flex items-center gap-1"
-                >
-                  <Calculator className="w-4 h-4" /> Recalculate Scores
-                </button>
+                <div className="flex items-center justify-between pt-4 border-t border-navy-700/50">
+                  <button
+                    onClick={calculateScores}
+                    className="text-sm text-accent-primary hover:text-accent-primary/80 flex items-center gap-1"
+                  >
+                    <Calculator className="w-4 h-4" /> Recalculate Scores
+                  </button>
+
+                  {/* Approve Risk Profile Button */}
+                  {!riskProfileApproved ? (
+                    <button
+                      onClick={() => setRiskProfileApproved(true)}
+                      className="btn-primary"
+                    >
+                      <CheckCircle className="w-4 h-4 mr-2" />
+                      Approve Risk Profile
+                    </button>
+                  ) : (
+                    <div className="flex items-center gap-2 text-emerald-400">
+                      <CheckCircle className="w-5 h-5" />
+                      <span className="text-sm font-medium">Profile Approved</span>
+                    </div>
+                  )}
+                </div>
               </div>
             )}
           </div>

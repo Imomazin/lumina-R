@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import {
   AlertTriangle,
   Target,
@@ -22,6 +22,9 @@ import {
   Info,
   History,
   Settings,
+  Upload,
+  FileSpreadsheet,
+  Database,
 } from 'lucide-react';
 import { PageHeader, SectionCard } from '../../components';
 import { RiskTrendChart, CategoryDistributionChart } from '../../components/charts';
@@ -197,8 +200,10 @@ function ControlEffectivenessCard({ control }: { control: Control }) {
 }
 
 export default function Dashboard() {
+  const navigate = useNavigate();
   const [sidebarExpanded, setSidebarExpanded] = useState(false);
   const [selectedTimeRange, setSelectedTimeRange] = useState('7d');
+  const [showUploadBanner, setShowUploadBanner] = useState(true);
 
   // Calculate metrics
   const highPriorityRisks = risks.filter(r => r.severity === 'critical' || r.severity === 'high').length;
@@ -307,6 +312,63 @@ export default function Dashboard() {
             </div>
           }
         />
+
+        {/* Data Upload CTA Banner - Prominent with animation */}
+        {showUploadBanner && (
+          <div className="relative overflow-hidden rounded-2xl border-2 border-accent-primary/50 bg-gradient-to-r from-accent-primary/10 via-purple-500/10 to-pink-500/10 p-6 ai-advisor-glow">
+            <div className="absolute inset-0 bg-gradient-to-r from-accent-primary/5 via-transparent to-accent-secondary/5" />
+            <div className="absolute top-0 right-0 w-64 h-64 bg-accent-primary/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
+
+            <div className="relative flex items-center justify-between">
+              <div className="flex items-center gap-5">
+                <div className="relative">
+                  <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-accent-primary/30 to-accent-secondary/30 flex items-center justify-center border border-accent-primary/40">
+                    <Upload className="w-8 h-8 text-accent-primary" />
+                  </div>
+                  <div className="absolute -top-1 -right-1 w-5 h-5 bg-amber-500 rounded-full flex items-center justify-center animate-bounce">
+                    <span className="text-xs font-bold text-navy-950">!</span>
+                  </div>
+                </div>
+                <div>
+                  <h3 className="text-xl font-bold text-navy-100">Upload Your Risk Data</h3>
+                  <p className="text-sm text-navy-400 mt-1 max-w-lg">
+                    Import your risk register, KRIs, controls, and events to unlock intelligent AI analysis across Monte Carlo, Bow-Tie, Decision Trees, and more.
+                  </p>
+                  <div className="flex items-center gap-6 mt-3">
+                    <div className="flex items-center gap-2 text-xs text-navy-500">
+                      <FileSpreadsheet className="w-4 h-4" />
+                      <span>Excel / CSV</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-xs text-navy-500">
+                      <Database className="w-4 h-4" />
+                      <span>Auto-mapping</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-xs text-navy-500">
+                      <Sparkles className="w-4 h-4" />
+                      <span>AI-powered gaps detection</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={() => setShowUploadBanner(false)}
+                  className="text-sm text-navy-500 hover:text-navy-300 transition-colors"
+                >
+                  Dismiss
+                </button>
+                <button
+                  onClick={() => navigate('/dashboard/workspace')}
+                  className="btn-primary text-base px-6 py-3 flex items-center gap-2 shadow-lg shadow-accent-primary/25"
+                >
+                  <Upload className="w-5 h-5" />
+                  Upload Data Now
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Row 1: Key Gauges */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">

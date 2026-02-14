@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { FileText, Download, Plus, Clock, Filter } from 'lucide-react';
 import { PageHeader, SectionCard } from '../../components';
 import { cn } from '../../utils';
@@ -69,6 +70,48 @@ const scheduledReports = [
 ];
 
 export default function Reports() {
+  const [showNewReport, setShowNewReport] = useState(false);
+  const [showFilter, setShowFilter] = useState(false);
+  const [filterType, setFilterType] = useState<string>('all');
+  const [generating, setGenerating] = useState<string | null>(null);
+
+  // Handle report download
+  const handleDownload = (report: Report) => {
+    setGenerating(report.id);
+    setTimeout(() => {
+      const content = [
+        `LUMINA-R ${report.name.toUpperCase()}`,
+        `Type: ${report.type}`,
+        `Generated: ${new Date().toLocaleString()}`,
+        `Frequency: ${report.frequency}`,
+        '',
+        'This report contains comprehensive risk intelligence data.',
+        'Full report generation requires backend integration.',
+      ].join('\n');
+      const blob = new Blob([content], { type: 'text/plain' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${report.id}-${report.name.replace(/\s+/g, '-').toLowerCase()}.txt`;
+      a.click();
+      URL.revokeObjectURL(url);
+      setGenerating(null);
+    }, 1000);
+  };
+
+  // Handle template click
+  const handleTemplateClick = (template: string) => {
+    setShowNewReport(true);
+  };
+
+  // Handle quick report generation
+  const handleQuickReport = (type: string) => {
+    const report = reports.find(r => r.name.toLowerCase().includes(type.toLowerCase()));
+    if (report) handleDownload(report);
+  };
+
+  const filteredReports = filterType === 'all' ? reports : reports.filter(r => r.type === filterType);
+
   const getTypeColor = (type: Report['type']) => {
     switch (type) {
       case 'board':
@@ -88,7 +131,7 @@ export default function Reports() {
         title="Reports"
         subtitle="Generate and manage risk reports"
         actions={
-          <button className="btn-primary">
+          <button className="btn-primary" onClick={() => setShowNewReport(true)}>
             <Plus className="w-4 h-4 mr-2" />
             New Report
           </button>
@@ -97,17 +140,17 @@ export default function Reports() {
 
       {/* Quick Actions */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <button className="glass-card-hover p-5 text-left">
+        <button className="glass-card-hover p-5 text-left" onClick={() => handleQuickReport('Board')}>
           <FileText className="w-8 h-8 text-accent-primary mb-3" />
           <h3 className="text-base font-semibold text-navy-100 mb-1">Board Risk Summary</h3>
           <p className="text-sm text-navy-400">Generate comprehensive board-ready report</p>
         </button>
-        <button className="glass-card-hover p-5 text-left">
+        <button className="glass-card-hover p-5 text-left" onClick={() => handleQuickReport('Executive')}>
           <FileText className="w-8 h-8 text-blue-400 mb-3" />
           <h3 className="text-base font-semibold text-navy-100 mb-1">Executive Dashboard</h3>
           <p className="text-sm text-navy-400">Quick executive summary with key metrics</p>
         </button>
-        <button className="glass-card-hover p-5 text-left">
+        <button className="glass-card-hover p-5 text-left" onClick={() => setShowNewReport(true)}>
           <FileText className="w-8 h-8 text-emerald-400 mb-3" />
           <h3 className="text-base font-semibold text-navy-100 mb-1">Custom Report</h3>
           <p className="text-sm text-navy-400">Build a custom report with selected data</p>
@@ -120,14 +163,32 @@ export default function Reports() {
           <SectionCard
             title="Available Reports"
             actions={
-              <button className="btn-ghost text-sm">
+              <button className="btn-ghost text-sm" onClick={() => setShowFilter(!showFilter)}>
                 <Filter className="w-4 h-4 mr-2" />
                 Filter
               </button>
             }
           >
+            {showFilter && (
+              <div className="flex gap-2 mb-4 flex-wrap">
+                {['all', 'board', 'executive', 'regulatory', 'operational'].map((type) => (
+                  <button
+                    key={type}
+                    onClick={() => setFilterType(type)}
+                    className={cn(
+                      'px-3 py-1.5 rounded-lg text-xs font-medium transition-colors capitalize',
+                      filterType === type
+                        ? 'bg-accent-primary/20 text-accent-primary border border-accent-primary/30'
+                        : 'text-navy-400 bg-navy-800/50 border border-navy-700/30 hover:text-navy-200'
+                    )}
+                  >
+                    {type === 'all' ? 'All Types' : type}
+                  </button>
+                ))}
+              </div>
+            )}
             <div className="space-y-3">
-              {reports.map((report) => (
+              {filteredReports.map((report) => (
                 <div
                   key={report.id}
                   className="flex items-center justify-between p-4 rounded-xl bg-navy-800/30 border border-navy-700/50 hover:border-navy-600/50 transition-colors"
@@ -159,9 +220,9 @@ export default function Reports() {
                         {new Date(report.lastGenerated).toLocaleDateString()}
                       </p>
                     </div>
-                    <button className="btn-secondary text-sm py-2 px-3">
+                    <button className="btn-secondary text-sm py-2 px-3" onClick={() => handleDownload(report)}>
                       <Download className="w-4 h-4 mr-1" />
-                      Download
+                      {generating === report.id ? 'Generating...' : 'Download'}
                     </button>
                   </div>
                 </div>
@@ -194,6 +255,7 @@ export default function Reports() {
               {['Board Risk Package', 'Regulatory Filing', 'Audit Summary', 'Risk Register Export'].map((template) => (
                 <button
                   key={template}
+                  onClick={() => handleTemplateClick(template)}
                   className="w-full flex items-center gap-3 p-3 rounded-lg bg-navy-800/30 hover:bg-navy-800/50 transition-colors text-left"
                 >
                   <FileText className="w-4 h-4 text-navy-400" />
@@ -204,6 +266,54 @@ export default function Reports() {
           </SectionCard>
         </div>
       </div>
+      {/* New Report Modal */}
+      {showNewReport && (
+        <div
+          className="fixed inset-0 bg-navy-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-6"
+          onClick={() => setShowNewReport(false)}
+        >
+          <div
+            className="glass-card max-w-lg w-full"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="p-6 border-b border-navy-700/50">
+              <div className="flex items-center justify-between">
+                <h2 className="text-xl font-bold text-navy-100">Create New Report</h2>
+                <button onClick={() => setShowNewReport(false)} className="p-2 rounded-lg text-navy-400 hover:text-navy-200 hover:bg-navy-800/50">×</button>
+              </div>
+            </div>
+            <div className="p-6 space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-navy-300 mb-1">Report Name</label>
+                <input type="text" placeholder="Enter report name..." className="w-full px-3 py-2 bg-navy-800/50 border border-navy-700 rounded-lg text-sm text-navy-100 placeholder-navy-500 focus:outline-none focus:border-accent-primary/50" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-navy-300 mb-1">Report Type</label>
+                <select className="w-full px-3 py-2 bg-navy-800/50 border border-navy-700 rounded-lg text-sm text-navy-100 focus:outline-none focus:border-accent-primary/50">
+                  <option value="board">Board</option>
+                  <option value="executive">Executive</option>
+                  <option value="regulatory">Regulatory</option>
+                  <option value="operational">Operational</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-navy-300 mb-1">Frequency</label>
+                <select className="w-full px-3 py-2 bg-navy-800/50 border border-navy-700 rounded-lg text-sm text-navy-100 focus:outline-none focus:border-accent-primary/50">
+                  <option value="ad-hoc">Ad Hoc</option>
+                  <option value="daily">Daily</option>
+                  <option value="weekly">Weekly</option>
+                  <option value="monthly">Monthly</option>
+                  <option value="quarterly">Quarterly</option>
+                </select>
+              </div>
+            </div>
+            <div className="p-6 border-t border-navy-700/50 flex justify-end gap-3">
+              <button className="btn-secondary" onClick={() => setShowNewReport(false)}>Cancel</button>
+              <button className="btn-primary" onClick={() => setShowNewReport(false)}>Create Report</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

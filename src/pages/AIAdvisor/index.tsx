@@ -118,7 +118,7 @@ export default function AIAdvisor() {
               <Upload className="w-4 h-4 mr-2" />
               Import Data
             </button>
-            <button className="btn-primary">
+            <button className="btn-primary" onClick={() => { setActiveTab('interrogation'); }}>
               <Plus className="w-4 h-4 mr-2" />
               New Assessment
             </button>

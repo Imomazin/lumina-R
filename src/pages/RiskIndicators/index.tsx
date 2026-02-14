@@ -10,6 +10,8 @@ import type { KRI, RiskCategory } from '../../types';
 export default function RiskIndicators() {
   const [selectedCategory, setSelectedCategory] = useState<RiskCategory | 'all'>('all');
   const [selectedKRI, setSelectedKRI] = useState<KRI | null>(null);
+  const [showConfigModal, setShowConfigModal] = useState(false);
+  const [showHistory, setShowHistory] = useState(false);
 
   const statusCounts = getKRIStatusCounts();
   const filteredKRIs = selectedCategory === 'all' ? kris : getKRIsByCategory(selectedCategory);
@@ -28,7 +30,7 @@ export default function RiskIndicators() {
         title="Key Risk Indicators"
         subtitle="Monitor leading indicators of risk exposure"
         actions={
-          <button className="btn-primary">
+          <button className="btn-primary" onClick={() => setShowConfigModal(true)}>
             <Activity className="w-4 h-4 mr-2" />
             Configure KRIs
           </button>
@@ -198,9 +200,76 @@ export default function RiskIndicators() {
               <button className="btn-secondary" onClick={() => setSelectedKRI(null)}>
                 Close
               </button>
-              <button className="btn-primary">
+              <button className="btn-primary" onClick={() => setShowHistory(true)}>
                 View History
               </button>
+            </div>
+
+            {/* History Panel */}
+            {showHistory && (
+              <div className="p-6 border-t border-navy-700/50 bg-navy-800/20">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-sm font-semibold text-navy-200">Historical Trend</h3>
+                  <button onClick={() => setShowHistory(false)} className="text-xs text-navy-400 hover:text-navy-200">Close</button>
+                </div>
+                <div className="space-y-2">
+                  {[
+                    { period: 'Current', value: selectedKRI.currentValue },
+                    { period: 'Last Month', value: Math.round(selectedKRI.currentValue * (1 - selectedKRI.trendPercentage / 100)) },
+                    { period: '2 Months Ago', value: Math.round(selectedKRI.currentValue * (1 - selectedKRI.trendPercentage * 2 / 100)) },
+                    { period: '3 Months Ago', value: Math.round(selectedKRI.currentValue * (1 - selectedKRI.trendPercentage * 2.5 / 100)) },
+                  ].map((entry, i) => (
+                    <div key={i} className="flex items-center justify-between p-2 rounded-lg bg-navy-800/30">
+                      <span className="text-xs text-navy-300">{entry.period}</span>
+                      <span className="text-sm font-mono text-navy-200">{entry.value} {selectedKRI.unit}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Configure KRIs Modal */}
+      {showConfigModal && (
+        <div
+          className="fixed inset-0 bg-navy-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-6"
+          onClick={() => setShowConfigModal(false)}
+        >
+          <div
+            className="glass-card max-w-lg w-full"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="p-6 border-b border-navy-700/50">
+              <div className="flex items-center justify-between">
+                <h2 className="text-xl font-bold text-navy-100">Configure KRIs</h2>
+                <button onClick={() => setShowConfigModal(false)} className="p-2 rounded-lg text-navy-400 hover:text-navy-200 hover:bg-navy-800/50">×</button>
+              </div>
+            </div>
+            <div className="p-6 space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-navy-300 mb-1">Default Update Frequency</label>
+                <select className="w-full px-3 py-2 bg-navy-800/50 border border-navy-700 rounded-lg text-sm text-navy-100 focus:outline-none focus:border-accent-primary/50">
+                  <option>Daily</option><option>Weekly</option><option>Monthly</option><option>Quarterly</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-navy-300 mb-1">Breach Notification</label>
+                <select className="w-full px-3 py-2 bg-navy-800/50 border border-navy-700 rounded-lg text-sm text-navy-100 focus:outline-none focus:border-accent-primary/50">
+                  <option>Email + Dashboard</option><option>Dashboard Only</option><option>Email Only</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-navy-300 mb-1">Auto-escalation on Red</label>
+                <select className="w-full px-3 py-2 bg-navy-800/50 border border-navy-700 rounded-lg text-sm text-navy-100 focus:outline-none focus:border-accent-primary/50">
+                  <option>Enabled</option><option>Disabled</option>
+                </select>
+              </div>
+            </div>
+            <div className="p-6 border-t border-navy-700/50 flex justify-end gap-3">
+              <button className="btn-secondary" onClick={() => setShowConfigModal(false)}>Cancel</button>
+              <button className="btn-primary" onClick={() => setShowConfigModal(false)}>Save Configuration</button>
             </div>
           </div>
         </div>

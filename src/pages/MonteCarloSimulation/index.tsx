@@ -143,7 +143,27 @@ export default function MonteCarloSimulation() {
         actions={
           <div className="flex items-center gap-3">
             {hasRun && (
-              <button className="btn-secondary">
+              <button className="btn-secondary" onClick={() => {
+                if (!simulationResults) return;
+                const headers = ['Metric', 'Value'];
+                const data = [
+                  ['Mean Impact', formatCurrency(simulationResults.statistics.mean)],
+                  ['Standard Deviation', formatCurrency(simulationResults.statistics.stdDev)],
+                  ['Min', formatCurrency(simulationResults.statistics.min)],
+                  ['Max', formatCurrency(simulationResults.statistics.max)],
+                  [`VaR (${confidenceLevel}%)`, formatCurrency(simulationResults.statistics.valueAtRisk)],
+                  ['CVaR', formatCurrency(simulationResults.statistics.conditionalVaR)],
+                  ...Object.entries(simulationResults.statistics.percentiles).map(([p, v]) => [`P${p}`, formatCurrency(v as number)]),
+                ];
+                const csv = [headers.join(','), ...data.map(r => r.join(','))].join('\n');
+                const blob = new Blob([csv], { type: 'text/csv' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `monte-carlo-results-${new Date().toISOString().split('T')[0]}.csv`;
+                a.click();
+                URL.revokeObjectURL(url);
+              }}>
                 <Download className="w-4 h-4 mr-2" />
                 Export Results
               </button>

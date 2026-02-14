@@ -204,6 +204,55 @@ export default function Dashboard() {
   const [sidebarExpanded, setSidebarExpanded] = useState(false);
   const [selectedTimeRange, setSelectedTimeRange] = useState('7d');
   const [showUploadBanner, setShowUploadBanner] = useState(true);
+  const [showFilterPanel, setShowFilterPanel] = useState(false);
+  const [filterCategory, setFilterCategory] = useState<string>('all');
+
+  // Export dashboard data as CSV
+  const handleExport = () => {
+    const headers = ['Risk ID', 'Title', 'Category', 'Severity', 'Score', 'Status', 'Owner'];
+    const rows = risks.map(r => [r.id, r.title, r.category, r.severity, r.riskScore, r.status, r.owner]);
+    const csv = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `lumina-r-dashboard-export-${new Date().toISOString().split('T')[0]}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  // Generate full report
+  const handleGenerateReport = () => {
+    const report = [
+      'LUMINA-R RISK INTELLIGENCE REPORT',
+      `Generated: ${new Date().toLocaleString()}`,
+      `Time Range: ${selectedTimeRange}`,
+      '',
+      'EXECUTIVE SUMMARY',
+      `Total Risks: ${risks.length}`,
+      `Risk Exposure Score: ${Math.round(risks.reduce((sum, r) => sum + r.riskScore, 0) / risks.length)}`,
+      `Breached KRIs: ${kris.filter(k => k.status === 'red').length}`,
+      `Control Effectiveness Avg: ${Math.round(controls.reduce((sum, c) => sum + c.effectivenessScore, 0) / controls.length)}%`,
+      '',
+      'RISK REGISTER',
+      ...risks.map(r => `${r.id} | ${r.title} | ${r.severity} | Score: ${r.riskScore} | ${r.status}`),
+      '',
+      'KRI STATUS',
+      ...kris.map(k => `${k.name} | ${k.status} | Current: ${k.currentValue}${k.unit}`),
+    ].join('\n');
+    const blob = new Blob([report], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `lumina-r-report-${new Date().toISOString().split('T')[0]}.txt`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  // Refresh data simulation
+  const handleRefreshData = () => {
+    window.location.reload();
+  };
 
   // Calculate metrics
   const highPriorityRisks = risks.filter(r => r.severity === 'critical' || r.severity === 'high').length;
@@ -297,15 +346,15 @@ export default function Dashboard() {
                   </button>
                 ))}
               </div>
-              <button className="btn-secondary">
+              <button className="btn-secondary" onClick={() => setShowFilterPanel(!showFilterPanel)}>
                 <Filter className="w-4 h-4 mr-2" />
                 Filter
               </button>
-              <button className="btn-secondary">
+              <button className="btn-secondary" onClick={handleExport}>
                 <Download className="w-4 h-4 mr-2" />
                 Export
               </button>
-              <button className="btn-primary">
+              <button className="btn-primary" onClick={handleGenerateReport}>
                 <Zap className="w-4 h-4 mr-2" />
                 Generate Report
               </button>
@@ -366,6 +415,32 @@ export default function Dashboard() {
                   Upload Data Now
                 </button>
               </div>
+            </div>
+          </div>
+        )}
+
+        {/* Filter Panel */}
+        {showFilterPanel && (
+          <div className="glass-card p-4">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-sm font-semibold text-navy-200">Filter by Category</h3>
+              <button onClick={() => { setFilterCategory('all'); setShowFilterPanel(false); }} className="text-xs text-navy-400 hover:text-navy-200">Clear All</button>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {['all', 'cyber', 'financial', 'operational', 'compliance', 'strategic', 'reputational'].map((cat) => (
+                <button
+                  key={cat}
+                  onClick={() => setFilterCategory(cat)}
+                  className={cn(
+                    'px-3 py-1.5 rounded-lg text-xs font-medium transition-colors capitalize',
+                    filterCategory === cat
+                      ? 'bg-accent-primary/20 text-accent-primary border border-accent-primary/30'
+                      : 'text-navy-400 hover:text-navy-200 bg-navy-800/50 border border-navy-700/30'
+                  )}
+                >
+                  {cat === 'all' ? 'All Categories' : cat}
+                </button>
+              ))}
             </div>
           </div>
         )}
@@ -726,7 +801,7 @@ export default function Dashboard() {
                   <h3 className="text-sm font-semibold text-navy-200">Quick Actions</h3>
                 </div>
                 <div className="space-y-2">
-                  <button className="w-full btn-secondary text-sm py-2">
+                  <button className="w-full btn-secondary text-sm py-2" onClick={handleRefreshData}>
                     <RefreshCw className="w-4 h-4 mr-2" />
                     Refresh Data
                   </button>

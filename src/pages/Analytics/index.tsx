@@ -1,4 +1,6 @@
+import { useState } from 'react';
 import { Download, Filter, Calendar, TrendingUp, TrendingDown, Activity } from 'lucide-react';
+import { cn } from '../../utils';
 import {
   AreaChart,
   Area,
@@ -58,6 +60,38 @@ const departmentRiskData = [
 ];
 
 export default function Analytics() {
+  const [timeRange, setTimeRange] = useState('6m');
+  const [showTimeDropdown, setShowTimeDropdown] = useState(false);
+  const [showFilter, setShowFilter] = useState(false);
+
+  const handleExportReport = () => {
+    const headers = ['Metric', 'Value'];
+    const data = [
+      ['Total Risk Exposure', risks.reduce((sum, r) => sum + r.riskScore, 0).toString()],
+      ['Average Risk Score', (risks.reduce((sum, r) => sum + r.riskScore, 0) / risks.length).toFixed(1)],
+      ['KRI Compliance', `${((kris.filter(k => k.status === 'green').length / kris.length) * 100).toFixed(0)}%`],
+      ['Total Risks', risks.length.toString()],
+      ['Critical Risks', risks.filter(r => r.severity === 'critical').length.toString()],
+      ['KRIs Tracked', kris.length.toString()],
+      ['KRIs Green', kris.filter(k => k.status === 'green').length.toString()],
+    ];
+    const csv = [headers.join(','), ...data.map(r => r.join(','))].join('\n');
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `risk-analytics-${new Date().toISOString().split('T')[0]}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const timeRangeOptions = [
+    { value: '1m', label: 'Last Month' },
+    { value: '3m', label: 'Last 3 Months' },
+    { value: '6m', label: 'Last 6 Months' },
+    { value: '1y', label: 'Last Year' },
+  ];
+
   const avgRiskScore = (risks.reduce((sum, r) => sum + r.riskScore, 0) / risks.length).toFixed(1);
   const kriCompliance = ((kris.filter(k => k.status === 'green').length / kris.length) * 100).toFixed(0);
 
@@ -68,15 +102,30 @@ export default function Analytics() {
         subtitle="Advanced analytics and insights across your risk portfolio"
         actions={
           <div className="flex items-center gap-3">
-            <button className="btn-ghost">
-              <Calendar className="w-4 h-4 mr-2" />
-              Last 6 Months
-            </button>
-            <button className="btn-ghost">
+            <div className="relative">
+              <button className="btn-ghost" onClick={() => setShowTimeDropdown(!showTimeDropdown)}>
+                <Calendar className="w-4 h-4 mr-2" />
+                {timeRangeOptions.find(t => t.value === timeRange)?.label || 'Last 6 Months'}
+              </button>
+              {showTimeDropdown && (
+                <div className="absolute right-0 top-full mt-1 z-10 w-44 rounded-lg bg-navy-800 border border-navy-700 shadow-xl py-1">
+                  {timeRangeOptions.map(opt => (
+                    <button
+                      key={opt.value}
+                      onClick={() => { setTimeRange(opt.value); setShowTimeDropdown(false); }}
+                      className={cn('w-full px-4 py-2 text-left text-sm hover:bg-navy-700/50', timeRange === opt.value ? 'text-accent-primary' : 'text-navy-200')}
+                    >
+                      {opt.label}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+            <button className="btn-ghost" onClick={() => setShowFilter(!showFilter)}>
               <Filter className="w-4 h-4 mr-2" />
               Filter
             </button>
-            <button className="btn-primary">
+            <button className="btn-primary" onClick={handleExportReport}>
               <Download className="w-4 h-4 mr-2" />
               Export Report
             </button>

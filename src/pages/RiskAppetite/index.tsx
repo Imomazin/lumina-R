@@ -7,6 +7,22 @@ import type { RiskAppetite } from '../../types';
 
 export default function RiskAppetitePage() {
   const [selectedAppetite, setSelectedAppetite] = useState<RiskAppetite | null>(null);
+  const [showConfigModal, setShowConfigModal] = useState(false);
+  const [editingAppetite, setEditingAppetite] = useState(false);
+
+  // Handle export
+  const handleExport = () => {
+    const headers = ['Category', 'Status', 'Current Level', 'Min Tolerance', 'Max Tolerance', 'Statement'];
+    const rows = riskAppetite.map(a => [a.category, a.status, `${a.currentLevel}%`, `${a.toleranceMin}%`, `${a.toleranceMax}%`, `"${a.statement}"`]);
+    const csv = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `risk-appetite-framework-${new Date().toISOString().split('T')[0]}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
 
   const getStatusColor = (status: RiskAppetite['status']) => {
     switch (status) {
@@ -60,11 +76,11 @@ export default function RiskAppetitePage() {
         subtitle="Define and monitor organizational risk tolerance levels"
         actions={
           <div className="flex items-center gap-3">
-            <button className="btn-ghost">
+            <button className="btn-ghost" onClick={handleExport}>
               <Download className="w-4 h-4 mr-2" />
               Export Report
             </button>
-            <button className="btn-primary">
+            <button className="btn-primary" onClick={() => setShowConfigModal(true)}>
               <Settings className="w-4 h-4 mr-2" />
               Configure
             </button>
@@ -294,9 +310,78 @@ export default function RiskAppetitePage() {
               <button className="btn-secondary" onClick={() => setSelectedAppetite(null)}>
                 Close
               </button>
-              <button className="btn-primary">
+              <button className="btn-primary" onClick={() => setEditingAppetite(true)}>
                 Edit Appetite
               </button>
+            </div>
+
+            {/* Edit mode */}
+            {editingAppetite && (
+              <div className="p-6 border-t border-navy-700/50 bg-navy-800/30">
+                <h3 className="text-sm font-semibold text-navy-200 mb-4">Edit Appetite Parameters</h3>
+                <div className="grid grid-cols-2 gap-4 mb-4">
+                  <div>
+                    <label className="block text-xs text-navy-400 mb-1">Min Tolerance (%)</label>
+                    <input type="number" min={0} max={100} defaultValue={selectedAppetite.toleranceMin} className="w-full px-3 py-2 bg-navy-800/50 border border-navy-700 rounded-lg text-sm text-navy-100 focus:outline-none focus:border-accent-primary/50" />
+                  </div>
+                  <div>
+                    <label className="block text-xs text-navy-400 mb-1">Max Tolerance (%)</label>
+                    <input type="number" min={0} max={100} defaultValue={selectedAppetite.toleranceMax} className="w-full px-3 py-2 bg-navy-800/50 border border-navy-700 rounded-lg text-sm text-navy-100 focus:outline-none focus:border-accent-primary/50" />
+                  </div>
+                </div>
+                <div className="mb-4">
+                  <label className="block text-xs text-navy-400 mb-1">Appetite Statement</label>
+                  <textarea rows={3} defaultValue={selectedAppetite.statement} className="w-full px-3 py-2 bg-navy-800/50 border border-navy-700 rounded-lg text-sm text-navy-100 focus:outline-none focus:border-accent-primary/50" />
+                </div>
+                <div className="flex justify-end gap-3">
+                  <button className="btn-secondary" onClick={() => setEditingAppetite(false)}>Cancel</button>
+                  <button className="btn-primary" onClick={() => { setEditingAppetite(false); setSelectedAppetite(null); }}>Save Changes</button>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Configure Modal */}
+      {showConfigModal && (
+        <div
+          className="fixed inset-0 bg-navy-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-6"
+          onClick={() => setShowConfigModal(false)}
+        >
+          <div
+            className="glass-card max-w-lg w-full"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="p-6 border-b border-navy-700/50">
+              <div className="flex items-center justify-between">
+                <h2 className="text-xl font-bold text-navy-100">Configure Risk Appetite</h2>
+                <button onClick={() => setShowConfigModal(false)} className="p-2 rounded-lg text-navy-400 hover:text-navy-200 hover:bg-navy-800/50">×</button>
+              </div>
+            </div>
+            <div className="p-6 space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-navy-300 mb-1">Review Frequency</label>
+                <select className="w-full px-3 py-2 bg-navy-800/50 border border-navy-700 rounded-lg text-sm text-navy-100 focus:outline-none focus:border-accent-primary/50">
+                  <option>Monthly</option><option>Quarterly</option><option>Semi-Annual</option><option>Annual</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-navy-300 mb-1">Breach Alert Level</label>
+                <select className="w-full px-3 py-2 bg-navy-800/50 border border-navy-700 rounded-lg text-sm text-navy-100 focus:outline-none focus:border-accent-primary/50">
+                  <option>Critical Only</option><option>All Breaches</option><option>Approaching + Breached</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-navy-300 mb-1">Escalation Path</label>
+                <select className="w-full px-3 py-2 bg-navy-800/50 border border-navy-700 rounded-lg text-sm text-navy-100 focus:outline-none focus:border-accent-primary/50">
+                  <option>Board Risk Committee</option><option>CRO</option><option>Risk Owner</option>
+                </select>
+              </div>
+            </div>
+            <div className="p-6 border-t border-navy-700/50 flex justify-end gap-3">
+              <button className="btn-secondary" onClick={() => setShowConfigModal(false)}>Cancel</button>
+              <button className="btn-primary" onClick={() => setShowConfigModal(false)}>Save Configuration</button>
             </div>
           </div>
         </div>

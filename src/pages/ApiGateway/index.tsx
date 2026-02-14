@@ -6,6 +6,7 @@ import { cn } from '../../utils';
 
 export default function ApiGateway() {
   const [selectedIntegration, setSelectedIntegration] = useState<typeof integrations[0] | null>(null);
+  const [showAddModal, setShowAddModal] = useState(false);
 
   const connectedCount = integrations.filter(i => i.status === 'connected').length;
   const pendingCount = integrations.filter(i => i.status === 'pending').length;
@@ -38,7 +39,7 @@ export default function ApiGateway() {
         title="API Gateway & Integrations"
         subtitle="Connect and manage external systems and data sources"
         actions={
-          <button className="btn-primary">
+          <button className="btn-primary" onClick={() => setShowAddModal(true)}>
             <Plus className="w-4 h-4 mr-2" />
             Add Integration
           </button>
@@ -214,10 +215,54 @@ export default function ApiGateway() {
               <button className="btn-secondary" onClick={() => setSelectedIntegration(null)}>
                 Close
               </button>
-              <button className="btn-primary">
+              <button className="btn-primary" onClick={() => { setSelectedIntegration(null); }}>
                 <Settings className="w-4 h-4 mr-2" />
                 Configure
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Add Integration Modal */}
+      {showAddModal && (
+        <div
+          className="fixed inset-0 bg-navy-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-6"
+          onClick={() => setShowAddModal(false)}
+        >
+          <div
+            className="glass-card max-w-lg w-full"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="p-6 border-b border-navy-700/50">
+              <div className="flex items-center justify-between">
+                <h2 className="text-xl font-bold text-navy-100">Add Integration</h2>
+                <button onClick={() => setShowAddModal(false)} className="p-2 rounded-lg text-navy-400 hover:text-navy-200 hover:bg-navy-800/50">×</button>
+              </div>
+            </div>
+            <div className="p-6 space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-navy-300 mb-1">Integration Name</label>
+                <input type="text" placeholder="e.g., ServiceNow, Jira..." className="w-full px-3 py-2 bg-navy-800/50 border border-navy-700 rounded-lg text-sm text-navy-100 placeholder-navy-500 focus:outline-none focus:border-accent-primary/50" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-navy-300 mb-1">Type</label>
+                <select className="w-full px-3 py-2 bg-navy-800/50 border border-navy-700 rounded-lg text-sm text-navy-100 focus:outline-none focus:border-accent-primary/50">
+                  <option>REST API</option><option>GraphQL</option><option>Webhook</option><option>File Import</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-navy-300 mb-1">API Endpoint URL</label>
+                <input type="text" placeholder="https://api.example.com/v1" className="w-full px-3 py-2 bg-navy-800/50 border border-navy-700 rounded-lg text-sm text-navy-100 placeholder-navy-500 focus:outline-none focus:border-accent-primary/50" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-navy-300 mb-1">API Key</label>
+                <input type="password" placeholder="Enter API key..." className="w-full px-3 py-2 bg-navy-800/50 border border-navy-700 rounded-lg text-sm text-navy-100 placeholder-navy-500 focus:outline-none focus:border-accent-primary/50" />
+              </div>
+            </div>
+            <div className="p-6 border-t border-navy-700/50 flex justify-end gap-3">
+              <button className="btn-secondary" onClick={() => setShowAddModal(false)}>Cancel</button>
+              <button className="btn-primary" onClick={() => setShowAddModal(false)}>Connect</button>
             </div>
           </div>
         </div>

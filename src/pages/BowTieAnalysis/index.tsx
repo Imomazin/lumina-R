@@ -84,6 +84,25 @@ export default function BowTieAnalysis() {
   const [bowTie, setBowTie] = useState<BowTieModel>(sampleBowTie);
   const [selectedElement, setSelectedElement] = useState<string | null>(null);
   const [editMode, setEditMode] = useState(false);
+  const [isSaved, setIsSaved] = useState(false);
+
+  // Handle export
+  const handleExportBowTie = () => {
+    const data = JSON.stringify(bowTie, null, 2);
+    const blob = new Blob([data], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `bow-tie-analysis-${bowTie.id}-${new Date().toISOString().split('T')[0]}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  // Handle save
+  const handleSave = () => {
+    setIsSaved(true);
+    setTimeout(() => setIsSaved(false), 2000);
+  };
 
   const getStatusIcon = (status: BowTieControl['status']) => {
     switch (status) {
@@ -189,13 +208,13 @@ export default function BowTieAnalysis() {
             >
               {editMode ? 'View Mode' : 'Edit Mode'}
             </button>
-            <button className="btn-secondary">
+            <button className="btn-secondary" onClick={handleExportBowTie}>
               <Download className="w-4 h-4 mr-2" />
               Export
             </button>
-            <button className="btn-primary">
+            <button className="btn-primary" onClick={handleSave}>
               <Save className="w-4 h-4 mr-2" />
-              Save
+              {isSaved ? 'Saved!' : 'Save'}
             </button>
           </div>
         }

@@ -4,6 +4,7 @@ import { PageHeader, SectionCard } from '../../components';
 import { RiskHeatMap } from '../../components/charts';
 import { StatusBadge } from '../../components/badges';
 import { risks } from '../../data';
+import { cn } from '../../utils';
 import type { Risk } from '../../types';
 
 export default function RiskMatrix() {
@@ -12,6 +13,22 @@ export default function RiskMatrix() {
     impact: number;
     risks: Risk[];
   } | null>(null);
+  const [showFilterPanel, setShowFilterPanel] = useState(false);
+  const [filterSeverity, setFilterSeverity] = useState<string>('all');
+
+  // Handle export
+  const handleExport = () => {
+    const headers = ['ID', 'Title', 'Probability', 'Impact', 'Score', 'Severity', 'Category'];
+    const rows = risks.map(r => [r.id, `"${r.title}"`, r.probability, r.impact, r.riskScore, r.severity, r.category]);
+    const csv = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `risk-matrix-${new Date().toISOString().split('T')[0]}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
 
   const handleCellClick = (probability: number, impact: number, cellRisks: Risk[]) => {
     if (cellRisks.length > 0) {
@@ -34,11 +51,11 @@ export default function RiskMatrix() {
         subtitle="Probability vs Impact risk assessment visualization"
         actions={
           <div className="flex items-center gap-3">
-            <button className="btn-ghost">
+            <button className="btn-ghost" onClick={() => setShowFilterPanel(!showFilterPanel)}>
               <Filter className="w-4 h-4 mr-2" />
               Filter
             </button>
-            <button className="btn-ghost">
+            <button className="btn-ghost" onClick={handleExport}>
               <Download className="w-4 h-4 mr-2" />
               Export
             </button>
@@ -65,6 +82,32 @@ export default function RiskMatrix() {
           <p className="text-sm text-navy-400">Low (1-9)</p>
         </div>
       </div>
+
+      {/* Filter Panel */}
+      {showFilterPanel && (
+        <div className="glass-card p-4">
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="text-sm font-semibold text-navy-200">Filter by Severity</h3>
+            <button onClick={() => { setFilterSeverity('all'); setShowFilterPanel(false); }} className="text-xs text-navy-400 hover:text-navy-200">Clear</button>
+          </div>
+          <div className="flex gap-2">
+            {['all', 'critical', 'high', 'medium', 'low'].map((sev) => (
+              <button
+                key={sev}
+                onClick={() => setFilterSeverity(sev)}
+                className={cn(
+                  'px-3 py-1.5 rounded-lg text-xs font-medium transition-colors capitalize',
+                  filterSeverity === sev
+                    ? 'bg-accent-primary/20 text-accent-primary border border-accent-primary/30'
+                    : 'text-navy-400 bg-navy-800/50 border border-navy-700/30 hover:text-navy-200'
+                )}
+              >
+                {sev === 'all' ? 'All' : sev}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Main Matrix */}

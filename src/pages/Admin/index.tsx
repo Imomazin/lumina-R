@@ -33,6 +33,11 @@ const auditLog = [
 export default function Admin() {
   const [activeTab, setActiveTab] = useState<'users' | 'settings' | 'audit'>('users');
   const [searchQuery, setSearchQuery] = useState('');
+  const [showAddUserModal, setShowAddUserModal] = useState(false);
+  const [showUserMenu, setShowUserMenu] = useState<string | null>(null);
+  const [notifications, setNotifications] = useState<Record<number, boolean>>({
+    0: true, 1: true, 2: true, 3: false,
+  });
 
   const filteredUsers = mockUsers.filter(
     (u) =>
@@ -97,7 +102,7 @@ export default function Admin() {
                 className="w-full pl-10 pr-4 py-2 bg-navy-800/50 border border-navy-700 rounded-lg text-sm text-navy-100 placeholder-navy-500 focus:outline-none focus:border-accent-primary/50"
               />
             </div>
-            <button className="btn-primary">
+            <button className="btn-primary" onClick={() => setShowAddUserModal(true)}>
               <Plus className="w-4 h-4 mr-2" />
               Add User
             </button>
@@ -153,10 +158,17 @@ export default function Admin() {
                         {user.status}
                       </span>
                     </td>
-                    <td>
-                      <button className="p-1 rounded hover:bg-navy-800/50">
+                    <td className="relative">
+                      <button className="p-1 rounded hover:bg-navy-800/50" onClick={() => setShowUserMenu(showUserMenu === user.id ? null : user.id)}>
                         <MoreVertical className="w-4 h-4 text-navy-400" />
                       </button>
+                      {showUserMenu === user.id && (
+                        <div className="absolute right-0 top-8 z-10 w-40 rounded-lg bg-navy-800 border border-navy-700 shadow-xl py-1">
+                          <button className="w-full px-4 py-2 text-left text-sm text-navy-200 hover:bg-navy-700/50" onClick={() => setShowUserMenu(null)}>Edit User</button>
+                          <button className="w-full px-4 py-2 text-left text-sm text-navy-200 hover:bg-navy-700/50" onClick={() => setShowUserMenu(null)}>Change Role</button>
+                          <button className="w-full px-4 py-2 text-left text-sm text-red-400 hover:bg-navy-700/50" onClick={() => setShowUserMenu(null)}>Deactivate</button>
+                        </div>
+                      )}
                     </td>
                   </tr>
                 ))}
@@ -208,10 +220,10 @@ export default function Admin() {
           <SectionCard title="Notification Settings">
             <div className="space-y-4">
               {[
-                { label: 'KRI Breach Alerts', desc: 'Notify when KRI breaches threshold', enabled: true },
-                { label: 'Risk Escalation', desc: 'Notify on risk status changes', enabled: true },
-                { label: 'Appetite Warnings', desc: 'Notify when approaching tolerance', enabled: true },
-                { label: 'Weekly Digest', desc: 'Send weekly risk summary', enabled: false },
+                { label: 'KRI Breach Alerts', desc: 'Notify when KRI breaches threshold' },
+                { label: 'Risk Escalation', desc: 'Notify on risk status changes' },
+                { label: 'Appetite Warnings', desc: 'Notify when approaching tolerance' },
+                { label: 'Weekly Digest', desc: 'Send weekly risk summary' },
               ].map((setting, i) => (
                 <div key={i} className="flex items-center justify-between py-2">
                   <div>
@@ -219,15 +231,16 @@ export default function Admin() {
                     <p className="text-xs text-navy-500">{setting.desc}</p>
                   </div>
                   <button
+                    onClick={() => setNotifications(prev => ({ ...prev, [i]: !prev[i] }))}
                     className={cn(
                       'w-11 h-6 rounded-full transition-colors relative',
-                      setting.enabled ? 'bg-accent-primary' : 'bg-navy-700'
+                      notifications[i] ? 'bg-accent-primary' : 'bg-navy-700'
                     )}
                   >
                     <span
                       className={cn(
                         'absolute top-1 w-4 h-4 rounded-full bg-white transition-transform',
-                        setting.enabled ? 'left-6' : 'left-1'
+                        notifications[i] ? 'left-6' : 'left-1'
                       )}
                     />
                   </button>
@@ -314,6 +327,59 @@ export default function Admin() {
             ))}
           </div>
         </SectionCard>
+      )}
+      {/* Add User Modal */}
+      {showAddUserModal && (
+        <div
+          className="fixed inset-0 bg-navy-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-6"
+          onClick={() => setShowAddUserModal(false)}
+        >
+          <div
+            className="glass-card max-w-lg w-full"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="p-6 border-b border-navy-700/50">
+              <div className="flex items-center justify-between">
+                <h2 className="text-xl font-bold text-navy-100">Add New User</h2>
+                <button onClick={() => setShowAddUserModal(false)} className="p-2 rounded-lg text-navy-400 hover:text-navy-200 hover:bg-navy-800/50">×</button>
+              </div>
+            </div>
+            <div className="p-6 space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-navy-300 mb-1">First Name</label>
+                  <input type="text" placeholder="First name" className="w-full px-3 py-2 bg-navy-800/50 border border-navy-700 rounded-lg text-sm text-navy-100 placeholder-navy-500 focus:outline-none focus:border-accent-primary/50" />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-navy-300 mb-1">Last Name</label>
+                  <input type="text" placeholder="Last name" className="w-full px-3 py-2 bg-navy-800/50 border border-navy-700 rounded-lg text-sm text-navy-100 placeholder-navy-500 focus:outline-none focus:border-accent-primary/50" />
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-navy-300 mb-1">Email</label>
+                <input type="email" placeholder="user@company.com" className="w-full px-3 py-2 bg-navy-800/50 border border-navy-700 rounded-lg text-sm text-navy-100 placeholder-navy-500 focus:outline-none focus:border-accent-primary/50" />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-navy-300 mb-1">Role</label>
+                  <select className="w-full px-3 py-2 bg-navy-800/50 border border-navy-700 rounded-lg text-sm text-navy-100 focus:outline-none focus:border-accent-primary/50">
+                    <option>Viewer</option><option>Analyst</option><option>Admin</option><option>Executive</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-navy-300 mb-1">Department</label>
+                  <select className="w-full px-3 py-2 bg-navy-800/50 border border-navy-700 rounded-lg text-sm text-navy-100 focus:outline-none focus:border-accent-primary/50">
+                    <option>Risk Management</option><option>Information Security</option><option>Compliance</option><option>Treasury</option><option>Operations</option><option>Executive</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+            <div className="p-6 border-t border-navy-700/50 flex justify-end gap-3">
+              <button className="btn-secondary" onClick={() => setShowAddUserModal(false)}>Cancel</button>
+              <button className="btn-primary" onClick={() => setShowAddUserModal(false)}>Add User</button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

@@ -7,6 +7,7 @@ import type { CaseStudy } from '../../types';
 export default function CaseStudiesPage() {
   const [selectedStudy, setSelectedStudy] = useState<CaseStudy | null>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [copied, setCopied] = useState(false);
 
   const handlePrevious = () => {
     setCurrentIndex((prev) => (prev === 0 ? caseStudies.length - 1 : prev - 1));
@@ -245,9 +246,13 @@ export default function CaseStudiesPage() {
               <button className="btn-secondary" onClick={() => setSelectedStudy(null)}>
                 Close
               </button>
-              <button className="btn-primary">
+              <button className="btn-primary" onClick={() => {
+                navigator.clipboard.writeText(window.location.href + '?study=' + selectedStudy.id);
+                setCopied(true);
+                setTimeout(() => setCopied(false), 2000);
+              }}>
                 <ExternalLink className="w-4 h-4 mr-2" />
-                Share Case Study
+                {copied ? 'Link Copied!' : 'Share Case Study'}
               </button>
             </div>
           </div>

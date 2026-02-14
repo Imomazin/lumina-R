@@ -100,7 +100,7 @@ export default function Reports() {
   };
 
   // Handle template click
-  const handleTemplateClick = (template: string) => {
+  const handleTemplateClick = (_template: string) => {
     setShowNewReport(true);
   };
 

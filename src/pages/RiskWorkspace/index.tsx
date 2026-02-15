@@ -64,6 +64,16 @@ export default function RiskWorkspace() {
   const [processingFile, setProcessingFile] = useState<string>('');
   const [importComplete, setImportComplete] = useState(false);
   const [dropError, setDropError] = useState<string | null>(null);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [analysisStep, setAnalysisStep] = useState(0);
+  const [analysisSteps] = useState([
+    'Validating data structure...',
+    'Mapping columns to risk schema...',
+    'Calculating risk scores...',
+    'Building KRI correlations...',
+    'Generating AI insights...',
+    'Finalizing import...',
+  ]);
 
   const validExtensions = ['csv', 'xlsx', 'xls'];
 
@@ -157,9 +167,19 @@ export default function RiskWorkspace() {
     ));
   };
 
-  const handleImportAll = () => {
+  const handleAnalyzeData = async () => {
+    setIsAnalyzing(true);
+    setAnalysisStep(0);
+
     const validDatasets = datasets.filter(ds => ds.status === 'parsed' && ds.assignedType !== 'unknown');
 
+    // Simulate analysis steps with progress
+    for (let i = 0; i < analysisSteps.length; i++) {
+      setAnalysisStep(i);
+      await new Promise(resolve => setTimeout(resolve, 600 + Math.random() * 400));
+    }
+
+    // Actually process the data
     for (const ds of validDatasets) {
       switch (ds.assignedType) {
         case 'risks': {
@@ -214,6 +234,7 @@ export default function RiskWorkspace() {
       ));
     }
 
+    setIsAnalyzing(false);
     setImportComplete(true);
   };
 
@@ -245,6 +266,74 @@ export default function RiskWorkspace() {
           </div>
         }
       />
+
+      {/* Analyzing Overlay */}
+      {isAnalyzing && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-navy-950/90 backdrop-blur-sm">
+          <div className="glass-card p-10 max-w-lg w-full mx-4 text-center">
+            <div className="w-20 h-20 rounded-full bg-accent-primary/20 flex items-center justify-center mx-auto mb-6">
+              <Loader2 className="w-10 h-10 text-accent-primary animate-spin" />
+            </div>
+            <h3 className="text-2xl font-semibold text-navy-100 mb-2">Analyzing Your Data</h3>
+            <p className="text-sm text-navy-400 mb-8">Processing {validCount} dataset{validCount !== 1 ? 's' : ''}...</p>
+
+            {/* Progress Steps */}
+            <div className="space-y-3 text-left">
+              {analysisSteps.map((step, i) => {
+                const isComplete = i < analysisStep;
+                const isCurrent = i === analysisStep;
+                return (
+                  <div
+                    key={i}
+                    className={cn(
+                      'flex items-center gap-3 px-4 py-2.5 rounded-lg transition-all',
+                      isComplete ? 'bg-emerald-500/10' :
+                      isCurrent ? 'bg-accent-primary/10' :
+                      'bg-navy-800/30 opacity-50'
+                    )}
+                  >
+                    <div className={cn(
+                      'w-6 h-6 rounded-full flex items-center justify-center shrink-0',
+                      isComplete ? 'bg-emerald-500' :
+                      isCurrent ? 'bg-accent-primary' :
+                      'bg-navy-700'
+                    )}>
+                      {isComplete ? (
+                        <CheckCircle className="w-4 h-4 text-white" />
+                      ) : isCurrent ? (
+                        <Loader2 className="w-4 h-4 text-white animate-spin" />
+                      ) : (
+                        <span className="text-xs text-navy-400">{i + 1}</span>
+                      )}
+                    </div>
+                    <span className={cn(
+                      'text-sm',
+                      isComplete ? 'text-emerald-400' :
+                      isCurrent ? 'text-accent-primary' :
+                      'text-navy-500'
+                    )}>
+                      {step}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Progress Bar */}
+            <div className="mt-8">
+              <div className="h-2 rounded-full bg-navy-800 overflow-hidden">
+                <div
+                  className="h-full bg-gradient-to-r from-accent-primary to-emerald-400 transition-all duration-500"
+                  style={{ width: `${((analysisStep + 1) / analysisSteps.length) * 100}%` }}
+                />
+              </div>
+              <p className="text-xs text-navy-500 mt-2">
+                Step {analysisStep + 1} of {analysisSteps.length}
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Import Complete */}
       {importComplete && (
@@ -565,11 +654,11 @@ export default function RiskWorkspace() {
                 })}
               </div>
 
-              {/* Import Button */}
+              {/* Analyze Button */}
               <div className="mt-6 flex items-center justify-between">
                 <div className="text-sm text-navy-400">
                   {validCount > 0 ? (
-                    <span className="text-navy-200">{validCount} dataset{validCount !== 1 ? 's' : ''} ready to import</span>
+                    <span className="text-navy-200">{validCount} dataset{validCount !== 1 ? 's' : ''} ready to analyze</span>
                   ) : (
                     <span className="text-amber-400 flex items-center gap-1">
                       <AlertTriangle className="w-4 h-4" />
@@ -578,12 +667,21 @@ export default function RiskWorkspace() {
                   )}
                 </div>
                 <button
-                  onClick={handleImportAll}
-                  disabled={validCount === 0}
+                  onClick={handleAnalyzeData}
+                  disabled={validCount === 0 || isAnalyzing}
                   className="btn-primary text-base px-6 py-3"
                 >
-                  <Database className="w-5 h-5 mr-2" />
-                  Import {validCount} Dataset{validCount !== 1 ? 's' : ''} into Lumina-R
+                  {isAnalyzing ? (
+                    <>
+                      <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                      Analyzing...
+                    </>
+                  ) : (
+                    <>
+                      <BarChart3 className="w-5 h-5 mr-2" />
+                      Analyze Data
+                    </>
+                  )}
                 </button>
               </div>
             </SectionCard>

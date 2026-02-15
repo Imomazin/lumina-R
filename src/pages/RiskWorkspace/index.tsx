@@ -63,26 +63,37 @@ export default function RiskWorkspace() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [processingFile, setProcessingFile] = useState<string>('');
   const [importComplete, setImportComplete] = useState(false);
+  const [dropError, setDropError] = useState<string | null>(null);
+
+  const validExtensions = ['csv', 'xlsx', 'xls'];
 
   const onDrop = useCallback(async (acceptedFiles: File[]) => {
+    setDropError(null);
+
+    if (acceptedFiles.length === 0) {
+      setDropError('No files received. Try clicking "Browse Files" below instead.');
+      return;
+    }
+
     for (const file of acceptedFiles) {
+      const ext = file.name.split('.').pop()?.toLowerCase();
+
+      if (!ext || !validExtensions.includes(ext)) {
+        setDropError(`Unsupported file: ${file.name}. Please use .csv, .xlsx, or .xls files.`);
+        continue;
+      }
+
       setIsProcessing(true);
       setProcessingFile(file.name);
 
       try {
         let sheets: ParsedSheet[];
-        const ext = file.name.split('.').pop()?.toLowerCase();
 
         if (ext === 'csv') {
           const sheet = await parseCSV(file);
           sheets = [sheet];
-        } else if (ext === 'xlsx' || ext === 'xls') {
-          sheets = await parseExcel(file);
         } else {
-          // Unsupported file type
-          setIsProcessing(false);
-          setProcessingFile('');
-          continue;
+          sheets = await parseExcel(file);
         }
 
         const newDatasets: UploadedDataset[] = sheets.map((sheet, i) => {
@@ -118,13 +129,15 @@ export default function RiskWorkspace() {
     }
   }, []);
 
-  const { getRootProps, getInputProps, isDragActive } = useDropzone({
+  const onDropRejected = useCallback(() => {
+    setDropError('File rejected. Please upload .csv, .xlsx, or .xls files only.');
+  }, []);
+
+  const { getRootProps, getInputProps, isDragActive, open } = useDropzone({
     onDrop,
-    accept: {
-      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': ['.xlsx'],
-      'application/vnd.ms-excel': ['.xls'],
-      'text/csv': ['.csv'],
-    },
+    onDropRejected,
+    noClick: false,
+    noDrag: false,
     multiple: true,
   });
 
@@ -337,6 +350,15 @@ export default function RiskWorkspace() {
             title="Upload Datasets"
             subtitle="Drop CSV or Excel files containing your risk data. Multi-sheet Excel files will be split automatically."
           >
+            {/* Error Message */}
+            {dropError && (
+              <div className="mb-4 p-3 rounded-lg bg-red-500/10 border border-red-500/30 flex items-center gap-2">
+                <XCircle className="w-4 h-4 text-red-400 shrink-0" />
+                <p className="text-sm text-red-400">{dropError}</p>
+                <button onClick={() => setDropError(null)} className="ml-auto text-red-400 hover:text-red-300 text-xs">Dismiss</button>
+              </div>
+            )}
+
             <div
               {...getRootProps()}
               className={cn(
@@ -359,7 +381,15 @@ export default function RiskWorkspace() {
                   <p className="text-lg font-medium text-navy-200 mb-2">
                     {isDragActive ? 'Drop files here' : 'Drag & drop your data files here'}
                   </p>
-                  <p className="text-sm text-navy-500 mb-4">or click to browse</p>
+                  <p className="text-sm text-navy-500 mb-3">or</p>
+                  <button
+                    type="button"
+                    onClick={(e) => { e.stopPropagation(); open(); }}
+                    className="btn-primary px-6 py-2.5 text-base mb-4"
+                  >
+                    <Upload className="w-5 h-5 mr-2" />
+                    Browse Files
+                  </button>
                   <div className="flex items-center justify-center gap-6 text-xs text-navy-600">
                     <span className="flex items-center gap-1">
                       <FileSpreadsheet className="w-4 h-4" /> Excel (.xlsx, .xls)

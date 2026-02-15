@@ -408,7 +408,7 @@ export default function Dashboard() {
                   Dismiss
                 </button>
                 <button
-                  onClick={() => navigate('/dashboard/workspace')}
+                  onClick={() => navigate('/dashboard/risk-workspace')}
                   className="btn-primary text-base px-6 py-3 flex items-center gap-2 shadow-lg shadow-accent-primary/25"
                 >
                   <Upload className="w-5 h-5" />

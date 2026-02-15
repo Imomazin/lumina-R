@@ -16,7 +16,7 @@ export default function RiskRegister() {
 
   // Handle import - navigate to workspace
   const handleImport = () => {
-    navigate('/dashboard/workspace');
+    navigate('/dashboard/risk-workspace');
   };
 
   // Handle export

@@ -112,7 +112,7 @@ export default function AIAdvisor() {
         actions={
           <div className="flex items-center gap-3">
             <button
-              onClick={() => navigate('/dashboard/workspace')}
+              onClick={() => navigate('/dashboard/risk-workspace')}
               className="btn-secondary"
             >
               <Upload className="w-4 h-4 mr-2" />
@@ -148,7 +148,7 @@ export default function AIAdvisor() {
               </div>
             </div>
             <button
-              onClick={() => navigate('/dashboard/workspace')}
+              onClick={() => navigate('/dashboard/risk-workspace')}
               className="btn-primary text-base px-6 py-3"
             >
               <Upload className="w-5 h-5 mr-2" />

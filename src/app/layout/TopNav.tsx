@@ -1,14 +1,6 @@
 import { useState } from 'react';
 import { useLocation, Link } from 'react-router-dom';
-import {
-  Search,
-  Bell,
-  Settings,
-  User,
-  ChevronDown,
-  LogOut,
-  HelpCircle,
-} from 'lucide-react';
+import { ChevronDown } from 'lucide-react';
 import { cn } from '../../utils';
 import { ThemeToggle } from '../../components/ThemeToggle';
 
@@ -112,7 +104,6 @@ export function TopNav() {
                   : 'bg-navy-800/50 border-navy-700 w-64 hover:border-navy-600'
               )}
             >
-              <Search className="w-4 h-4 text-navy-500" />
               <input
                 type="text"
                 placeholder="Search risks, reports, or ask AI..."
@@ -133,9 +124,9 @@ export function TopNav() {
                 setIsNotificationsOpen(!isNotificationsOpen);
                 setIsProfileOpen(false);
               }}
-              className="relative p-2 rounded-lg text-navy-400 hover:text-navy-200 hover:bg-navy-800/50 transition-colors"
+              className="relative px-3 py-2 rounded-lg text-sm text-navy-400 hover:text-navy-200 hover:bg-navy-800/50 transition-colors"
             >
-              <Bell className="w-5 h-5" />
+              Alerts
               <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-risk-critical" />
             </button>
 
@@ -183,7 +174,7 @@ export function TopNav() {
                       className="text-sm text-accent-primary hover:text-accent-primary/80 font-medium"
                       onClick={() => setIsNotificationsOpen(false)}
                     >
-                      View all alerts →
+                      View all alerts
                     </Link>
                   </div>
                 </div>
@@ -197,9 +188,9 @@ export function TopNav() {
           {/* Settings */}
           <Link
             to="/dashboard/admin"
-            className="p-2 rounded-lg text-navy-400 hover:text-navy-200 hover:bg-navy-800/50 transition-colors"
+            className="px-3 py-2 rounded-lg text-sm text-navy-400 hover:text-navy-200 hover:bg-navy-800/50 transition-colors"
           >
-            <Settings className="w-5 h-5" />
+            Settings
           </Link>
 
           {/* Profile Dropdown */}
@@ -229,30 +220,26 @@ export function TopNav() {
                     <p className="text-xs text-navy-400">Chief Risk Officer</p>
                   </div>
                   <div className="py-2">
-                    <button className="w-full flex items-center gap-3 px-4 py-2 text-sm text-navy-300 hover:bg-navy-800/50 transition-colors">
-                      <User className="w-4 h-4" />
+                    <button className="w-full text-left px-4 py-2 text-sm text-navy-300 hover:bg-navy-800/50 transition-colors">
                       Profile
                     </button>
                     <Link
                       to="/dashboard/admin"
-                      className="w-full flex items-center gap-3 px-4 py-2 text-sm text-navy-300 hover:bg-navy-800/50 transition-colors"
+                      className="block w-full text-left px-4 py-2 text-sm text-navy-300 hover:bg-navy-800/50 transition-colors"
                       onClick={() => setIsProfileOpen(false)}
                     >
-                      <Settings className="w-4 h-4" />
                       Settings
                     </Link>
-                    <button className="w-full flex items-center gap-3 px-4 py-2 text-sm text-navy-300 hover:bg-navy-800/50 transition-colors">
-                      <HelpCircle className="w-4 h-4" />
+                    <button className="w-full text-left px-4 py-2 text-sm text-navy-300 hover:bg-navy-800/50 transition-colors">
                       Help & Support
                     </button>
                   </div>
                   <div className="border-t border-navy-700 py-2">
                     <Link
                       to="/"
-                      className="w-full flex items-center gap-3 px-4 py-2 text-sm text-risk-critical hover:bg-navy-800/50 transition-colors"
+                      className="block w-full text-left px-4 py-2 text-sm text-risk-critical hover:bg-navy-800/50 transition-colors"
                       onClick={() => setIsProfileOpen(false)}
                     >
-                      <LogOut className="w-4 h-4" />
                       Sign Out
                     </Link>
                   </div>

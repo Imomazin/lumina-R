@@ -1,4 +1,3 @@
-import { Sun, Moon, Monitor } from 'lucide-react';
 import { useTheme, type Theme } from '../context/ThemeContext';
 import { cn } from '../utils';
 
@@ -10,14 +9,13 @@ interface ThemeToggleProps {
 export function ThemeToggle({ className, compact = false }: ThemeToggleProps) {
   const { theme, setTheme } = useTheme();
 
-  const themes: { value: Theme; icon: React.ElementType; label: string }[] = [
-    { value: 'light', icon: Sun, label: 'Light' },
-    { value: 'dark', icon: Moon, label: 'Dark' },
-    { value: 'system', icon: Monitor, label: 'System' },
+  const themes: { value: Theme; label: string }[] = [
+    { value: 'light', label: 'Light' },
+    { value: 'dark', label: 'Dark' },
+    { value: 'system', label: 'Auto' },
   ];
 
   if (compact) {
-    // Compact dropdown version for mobile or tight spaces
     return (
       <select
         value={theme}
@@ -37,16 +35,20 @@ export function ThemeToggle({ className, compact = false }: ThemeToggleProps) {
   }
 
   return (
-    <div className={cn('theme-toggle', className)}>
-      {themes.map(({ value, icon: Icon, label }) => (
+    <div className={cn('flex items-center gap-1 p-1 bg-navy-800/50 rounded-lg', className)}>
+      {themes.map(({ value, label }) => (
         <button
           key={value}
           onClick={() => setTheme(value)}
-          className={cn('theme-toggle-btn', theme === value && 'active')}
-          title={label}
+          className={cn(
+            'px-2 py-1 rounded text-xs font-medium transition-colors',
+            theme === value
+              ? 'bg-accent-primary text-white'
+              : 'text-navy-400 hover:text-navy-200'
+          )}
           aria-label={`Switch to ${label} theme`}
         >
-          <Icon className="w-4 h-4" />
+          {label}
         </button>
       ))}
     </div>

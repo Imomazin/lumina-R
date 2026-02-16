@@ -434,6 +434,45 @@ export default function RiskWorkspace() {
             </div>
           )}
 
+          {/* Prominent Analyze Action */}
+          {datasets.length > 0 && validCount > 0 && (
+            <div className="glass-card p-6 border-2 border-accent-primary/30 bg-accent-primary/5">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-4">
+                  <div className="w-14 h-14 rounded-xl bg-accent-primary/20 flex items-center justify-center">
+                    <BarChart3 className="w-7 h-7 text-accent-primary" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-semibold text-navy-100">
+                      {validCount} Dataset{validCount !== 1 ? 's' : ''} Ready for Analysis
+                    </h3>
+                    <p className="text-sm text-navy-400 mt-0.5">
+                      {datasets.reduce((sum, ds) => sum + (ds.assignedType !== 'unknown' ? ds.sheet.rowCount : 0), 0).toLocaleString()} total rows across {' '}
+                      {[hasRisks && 'Risks', hasKRIs && 'KRIs', hasEvents && 'Events', hasControls && 'Controls'].filter(Boolean).join(', ')}
+                    </p>
+                  </div>
+                </div>
+                <button
+                  onClick={handleAnalyzeData}
+                  disabled={isAnalyzing}
+                  className="btn-primary text-lg px-8 py-4 shadow-lg shadow-accent-primary/25"
+                >
+                  {isAnalyzing ? (
+                    <>
+                      <Loader2 className="w-6 h-6 mr-2 animate-spin" />
+                      Analyzing...
+                    </>
+                  ) : (
+                    <>
+                      <BarChart3 className="w-6 h-6 mr-2" />
+                      Analyze Data
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+          )}
+
           {/* Drop Zone */}
           <SectionCard
             title="Upload Datasets"

@@ -4,6 +4,7 @@ import { MainLayout } from './layout';
 // Pages
 import Landing from '../pages/Landing';
 import RiskLanding from '../pages/RiskLanding';
+import Pricing from '../pages/Pricing';
 import Dashboard from '../pages/Dashboard';
 import RiskRegister from '../pages/RiskRegister';
 import RiskIndicators from '../pages/RiskIndicators';
@@ -31,6 +32,11 @@ export const router = createBrowserRouter([
   {
     path: '/risk',
     element: <RiskLanding />,
+  },
+  // Pricing page (no layout)
+  {
+    path: '/pricing',
+    element: <Pricing />,
   },
   // Dashboard and app routes (with layout)
   {

@@ -328,35 +328,35 @@ export default function Dashboard() {
           title="Risk Intelligence Dashboard"
           subtitle="Real-time visibility into enterprise risk posture"
           actions={
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2">
               {/* Time Range Selector */}
-              <div className="flex items-center gap-1 p-1 rounded-lg bg-navy-800/50">
+              <div className="flex items-center gap-0.5 p-1 rounded-lg bg-[var(--bg-tertiary)] border border-[var(--border-primary)]">
                 {['24h', '7d', '30d', '90d'].map((range) => (
                   <button
                     key={range}
                     onClick={() => setSelectedTimeRange(range)}
                     className={cn(
-                      'px-3 py-1 rounded text-xs font-medium transition-colors',
+                      'px-3 py-1.5 rounded-md text-xs font-medium transition-all',
                       selectedTimeRange === range
-                        ? 'bg-accent-primary text-white'
-                        : 'text-navy-400 hover:text-navy-200'
+                        ? 'bg-accent-primary text-white shadow-sm'
+                        : 'text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)]'
                     )}
                   >
                     {range}
                   </button>
                 ))}
               </div>
-              <button className="btn-secondary" onClick={() => setShowFilterPanel(!showFilterPanel)}>
-                <Filter className="w-4 h-4 mr-2" />
-                Filter
+              <button className="btn-secondary btn-sm" onClick={() => setShowFilterPanel(!showFilterPanel)}>
+                <Filter className="w-4 h-4" />
+                <span className="hidden sm:inline">Filter</span>
               </button>
-              <button className="btn-secondary" onClick={handleExport}>
-                <Download className="w-4 h-4 mr-2" />
-                Export
+              <button className="btn-secondary btn-sm" onClick={handleExport}>
+                <Download className="w-4 h-4" />
+                <span className="hidden sm:inline">Export</span>
               </button>
-              <button className="btn-primary" onClick={handleGenerateReport}>
-                <Zap className="w-4 h-4 mr-2" />
-                Generate Report
+              <button className="btn-primary btn-sm" onClick={handleGenerateReport}>
+                <Zap className="w-4 h-4" />
+                <span className="hidden sm:inline">Generate Report</span>
               </button>
             </div>
           }

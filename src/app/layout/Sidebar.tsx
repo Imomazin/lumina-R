@@ -105,9 +105,9 @@ function NavItem({ to, icon, label, badge, children }: NavItemProps) {
 
 export function Sidebar() {
   return (
-    <aside className="fixed left-0 top-0 bottom-0 w-64 bg-navy-900/80 backdrop-blur-xl border-r border-navy-700/50 flex flex-col z-30">
+    <aside className="fixed left-0 top-0 bottom-0 w-64 bg-[var(--bg-secondary)] backdrop-blur-xl border-r border-[var(--border-primary)] flex flex-col z-30">
       {/* Logo */}
-      <div className="h-16 flex items-center gap-3 px-5 border-b border-navy-700/50">
+      <div className="h-16 flex items-center gap-3 px-5 border-b border-[var(--border-primary)]">
         <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-accent-primary to-accent-secondary flex items-center justify-center">
           <Shield className="w-5 h-5 text-white" />
         </div>
@@ -222,7 +222,7 @@ export function Sidebar() {
       </nav>
 
       {/* AI Advisor Quick Access */}
-      <div className="p-4 border-t border-navy-700/50">
+      <div className="p-4 border-t border-[var(--border-primary)]">
         <div className="p-3 rounded-xl bg-gradient-to-br from-accent-primary/20 to-accent-secondary/20 border border-accent-primary/30">
           <div className="flex items-center gap-2 mb-2">
             <Sparkles className="w-4 h-4 text-accent-primary" />

@@ -10,6 +10,7 @@ import {
   HelpCircle,
 } from 'lucide-react';
 import { cn } from '../../utils';
+import { ThemeToggle } from '../../components/ThemeToggle';
 
 // Page-specific tabs configuration
 const pageTabs: Record<string, { label: string; path: string }[]> = {
@@ -79,7 +80,7 @@ export function TopNav() {
   ];
 
   return (
-    <header className="fixed top-0 left-64 right-0 h-16 bg-navy-900/80 backdrop-blur-xl border-b border-navy-700/50 z-20">
+    <header className="fixed top-0 left-64 right-0 h-16 bg-[var(--bg-secondary)]/80 backdrop-blur-xl border-b border-[var(--border-primary)] z-20">
       <div className="h-full flex items-center justify-between px-6">
         {/* Left: Contextual Tabs */}
         <nav className="flex items-center gap-1">
@@ -189,6 +190,9 @@ export function TopNav() {
               </>
             )}
           </div>
+
+          {/* Theme Toggle */}
+          <ThemeToggle />
 
           {/* Settings */}
           <Link

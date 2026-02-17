@@ -1,9 +1,9 @@
 // Lumina-R AI Risk Intelligence Engine
 // Advanced Chat Engine with 100+ Scenarios, Pattern Recognition, and Deep Data Analysis
-import { enterpriseRisks, getRiskStats, getHighRisks, getEscalatedRisks, getOutsideAppetiteRisks, getRisksByCategory, getRisksByOwner, getRisksByRegion } from '../data/enterpriseRisks';
-import { getKRIStats, getBreachedKRIs, getKRIsByRiskId, getKRIHealthScore, getKRIsByStatus, getKRIsWithTrend } from '../data/enterpriseKRIs';
+import { enterpriseRisks, getRiskStats, getHighRisks, getEscalatedRisks, getOutsideAppetiteRisks, getRisksByCategory, getRisksByRegion } from '../data/enterpriseRisks';
+import { getKRIStats, getBreachedKRIs, getKRIsByRiskId, getKRIHealthScore, getKRIsWithTrend } from '../data/enterpriseKRIs';
 import { getEventStats, getEventsByRiskId, getHighImpactEvents, getRecentEvents } from '../data/riskEvents';
-import { getControlStats, getControlsByRiskId, getControlEffectivenessScore, getControlsByType, getAutomatedControls, getManualControls } from '../data/enterpriseControls';
+import { getControlStats, getControlsByRiskId, getControlEffectivenessScore, getAutomatedControls, getManualControls } from '../data/enterpriseControls';
 
 export interface ChatMessage {
   id: string;

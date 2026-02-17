@@ -2,22 +2,8 @@ import { useState, useCallback } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { useNavigate } from 'react-router-dom';
 import {
-  Upload,
-  FileSpreadsheet,
-  FileText,
-  CheckCircle,
   XCircle,
-  RefreshCw,
-  Eye,
-  HelpCircle,
   Loader2,
-  AlertTriangle,
-  Database,
-  Table2,
-  Shield,
-  Activity,
-  BarChart3,
-  Plus,
   Trash2,
   ChevronDown,
   ChevronUp,
@@ -48,12 +34,12 @@ interface UploadedDataset {
   expandPreview: boolean;
 }
 
-const datasetTypeConfig: Record<DatasetType, { label: string; icon: React.ElementType; color: string; description: string }> = {
-  risks: { label: 'Risk Register', icon: AlertTriangle, color: 'text-red-400', description: 'Risk IDs, categories, likelihood, impact scores' },
-  kris: { label: 'Key Risk Indicators', icon: Activity, color: 'text-amber-400', description: 'KRI IDs, thresholds, current values, trends' },
-  events: { label: 'Risk Events', icon: BarChart3, color: 'text-blue-400', description: 'Event IDs, dates, financial impacts, root causes' },
-  controls: { label: 'Controls', icon: Shield, color: 'text-emerald-400', description: 'Control IDs, types, automation levels, owners' },
-  unknown: { label: 'Unknown', icon: Table2, color: 'text-navy-400', description: 'Could not auto-detect dataset type' },
+const datasetTypeConfig: Record<DatasetType, { label: string; abbrev: string; color: string; bgColor: string; description: string }> = {
+  risks: { label: 'Risk Register', abbrev: 'R', color: 'text-red-400', bgColor: 'bg-red-500/20', description: 'Risk IDs, categories, likelihood, impact scores' },
+  kris: { label: 'Key Risk Indicators', abbrev: 'K', color: 'text-amber-400', bgColor: 'bg-amber-500/20', description: 'KRI IDs, thresholds, current values, trends' },
+  events: { label: 'Risk Events', abbrev: 'E', color: 'text-blue-400', bgColor: 'bg-blue-500/20', description: 'Event IDs, dates, financial impacts, root causes' },
+  controls: { label: 'Controls', abbrev: 'C', color: 'text-emerald-400', bgColor: 'bg-emerald-500/20', description: 'Control IDs, types, automation levels, owners' },
+  unknown: { label: 'Unknown', abbrev: '?', color: 'text-navy-400', bgColor: 'bg-navy-700/50', description: 'Could not auto-detect dataset type' },
 };
 
 export default function RiskWorkspace() {
@@ -259,7 +245,6 @@ export default function RiskWorkspace() {
           <div className="flex items-center gap-3">
             {datasets.length > 0 && (
               <button onClick={resetWorkspace} className="btn-secondary">
-                <RefreshCw className="w-4 h-4 mr-2" />
                 Start Over
               </button>
             )}
@@ -293,18 +278,14 @@ export default function RiskWorkspace() {
                     )}
                   >
                     <div className={cn(
-                      'w-6 h-6 rounded-full flex items-center justify-center shrink-0',
-                      isComplete ? 'bg-emerald-500' :
-                      isCurrent ? 'bg-accent-primary' :
-                      'bg-navy-700'
+                      'w-6 h-6 rounded-full flex items-center justify-center shrink-0 text-xs font-bold',
+                      isComplete ? 'bg-emerald-500 text-white' :
+                      isCurrent ? 'bg-accent-primary text-white' :
+                      'bg-navy-700 text-navy-400'
                     )}>
-                      {isComplete ? (
-                        <CheckCircle className="w-4 h-4 text-white" />
-                      ) : isCurrent ? (
+                      {isComplete ? '✓' : isCurrent ? (
                         <Loader2 className="w-4 h-4 text-white animate-spin" />
-                      ) : (
-                        <span className="text-xs text-navy-400">{i + 1}</span>
-                      )}
+                      ) : (i + 1)}
                     </div>
                     <span className={cn(
                       'text-sm',
@@ -339,7 +320,7 @@ export default function RiskWorkspace() {
       {importComplete && (
         <div className="glass-card p-8 border-2 border-emerald-500/30 text-center">
           <div className="w-16 h-16 rounded-full bg-emerald-500/20 flex items-center justify-center mx-auto mb-4">
-            <CheckCircle className="w-8 h-8 text-emerald-400" />
+            <span className="text-3xl font-bold text-emerald-400">✓</span>
           </div>
           <h3 className="text-xl font-semibold text-navy-100 mb-2">Data Imported Successfully</h3>
           <p className="text-sm text-navy-400 mb-6">
@@ -349,45 +330,38 @@ export default function RiskWorkspace() {
           <div className="flex justify-center gap-4 mb-6">
             {dataCtx.uploadedRisks.length > 0 && (
               <div className="glass-card p-4 text-center min-w-[120px]">
-                <AlertTriangle className="w-6 h-6 text-red-400 mx-auto mb-1" />
                 <div className="text-2xl font-bold text-navy-100">{dataCtx.uploadedRisks.length}</div>
-                <p className="text-xs text-navy-400">Risks</p>
+                <p className="text-sm font-medium text-red-400">Risks</p>
               </div>
             )}
             {dataCtx.uploadedKRIs.length > 0 && (
               <div className="glass-card p-4 text-center min-w-[120px]">
-                <Activity className="w-6 h-6 text-amber-400 mx-auto mb-1" />
                 <div className="text-2xl font-bold text-navy-100">{dataCtx.uploadedKRIs.length}</div>
-                <p className="text-xs text-navy-400">KRIs</p>
+                <p className="text-sm font-medium text-amber-400">KRIs</p>
               </div>
             )}
             {dataCtx.uploadedEvents.length > 0 && (
               <div className="glass-card p-4 text-center min-w-[120px]">
-                <BarChart3 className="w-6 h-6 text-blue-400 mx-auto mb-1" />
                 <div className="text-2xl font-bold text-navy-100">{dataCtx.uploadedEvents.length}</div>
-                <p className="text-xs text-navy-400">Events</p>
+                <p className="text-sm font-medium text-blue-400">Events</p>
               </div>
             )}
             {dataCtx.uploadedControls.length > 0 && (
               <div className="glass-card p-4 text-center min-w-[120px]">
-                <Shield className="w-6 h-6 text-emerald-400 mx-auto mb-1" />
                 <div className="text-2xl font-bold text-navy-100">{dataCtx.uploadedControls.length}</div>
-                <p className="text-xs text-navy-400">Controls</p>
+                <p className="text-sm font-medium text-emerald-400">Controls</p>
               </div>
             )}
           </div>
 
           <div className="flex justify-center gap-3">
             <button onClick={() => navigate('/dashboard')} className="btn-secondary">
-              <Eye className="w-4 h-4 mr-2" />
               View Dashboard
             </button>
             <button onClick={() => navigate('/dashboard/ai-advisor')} className="btn-primary">
-              <Database className="w-4 h-4 mr-2" />
               Analyze with AI
             </button>
             <button onClick={resetWorkspace} className="btn-secondary">
-              <Plus className="w-4 h-4 mr-2" />
               Import More
             </button>
           </div>
@@ -407,7 +381,6 @@ export default function RiskWorkspace() {
                 { type: 'controls' as const, has: hasControls, label: 'Controls', count: datasets.find(d => d.assignedType === 'controls')?.sheet.rowCount },
               ].map(({ type, has, label, count }) => {
                 const config = datasetTypeConfig[type];
-                const Icon = config.icon;
                 return (
                   <div
                     key={type}
@@ -417,7 +390,9 @@ export default function RiskWorkspace() {
                     )}
                   >
                     <div className="flex items-center gap-3">
-                      <Icon className={cn('w-5 h-5', has ? config.color : 'text-navy-600')} />
+                      <div className={cn('w-8 h-8 rounded-lg flex items-center justify-center font-bold', has ? config.bgColor : 'bg-navy-700/50')}>
+                        <span className={cn('text-sm', has ? config.color : 'text-navy-600')}>{config.abbrev}</span>
+                      </div>
                       <div>
                         <p className={cn('text-sm font-medium', has ? 'text-navy-100' : 'text-navy-500')}>{label}</p>
                         {has ? (
@@ -426,7 +401,7 @@ export default function RiskWorkspace() {
                           <p className="text-xs text-navy-600">Not uploaded yet</p>
                         )}
                       </div>
-                      {has && <CheckCircle className="w-4 h-4 text-emerald-400 ml-auto" />}
+                      {has && <span className="text-emerald-400 ml-auto font-bold">✓</span>}
                     </div>
                   </div>
                 );
@@ -440,11 +415,11 @@ export default function RiskWorkspace() {
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-4">
                   <div className="w-14 h-14 rounded-xl bg-accent-primary/20 flex items-center justify-center">
-                    <BarChart3 className="w-7 h-7 text-accent-primary" />
+                    <span className="text-2xl font-bold text-accent-primary">{validCount}</span>
                   </div>
                   <div>
                     <h3 className="text-lg font-semibold text-navy-100">
-                      {validCount} Dataset{validCount !== 1 ? 's' : ''} Ready for Analysis
+                      Dataset{validCount !== 1 ? 's' : ''} Ready for Analysis
                     </h3>
                     <p className="text-sm text-navy-400 mt-0.5">
                       {datasets.reduce((sum, ds) => sum + (ds.assignedType !== 'unknown' ? ds.sheet.rowCount : 0), 0).toLocaleString()} total rows across {' '}
@@ -463,10 +438,7 @@ export default function RiskWorkspace() {
                       Analyzing...
                     </>
                   ) : (
-                    <>
-                      <BarChart3 className="w-6 h-6 mr-2" />
-                      Analyze Data
-                    </>
+                    'Analyze Data'
                   )}
                 </button>
               </div>
@@ -505,7 +477,9 @@ export default function RiskWorkspace() {
                 </div>
               ) : (
                 <>
-                  <Upload className={cn('w-12 h-12 mx-auto mb-4', isDragActive ? 'text-accent-primary' : 'text-navy-500')} />
+                  <div className={cn('w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4', isDragActive ? 'bg-accent-primary/20' : 'bg-navy-700/50')}>
+                    <span className={cn('text-2xl font-bold', isDragActive ? 'text-accent-primary' : 'text-navy-500')}>+</span>
+                  </div>
                   <p className="text-lg font-medium text-navy-200 mb-2">
                     {isDragActive ? 'Drop files here' : 'Drag & drop your data files here'}
                   </p>
@@ -515,16 +489,11 @@ export default function RiskWorkspace() {
                     onClick={(e) => { e.stopPropagation(); open(); }}
                     className="btn-primary px-6 py-2.5 text-base mb-4"
                   >
-                    <Upload className="w-5 h-5 mr-2" />
                     Browse Files
                   </button>
                   <div className="flex items-center justify-center gap-6 text-xs text-navy-600">
-                    <span className="flex items-center gap-1">
-                      <FileSpreadsheet className="w-4 h-4" /> Excel (.xlsx, .xls)
-                    </span>
-                    <span className="flex items-center gap-1">
-                      <FileText className="w-4 h-4" /> CSV
-                    </span>
+                    <span>Excel (.xlsx, .xls)</span>
+                    <span>CSV</span>
                   </div>
                   <p className="text-xs text-navy-600 mt-3">
                     Upload multiple files at once - risks, KRIs, events, and controls
@@ -536,16 +505,15 @@ export default function RiskWorkspace() {
             {datasets.length === 0 && (
               <div className="mt-6 p-4 rounded-xl bg-navy-800/30 border border-navy-700/50">
                 <div className="flex items-start gap-3">
-                  <HelpCircle className="w-5 h-5 text-navy-500 mt-0.5" />
+                  <div className="w-6 h-6 rounded-full bg-navy-700 flex items-center justify-center text-navy-400 text-sm font-bold shrink-0">?</div>
                   <div>
                     <p className="text-sm font-medium text-navy-200">What data can you upload?</p>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-3">
                       {(['risks', 'kris', 'events', 'controls'] as const).map(type => {
                         const config = datasetTypeConfig[type];
-                        const Icon = config.icon;
                         return (
                           <div key={type} className="flex items-start gap-2">
-                            <Icon className={cn('w-4 h-4 mt-0.5', config.color)} />
+                            <span className={cn('w-5 h-5 rounded flex items-center justify-center text-xs font-bold shrink-0', config.bgColor, config.color)}>{config.abbrev}</span>
                             <div>
                               <p className="text-xs font-medium text-navy-300">{config.label}</p>
                               <p className="text-xs text-navy-500">{config.description}</p>
@@ -569,7 +537,6 @@ export default function RiskWorkspace() {
               <div className="space-y-4">
                 {datasets.map(ds => {
                   const config = datasetTypeConfig[ds.assignedType];
-                  const Icon = config.icon;
                   const isError = ds.status === 'error';
                   const isImported = ds.status === 'imported';
 
@@ -586,12 +553,12 @@ export default function RiskWorkspace() {
                       {/* Dataset Header */}
                       <div className="p-4 flex items-center gap-4">
                         <div className={cn(
-                          'w-10 h-10 rounded-lg flex items-center justify-center',
-                          isError ? 'bg-red-500/20' : isImported ? 'bg-emerald-500/20' : 'bg-navy-700/50'
+                          'w-10 h-10 rounded-lg flex items-center justify-center font-bold',
+                          isError ? 'bg-red-500/20 text-red-400' : isImported ? 'bg-emerald-500/20 text-emerald-400' : config.bgColor
                         )}>
                           {isError ? <XCircle className="w-5 h-5 text-red-400" /> :
-                           isImported ? <CheckCircle className="w-5 h-5 text-emerald-400" /> :
-                           <Icon className={cn('w-5 h-5', config.color)} />}
+                           isImported ? <span className="text-lg">✓</span> :
+                           <span className={config.color}>{config.abbrev}</span>}
                         </div>
 
                         <div className="flex-1 min-w-0">
@@ -649,7 +616,6 @@ export default function RiskWorkspace() {
                       {ds.expandPreview && !isError && (
                         <div className="border-t border-navy-700/50 p-4">
                           <div className="flex items-center gap-2 mb-3">
-                            <Table2 className="w-4 h-4 text-navy-400" />
                             <p className="text-xs font-medium text-navy-300">Column Headers</p>
                           </div>
                           <div className="flex flex-wrap gap-2 mb-4">
@@ -699,8 +665,7 @@ export default function RiskWorkspace() {
                   {validCount > 0 ? (
                     <span className="text-navy-200">{validCount} dataset{validCount !== 1 ? 's' : ''} ready to analyze</span>
                   ) : (
-                    <span className="text-amber-400 flex items-center gap-1">
-                      <AlertTriangle className="w-4 h-4" />
+                    <span className="text-amber-400">
                       Assign a type to at least one dataset to continue
                     </span>
                   )}
@@ -716,10 +681,7 @@ export default function RiskWorkspace() {
                       Analyzing...
                     </>
                   ) : (
-                    <>
-                      <BarChart3 className="w-5 h-5 mr-2" />
-                      Analyze Data
-                    </>
+                    'Analyze Data'
                   )}
                 </button>
               </div>
@@ -732,30 +694,26 @@ export default function RiskWorkspace() {
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 {dataCtx.uploadedRisks.length > 0 && (
                   <div className="p-4 rounded-xl bg-red-500/10 border border-red-500/30 text-center">
-                    <AlertTriangle className="w-6 h-6 text-red-400 mx-auto mb-1" />
                     <div className="text-xl font-bold text-navy-100">{dataCtx.uploadedRisks.length}</div>
-                    <p className="text-xs text-navy-400">Risks loaded</p>
+                    <p className="text-sm font-medium text-red-400">Risks loaded</p>
                   </div>
                 )}
                 {dataCtx.uploadedKRIs.length > 0 && (
                   <div className="p-4 rounded-xl bg-amber-500/10 border border-amber-500/30 text-center">
-                    <Activity className="w-6 h-6 text-amber-400 mx-auto mb-1" />
                     <div className="text-xl font-bold text-navy-100">{dataCtx.uploadedKRIs.length}</div>
-                    <p className="text-xs text-navy-400">KRIs loaded</p>
+                    <p className="text-sm font-medium text-amber-400">KRIs loaded</p>
                   </div>
                 )}
                 {dataCtx.uploadedEvents.length > 0 && (
                   <div className="p-4 rounded-xl bg-blue-500/10 border border-blue-500/30 text-center">
-                    <BarChart3 className="w-6 h-6 text-blue-400 mx-auto mb-1" />
                     <div className="text-xl font-bold text-navy-100">{dataCtx.uploadedEvents.length}</div>
-                    <p className="text-xs text-navy-400">Events loaded</p>
+                    <p className="text-sm font-medium text-blue-400">Events loaded</p>
                   </div>
                 )}
                 {dataCtx.uploadedControls.length > 0 && (
                   <div className="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-center">
-                    <Shield className="w-6 h-6 text-emerald-400 mx-auto mb-1" />
                     <div className="text-xl font-bold text-navy-100">{dataCtx.uploadedControls.length}</div>
-                    <p className="text-xs text-navy-400">Controls loaded</p>
+                    <p className="text-sm font-medium text-emerald-400">Controls loaded</p>
                   </div>
                 )}
               </div>

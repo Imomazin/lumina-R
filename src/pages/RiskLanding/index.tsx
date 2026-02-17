@@ -1,19 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import {
-  Bot,
-  Upload,
-  FileSpreadsheet,
-  FileText,
-  FileType,
-  ArrowRight,
-  Sparkles,
-  Shield,
-  Target,
-  BarChart3,
-  Zap,
-  CheckCircle,
-} from 'lucide-react';
+// Icons removed for cleaner UI
 import { cn } from '../../utils';
 
 type ContextType = 'project' | 'programme' | 'business_unit' | 'enterprise';
@@ -22,7 +9,7 @@ interface ContextOption {
   type: ContextType;
   label: string;
   description: string;
-  icon: React.ElementType;
+  abbrev: string;
 }
 
 const contextOptions: ContextOption[] = [
@@ -30,25 +17,25 @@ const contextOptions: ContextOption[] = [
     type: 'project',
     label: 'Project',
     description: 'Single initiative with defined scope and timeline',
-    icon: Target,
+    abbrev: 'P',
   },
   {
     type: 'programme',
     label: 'Programme',
     description: 'Collection of related projects with shared objectives',
-    icon: BarChart3,
+    abbrev: 'Pr',
   },
   {
     type: 'business_unit',
     label: 'Business Unit',
     description: 'Departmental or divisional risk assessment',
-    icon: Shield,
+    abbrev: 'BU',
   },
   {
     type: 'enterprise',
     label: 'Enterprise',
     description: 'Organization-wide strategic risk analysis',
-    icon: Sparkles,
+    abbrev: 'E',
   },
 ];
 
@@ -60,10 +47,10 @@ const features = [
 ];
 
 const fileTypes = [
-  { icon: FileSpreadsheet, label: 'Excel', ext: '.xlsx, .xls' },
-  { icon: FileSpreadsheet, label: 'CSV', ext: '.csv' },
-  { icon: FileType, label: 'PDF', ext: '.pdf' },
-  { icon: FileText, label: 'Word', ext: '.docx' },
+  { label: 'Excel', ext: '.xlsx, .xls' },
+  { label: 'CSV', ext: '.csv' },
+  { label: 'PDF', ext: '.pdf' },
+  { label: 'Word', ext: '.docx' },
 ];
 
 export default function RiskLanding() {
@@ -99,7 +86,7 @@ export default function RiskLanding() {
         <div className="flex items-center justify-between max-w-7xl mx-auto">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-accent-primary to-red-600 flex items-center justify-center">
-              <Shield className="w-5 h-5 text-white" />
+              <span className="text-lg font-bold text-white">LR</span>
             </div>
             <div>
               <h1 className="text-xl font-bold text-white">Lumina R</h1>
@@ -127,7 +114,7 @@ export default function RiskLanding() {
           onMouseLeave={() => setIsHoveringAdvisor(false)}
         >
           <div className="max-w-md text-center">
-            {/* Animated Icon */}
+            {/* Animated Badge */}
             <div
               className={cn(
                 'w-24 h-24 rounded-2xl mx-auto mb-8 flex items-center justify-center transition-all duration-500',
@@ -136,12 +123,10 @@ export default function RiskLanding() {
                   : 'bg-gradient-to-br from-accent-primary/80 to-red-600/80'
               )}
             >
-              <Bot
-                className={cn(
-                  'w-12 h-12 text-white transition-transform duration-500',
-                  isHoveringAdvisor && 'animate-pulse'
-                )}
-              />
+              <span className={cn(
+                'text-3xl font-bold text-white transition-transform duration-500',
+                isHoveringAdvisor && 'animate-pulse'
+              )}>AI</span>
             </div>
 
             <h2 className="text-3xl font-bold text-white mb-4">AI Risk Advisor</h2>
@@ -154,7 +139,7 @@ export default function RiskLanding() {
             <div className="mb-8 space-y-2">
               {features.map((feature, idx) => (
                 <div key={idx} className="flex items-center gap-2 text-sm text-navy-400">
-                  <CheckCircle className="w-4 h-4 text-accent-primary" />
+                  <span className="w-4 h-4 rounded-full bg-accent-primary/20 flex items-center justify-center text-accent-primary text-xs font-bold">✓</span>
                   <span>{feature}</span>
                 </div>
               ))}
@@ -169,9 +154,8 @@ export default function RiskLanding() {
                   : 'bg-accent-primary hover:bg-accent-primary/90'
               )}
             >
-              <Zap className="w-5 h-5" />
               Start AI Advisor
-              <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+              <span className="group-hover:translate-x-1 transition-transform">→</span>
             </button>
           </div>
         </div>
@@ -179,9 +163,9 @@ export default function RiskLanding() {
         {/* RIGHT PANEL - Upload / Enter Risk Data */}
         <div className="flex-1 p-8 lg:p-12 flex flex-col justify-center items-center bg-navy-900/30">
           <div className="max-w-md text-center">
-            {/* Icon */}
+            {/* Badge */}
             <div className="w-24 h-24 rounded-2xl bg-navy-800/50 border border-navy-700/50 mx-auto mb-8 flex items-center justify-center">
-              <Upload className="w-12 h-12 text-navy-400" />
+              <span className="text-3xl font-bold text-navy-400">+</span>
             </div>
 
             <h2 className="text-3xl font-bold text-white mb-4">Upload Risk Data</h2>
@@ -195,13 +179,10 @@ export default function RiskLanding() {
               {fileTypes.map((type, idx) => (
                 <div
                   key={idx}
-                  className="p-3 rounded-xl bg-navy-800/30 border border-navy-700/50 flex items-center gap-3"
+                  className="p-3 rounded-xl bg-navy-800/30 border border-navy-700/50"
                 >
-                  <type.icon className="w-5 h-5 text-navy-500" />
-                  <div className="text-left">
-                    <p className="text-sm font-medium text-navy-200">{type.label}</p>
-                    <p className="text-2xs text-navy-500">{type.ext}</p>
-                  </div>
+                  <p className="text-sm font-medium text-navy-200">{type.label}</p>
+                  <p className="text-2xs text-navy-500">{type.ext}</p>
                 </div>
               ))}
             </div>
@@ -210,9 +191,8 @@ export default function RiskLanding() {
               onClick={handleUpload}
               className="group px-8 py-4 rounded-xl font-semibold text-white bg-navy-700 hover:bg-navy-600 transition-all duration-300 flex items-center gap-3 mx-auto"
             >
-              <Upload className="w-5 h-5" />
               Upload Files
-              <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+              <span className="group-hover:translate-x-1 transition-transform">→</span>
             </button>
           </div>
         </div>
@@ -223,9 +203,6 @@ export default function RiskLanding() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-navy-950/80 backdrop-blur-sm animate-fade-in">
           <div className="bg-navy-900 border border-navy-700 rounded-2xl p-8 max-w-2xl w-full mx-4 shadow-2xl">
             <div className="text-center mb-8">
-              <div className="w-16 h-16 rounded-xl bg-accent-primary/20 mx-auto mb-4 flex items-center justify-center">
-                <Target className="w-8 h-8 text-accent-primary" />
-              </div>
               <h3 className="text-2xl font-bold text-white mb-2">Select Context</h3>
               <p className="text-navy-400">
                 Choose the scope of your risk assessment. This cannot be changed once you begin.
@@ -248,20 +225,13 @@ export default function RiskLanding() {
                   <div className="flex items-center gap-3 mb-2">
                     <div
                       className={cn(
-                        'p-2 rounded-lg',
+                        'w-10 h-10 rounded-lg flex items-center justify-center font-bold',
                         selectedContext === option.type
-                          ? 'bg-accent-primary/20'
-                          : 'bg-navy-700/50'
+                          ? 'bg-accent-primary/20 text-accent-primary'
+                          : 'bg-navy-700/50 text-navy-400'
                       )}
                     >
-                      <option.icon
-                        className={cn(
-                          'w-5 h-5',
-                          selectedContext === option.type
-                            ? 'text-accent-primary'
-                            : 'text-navy-400'
-                        )}
-                      />
+                      {option.abbrev}
                     </div>
                     <span
                       className={cn(
@@ -296,7 +266,7 @@ export default function RiskLanding() {
                 )}
               >
                 Continue
-                <ArrowRight className="w-4 h-4" />
+                <span>→</span>
               </button>
             </div>
           </div>

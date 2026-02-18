@@ -110,6 +110,15 @@ export function Sidebar() {
           <NavItem to="/dashboard/risk-workspace" label="Risk Workspace" />
         </div>
 
+        {/* Strategic Section */}
+        <div className="mb-6">
+          <p className="px-3 mb-2 text-2xs font-semibold text-navy-600 uppercase tracking-wider">
+            Strategic
+          </p>
+          <NavItem to="/dashboard/strategic-register" label="Strategic Register" />
+          <NavItem to="/dashboard/strategic-portfolio" label="Portfolio Dashboard" />
+        </div>
+
         {/* Tools Section */}
         <div className="mb-6">
           <p className="px-3 mb-2 text-2xs font-semibold text-navy-600 uppercase tracking-wider">

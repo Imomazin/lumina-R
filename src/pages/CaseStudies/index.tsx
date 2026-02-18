@@ -192,7 +192,7 @@ export default function CaseStudiesPage() {
             <div className="p-6 space-y-6">
               <div>
                 <h3 className="text-sm font-semibold text-navy-300 mb-2 flex items-center gap-2">
-                  <Target className="w-4 h-4 text-amber-400" />
+                  <span className="text-amber-400">!</span>
                   The Challenge
                 </h3>
                 <p className="text-navy-400 leading-relaxed">{selectedStudy.challenge}</p>
@@ -200,7 +200,7 @@ export default function CaseStudiesPage() {
 
               <div>
                 <h3 className="text-sm font-semibold text-navy-300 mb-2 flex items-center gap-2">
-                  <CheckCircle className="w-4 h-4 text-emerald-400" />
+                  <span className="text-emerald-400">✓</span>
                   The Solution
                 </h3>
                 <p className="text-navy-400 leading-relaxed">{selectedStudy.solution}</p>

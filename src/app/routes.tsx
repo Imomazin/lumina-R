@@ -21,6 +21,8 @@ import Reports from '../pages/Reports';
 import AIAdvisor from '../pages/AIAdvisor';
 import Integrations from '../pages/ApiGateway';
 import Admin from '../pages/Admin';
+import StrategicRegister from '../pages/StrategicRegister';
+import StrategicPortfolio from '../pages/StrategicRegister/PortfolioDashboard';
 
 export const router = createBrowserRouter([
   // Landing page (no layout)
@@ -70,6 +72,14 @@ export const router = createBrowserRouter([
       {
         path: 'risk-workspace',
         element: <RiskWorkspace />,
+      },
+      {
+        path: 'strategic-register',
+        element: <StrategicRegister />,
+      },
+      {
+        path: 'strategic-portfolio',
+        element: <StrategicPortfolio />,
       },
       {
         path: 'tools/monte-carlo',

@@ -1255,7 +1255,7 @@ export default function RiskInterrogation() {
                       onClick={() => removeKRI(kri.id)}
                       className="ml-3 p-2 text-navy-500 hover:text-red-400 transition-colors"
                     >
-                      <Trash2 className="w-4 h-4" />
+                      <span className="text-sm">×</span>
                     </button>
                   </div>
 
@@ -1386,7 +1386,7 @@ export default function RiskInterrogation() {
                       onClick={() => removeKCI(kci.id)}
                       className="ml-3 p-2 text-navy-500 hover:text-red-400 transition-colors"
                     >
-                      <Trash2 className="w-4 h-4" />
+                      <span className="text-sm">×</span>
                     </button>
                   </div>
 
@@ -1509,7 +1509,7 @@ export default function RiskInterrogation() {
                   onClick={calculateScores}
                   className="btn-primary"
                 >
-                  <Calculator className="w-4 h-4 mr-2" />
+                  <span className="mr-2">=</span>
                   Calculate Risk Scores
                 </button>
               </div>

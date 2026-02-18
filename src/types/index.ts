@@ -626,3 +626,215 @@ export interface Integration {
   status: 'connected' | 'disconnected' | 'pending';
   lastSync?: string;
 }
+
+// ============================================
+// TIER 4 STRATEGIC RISK REGISTER
+// ============================================
+
+export type StrategicRiskColour = 'green' | 'amber' | 'red' | 'black';
+
+export type EscalationLevel =
+  | 'none'
+  | 'risk_owner'
+  | 'department_head'
+  | 'executive_committee'
+  | 'cfo_review'
+  | 'board_visibility'
+  | 'crisis_governance';
+
+// Weighted Impact Dimensions - per user specification
+// Financial: 30%, Operational: 20%, Reputational: 20%, Strategic: 20%, Legal: 10%
+export interface WeightedImpactDimensions {
+  financial: number; // 1-5 scale, weight 0.30
+  operational: number; // 1-5 scale, weight 0.20
+  reputational: number; // 1-5 scale, weight 0.20
+  strategic: number; // 1-5 scale, weight 0.20
+  legal: number; // 1-5 scale, weight 0.10
+}
+
+export const IMPACT_WEIGHTS = {
+  financial: 0.30,
+  operational: 0.20,
+  reputational: 0.20,
+  strategic: 0.20,
+  legal: 0.10,
+} as const;
+
+// Financial estimate for triangular distribution
+export interface FinancialEstimate {
+  bestCase: number; // £ value
+  mostLikely: number; // £ value
+  worstCase: number; // £ value
+  confidenceLevel: number; // 0-100%
+}
+
+// Mitigation option with ROI calculation
+export interface MitigationOption {
+  id: string;
+  name: string;
+  description: string;
+  cost: number; // £ value
+  riskReductionValue: number; // £ value (EMV reduction)
+  netBenefit: number; // riskReductionValue - cost
+  newResidualScore: number; // Projected residual risk score after mitigation
+  implementationTime: string; // e.g., "3 months"
+  owner: string;
+  status: 'proposed' | 'approved' | 'in_progress' | 'completed';
+}
+
+// Early Warning Indicator for auto-bump risk scores
+export interface EarlyWarningIndicator {
+  id: string;
+  name: string;
+  currentValue: number;
+  threshold: number;
+  trend: 'increasing' | 'stable' | 'decreasing';
+  lastTriggered?: string;
+  scoreBumpAmount: number; // How much to increase risk score when triggered
+}
+
+// Risk interdependency for network visualization
+export interface RiskInterdependency {
+  linkedRiskId: string;
+  relationshipType: 'causes' | 'caused_by' | 'correlates' | 'amplifies';
+  strength: number; // 1-10
+  description: string;
+}
+
+// Threshold configuration for dynamic threshold engine
+export interface ThresholdConfig {
+  annualEBITDA: number; // £ value
+  greenScoreMax: number; // Score below this = Green
+  greenEMVMax: number; // EMV below this = Green (£100k default)
+  amberScoreMax: number; // Score between green and this = Amber
+  amberEMVMax: number; // EMV between green and this = Amber (£500k default)
+  // Red: Score >= amberScoreMax OR EMV > amberEMVMax
+  // Black: Worst Case > 20% EBITDA OR Legal Impact = 5
+  mandatoryMitigationThreshold: number; // EBITDA % that triggers mandatory mitigation (10% default)
+  executiveCommitteeScoreThreshold: number; // Score that triggers exec committee (13 default)
+  cfoReviewEMVThreshold: number; // EMV that triggers CFO review (£500k default)
+  strategicBoardThreshold: number; // Strategic impact score for board visibility (4 default)
+}
+
+// Auto-escalation trigger result
+export interface EscalationTrigger {
+  level: EscalationLevel;
+  reason: string;
+  triggered: boolean;
+}
+
+// The main Strategic Risk interface - Tier 4
+export interface StrategicRisk {
+  // Section A: Risk Identity
+  id: string; // Format: R-STR-XXX
+  title: string;
+  description: string; // Narrative description
+  category: RiskCategory;
+  owner: string;
+  department: string;
+  dateIdentified: string;
+  lastReviewed: string;
+  nextReview: string;
+  tags: string[];
+
+  // Section B: Qualitative Risk Analysis
+  probability: number; // 1-5 scale
+  probabilityPercent: number; // 0-100%
+  impactDimensions: WeightedImpactDimensions;
+  weightedImpactScore: number; // Calculated: (0.30×F + 0.20×O + 0.20×R + 0.20×S + 0.10×L)
+  overallRiskScore: number; // Calculated: Probability × Weighted Impact
+
+  // Section C: Quantitative Financial Model
+  financialEstimate: FinancialEstimate;
+  expectedMonetaryValue: number; // Calculated: Triangular mean × probability
+  simpleEMV: number; // Calculated: Probability × Most Likely
+  capitalAllocationRequired: number; // Max(Worst Case × Confidence Adjustment)
+
+  // Section D: Risk Thresholds & Decision Rules
+  ebitdaExposurePercent: number; // Worst Case ÷ Annual EBITDA × 100
+  colour: StrategicRiskColour; // Calculated based on thresholds
+  escalationTriggers: EscalationTrigger[];
+  status: RiskStatus;
+
+  // Section E: Mitigation Costing
+  currentControls: string[];
+  mitigationOptions: MitigationOption[];
+  residualRiskScore: number; // After current controls
+
+  // Risk Interdependency Map
+  interdependencies: RiskInterdependency[];
+  interdependencyScore: number; // 1-10, calculated from linked risks
+
+  // Early Warning Indicators
+  earlyWarningIndicators: EarlyWarningIndicator[];
+
+  // Trends and velocity
+  trend: 'increasing' | 'stable' | 'decreasing';
+  riskVelocity: 'rapid' | 'moderate' | 'slow'; // How fast the risk could materialize
+  maturityIndex: number; // 1-5, risk management maturity for this risk
+
+  // Linked entities
+  linkedKRIs: string[];
+  linkedObjectiveIds: string[];
+
+  // Audit trail
+  lastModifiedBy: string;
+  lastModifiedAt: string;
+}
+
+// Portfolio-level metrics for dashboard
+export interface StrategicPortfolioMetrics {
+  totalEMVExposure: number; // Sum of all EMVs
+  totalCapitalAllocated: number; // Sum of all capital allocations
+  averageRiskScore: number;
+  risksByColour: {
+    green: number;
+    amber: number;
+    red: number;
+    black: number;
+  };
+  top10ByCapitalImpact: StrategicRisk[];
+  top10ByEMV: StrategicRisk[];
+  ebitdaAtRisk: number; // Total EBITDA exposure
+  ebitdaAtRiskPercent: number;
+  trendSummary: {
+    increasing: number;
+    stable: number;
+    decreasing: number;
+  };
+  mitigationROISummary: {
+    totalMitigationCost: number;
+    totalRiskReduction: number;
+    totalNetBenefit: number;
+  };
+}
+
+// Heat map cell for strategic risk matrix
+export interface StrategicHeatMapCell {
+  probability: number; // 1-5
+  weightedImpact: number; // 1-5 (after weighting)
+  risks: StrategicRisk[];
+  count: number;
+  totalEMV: number;
+  dominantColour: StrategicRiskColour;
+}
+
+// Confidence interval for Monte Carlo results
+export interface ConfidenceInterval {
+  level: number; // e.g., 95
+  lowerBound: number;
+  upperBound: number;
+  mean: number;
+}
+
+// Stress testing scenario
+export interface StressTestScenario {
+  id: string;
+  name: string;
+  description: string;
+  probabilityMultiplier: number;
+  impactMultiplier: number;
+  affectedRiskIds: string[];
+  resultingTotalEMV: number;
+  resultingEBITDAExposure: number;
+}

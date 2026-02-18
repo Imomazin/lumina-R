@@ -1,5 +1,4 @@
 import { useState, useRef, useEffect } from 'react';
-import { Bot, Send, BookOpen, TrendingUp, Shield, AlertTriangle, MessageSquare, Workflow, Plus, Upload, Sparkles, RefreshCw } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { PageHeader, SectionCard } from '../../components';
 import { RiskAdvisorPanel } from '../../ai';
@@ -115,12 +114,10 @@ export default function AIAdvisor() {
               onClick={() => navigate('/dashboard/risk-workspace')}
               className="btn-secondary"
             >
-              <Upload className="w-4 h-4 mr-2" />
               Import Data
             </button>
             <button className="btn-primary" onClick={() => { setActiveTab('interrogation'); }}>
-              <Plus className="w-4 h-4 mr-2" />
-              New Assessment
+              + New Assessment
             </button>
           </div>
         }
@@ -133,7 +130,7 @@ export default function AIAdvisor() {
           <div className="relative flex items-center justify-between">
             <div className="flex items-center gap-4">
               <div className="w-14 h-14 rounded-xl bg-amber-500/20 flex items-center justify-center border border-amber-500/30">
-                <Upload className="w-7 h-7 text-amber-400 animate-bounce" />
+                <span className="text-2xl font-bold text-amber-400 animate-bounce">+</span>
               </div>
               <div>
                 <h3 className="text-lg font-bold text-navy-100">No Risk Data Detected</h3>
@@ -151,8 +148,7 @@ export default function AIAdvisor() {
               onClick={() => navigate('/dashboard/risk-workspace')}
               className="btn-primary text-base px-6 py-3"
             >
-              <Upload className="w-5 h-5 mr-2" />
-              Upload Risk Data
+              Upload Risk Data →
             </button>
           </div>
         </div>
@@ -163,25 +159,23 @@ export default function AIAdvisor() {
         <button
           onClick={() => setActiveTab('chat')}
           className={cn(
-            'flex items-center gap-2 px-4 py-2.5 rounded-lg font-medium transition-all',
+            'px-4 py-2.5 rounded-lg font-medium transition-all',
             activeTab === 'chat'
               ? 'bg-accent-primary text-white'
               : 'bg-navy-800/50 text-navy-400 hover:text-navy-200 hover:bg-navy-800'
           )}
         >
-          <MessageSquare className="w-4 h-4" />
           Chat Assistant
         </button>
         <button
           onClick={() => setActiveTab('interrogation')}
           className={cn(
-            'flex items-center gap-2 px-4 py-2.5 rounded-lg font-medium transition-all',
+            'px-4 py-2.5 rounded-lg font-medium transition-all',
             activeTab === 'interrogation'
               ? 'bg-accent-primary text-white'
               : 'bg-navy-800/50 text-navy-400 hover:text-navy-200 hover:bg-navy-800'
           )}
         >
-          <Workflow className="w-4 h-4" />
           Risk Interrogation
         </button>
       </div>
@@ -195,31 +189,19 @@ export default function AIAdvisor() {
             {/* Quick Insights */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               <div className="glass-card p-4 border-l-4 border-l-red-500">
-                <div className="flex items-center gap-2 text-red-400 mb-1">
-                  <AlertTriangle className="w-4 h-4" />
-                  <span className="text-2xl font-bold">{criticalRisks}</span>
-                </div>
+                <span className="text-2xl font-bold text-red-400">{criticalRisks}</span>
                 <p className="text-xs text-navy-400">High Score Risks</p>
               </div>
               <div className="glass-card p-4 border-l-4 border-l-amber-500">
-                <div className="flex items-center gap-2 text-amber-400 mb-1">
-                  <AlertTriangle className="w-4 h-4" />
-                  <span className="text-2xl font-bold">{breachedKRIs}</span>
-                </div>
+                <span className="text-2xl font-bold text-amber-400">{breachedKRIs}</span>
                 <p className="text-xs text-navy-400">KRIs Breached</p>
               </div>
               <div className="glass-card p-4 border-l-4 border-l-orange-500">
-                <div className="flex items-center gap-2 text-orange-400 mb-1">
-                  <Shield className="w-4 h-4" />
-                  <span className="text-2xl font-bold">{outsideAppetite}</span>
-                </div>
+                <span className="text-2xl font-bold text-orange-400">{outsideAppetite}</span>
                 <p className="text-xs text-navy-400">Outside Appetite</p>
               </div>
               <div className="glass-card p-4 border-l-4 border-l-purple-500">
-                <div className="flex items-center gap-2 text-purple-400 mb-1">
-                  <TrendingUp className="w-4 h-4" />
-                  <span className="text-2xl font-bold">{escalatedRisks}</span>
-                </div>
+                <span className="text-2xl font-bold text-purple-400">{escalatedRisks}</span>
                 <p className="text-xs text-navy-400">Escalated</p>
               </div>
             </div>
@@ -229,7 +211,7 @@ export default function AIAdvisor() {
               <div className="flex items-center justify-between p-5 border-b border-navy-700/50">
                 <div className="flex items-center gap-3">
                   <div className="p-2 rounded-xl bg-gradient-to-br from-accent-primary/20 to-accent-secondary/20 border border-accent-primary/30 ai-advisor-icon-glow">
-                    <Bot className="w-5 h-5 text-accent-primary" />
+                    <span className="text-sm font-bold text-accent-primary">AI</span>
                   </div>
                   <div>
                     <h3 className="text-base font-semibold text-navy-100">Intelligent Risk Advisor</h3>
@@ -238,10 +220,10 @@ export default function AIAdvisor() {
                 </div>
                 <button
                   onClick={() => setMessages([processMessage('hello')])}
-                  className="p-2 rounded-lg hover:bg-navy-800/50 text-navy-400 hover:text-navy-200 transition-colors"
+                  className="p-2 rounded-lg hover:bg-navy-800/50 text-navy-400 hover:text-navy-200 transition-colors text-xs"
                   title="Reset conversation"
                 >
-                  <RefreshCw className="w-4 h-4" />
+                  Reset
                 </button>
               </div>
 
@@ -250,14 +232,10 @@ export default function AIAdvisor() {
                 {messages.map((msg) => (
                   <div key={msg.id} className={cn('flex gap-3', msg.role === 'user' ? 'flex-row-reverse' : '')}>
                     <div className={cn(
-                      'p-2 rounded-lg h-fit',
-                      msg.role === 'user' ? 'bg-accent-primary/20' : 'bg-accent-primary/10'
+                      'p-2 rounded-lg h-fit font-bold text-xs',
+                      msg.role === 'user' ? 'bg-accent-primary/20 text-accent-primary' : 'bg-accent-primary/10 text-accent-primary'
                     )}>
-                      {msg.role === 'user' ? (
-                        <Sparkles className="w-4 h-4 text-accent-primary" />
-                      ) : (
-                        <Bot className="w-4 h-4 text-accent-primary" />
-                      )}
+                      {msg.role === 'user' ? 'U' : 'AI'}
                     </div>
                     <div className={cn(
                       'flex-1 max-w-[85%]',
@@ -292,8 +270,8 @@ export default function AIAdvisor() {
                 ))}
                 {isLoading && (
                   <div className="flex gap-3">
-                    <div className="p-2 rounded-lg bg-accent-primary/10 h-fit">
-                      <Bot className="w-4 h-4 text-accent-primary animate-pulse" />
+                    <div className="p-2 rounded-lg bg-accent-primary/10 h-fit font-bold text-xs text-accent-primary animate-pulse">
+                      AI
                     </div>
                     <div className="flex items-center gap-2 px-4 py-3 rounded-xl bg-navy-800/50">
                       <div className="flex gap-1">
@@ -323,7 +301,7 @@ export default function AIAdvisor() {
                     disabled={!query.trim() || isLoading}
                     className="btn-primary px-4"
                   >
-                    <Send className="w-5 h-5" />
+                    →
                   </button>
                 </form>
 
@@ -355,13 +333,13 @@ export default function AIAdvisor() {
             <SectionCard title="AI Capabilities">
               <div className="space-y-3">
                 {[
-                  { icon: TrendingUp, label: 'Risk Analysis', desc: 'Analyze 30 risks, 40 KRIs, 25 controls' },
-                  { icon: AlertTriangle, label: 'Monte Carlo', desc: 'Run probability simulations' },
-                  { icon: Shield, label: 'Bow-Tie Analysis', desc: 'Visualize cause-consequence' },
-                  { icon: BookOpen, label: 'Decision Trees', desc: 'Evaluate treatment options' },
+                  { abbrev: 'RA', label: 'Risk Analysis', desc: 'Analyze 30 risks, 40 KRIs, 25 controls' },
+                  { abbrev: 'MC', label: 'Monte Carlo', desc: 'Run probability simulations' },
+                  { abbrev: 'BT', label: 'Bow-Tie Analysis', desc: 'Visualize cause-consequence' },
+                  { abbrev: 'DT', label: 'Decision Trees', desc: 'Evaluate treatment options' },
                 ].map((cap, i) => (
                   <div key={i} className="flex items-start gap-3 p-3 rounded-lg bg-navy-800/30 hover:bg-navy-800/50 cursor-pointer transition-colors">
-                    <cap.icon className="w-5 h-5 text-accent-primary mt-0.5" />
+                    <span className="w-8 h-8 rounded-lg bg-accent-primary/20 flex items-center justify-center text-xs font-bold text-accent-primary">{cap.abbrev}</span>
                     <div>
                       <p className="text-sm font-medium text-navy-200">{cap.label}</p>
                       <p className="text-xs text-navy-500">{cap.desc}</p>

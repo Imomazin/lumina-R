@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { FileText, Download, Plus, Clock, Filter } from 'lucide-react';
 import { PageHeader, SectionCard } from '../../components';
 import { cn } from '../../utils';
 
@@ -132,8 +131,7 @@ export default function Reports() {
         subtitle="Generate and manage risk reports"
         actions={
           <button className="btn-primary" onClick={() => setShowNewReport(true)}>
-            <Plus className="w-4 h-4 mr-2" />
-            New Report
+            + New Report
           </button>
         }
       />
@@ -141,17 +139,17 @@ export default function Reports() {
       {/* Quick Actions */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <button className="glass-card-hover p-5 text-left" onClick={() => handleQuickReport('Board')}>
-          <FileText className="w-8 h-8 text-accent-primary mb-3" />
+          <div className="w-10 h-10 rounded-lg bg-accent-primary/20 flex items-center justify-center font-bold text-accent-primary mb-3">B</div>
           <h3 className="text-base font-semibold text-navy-100 mb-1">Board Risk Summary</h3>
           <p className="text-sm text-navy-400">Generate comprehensive board-ready report</p>
         </button>
         <button className="glass-card-hover p-5 text-left" onClick={() => handleQuickReport('Executive')}>
-          <FileText className="w-8 h-8 text-blue-400 mb-3" />
+          <div className="w-10 h-10 rounded-lg bg-blue-500/20 flex items-center justify-center font-bold text-blue-400 mb-3">E</div>
           <h3 className="text-base font-semibold text-navy-100 mb-1">Executive Dashboard</h3>
           <p className="text-sm text-navy-400">Quick executive summary with key metrics</p>
         </button>
         <button className="glass-card-hover p-5 text-left" onClick={() => setShowNewReport(true)}>
-          <FileText className="w-8 h-8 text-emerald-400 mb-3" />
+          <div className="w-10 h-10 rounded-lg bg-emerald-500/20 flex items-center justify-center font-bold text-emerald-400 mb-3">+</div>
           <h3 className="text-base font-semibold text-navy-100 mb-1">Custom Report</h3>
           <p className="text-sm text-navy-400">Build a custom report with selected data</p>
         </button>
@@ -164,7 +162,6 @@ export default function Reports() {
             title="Available Reports"
             actions={
               <button className="btn-ghost text-sm" onClick={() => setShowFilter(!showFilter)}>
-                <Filter className="w-4 h-4 mr-2" />
                 Filter
               </button>
             }
@@ -194,8 +191,8 @@ export default function Reports() {
                   className="flex items-center justify-between p-4 rounded-xl bg-navy-800/30 border border-navy-700/50 hover:border-navy-600/50 transition-colors"
                 >
                   <div className="flex items-center gap-4">
-                    <div className="p-2.5 rounded-xl bg-navy-700/50">
-                      <FileText className="w-5 h-5 text-navy-300" />
+                    <div className="p-2.5 rounded-xl bg-navy-700/50 font-bold text-navy-300 text-sm">
+                      R
                     </div>
                     <div>
                       <h4 className="text-sm font-semibold text-navy-100">{report.name}</h4>
@@ -221,7 +218,6 @@ export default function Reports() {
                       </p>
                     </div>
                     <button className="btn-secondary text-sm py-2 px-3" onClick={() => handleDownload(report)}>
-                      <Download className="w-4 h-4 mr-1" />
                       {generating === report.id ? 'Generating...' : 'Download'}
                     </button>
                   </div>
@@ -240,7 +236,7 @@ export default function Reports() {
                   key={i}
                   className="flex items-center gap-3 p-3 rounded-lg bg-navy-800/30"
                 >
-                  <Clock className="w-4 h-4 text-navy-400" />
+                  <span className="text-xs text-navy-400">⏱</span>
                   <div className="flex-1">
                     <p className="text-sm text-navy-200">{report.name}</p>
                     <p className="text-xs text-navy-500">{report.nextRun}</p>
@@ -258,8 +254,7 @@ export default function Reports() {
                   onClick={() => handleTemplateClick(template)}
                   className="w-full flex items-center gap-3 p-3 rounded-lg bg-navy-800/30 hover:bg-navy-800/50 transition-colors text-left"
                 >
-                  <FileText className="w-4 h-4 text-navy-400" />
-                  <span className="text-sm text-navy-200">{template}</span>
+                  <span className="text-sm text-navy-200">→ {template}</span>
                 </button>
               ))}
             </div>

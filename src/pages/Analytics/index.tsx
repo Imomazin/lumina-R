@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { Download, Filter, Calendar, TrendingUp, TrendingDown, Activity } from 'lucide-react';
 import { cn } from '../../utils';
 import {
   AreaChart,
@@ -104,7 +103,6 @@ export default function Analytics() {
           <div className="flex items-center gap-3">
             <div className="relative">
               <button className="btn-ghost" onClick={() => setShowTimeDropdown(!showTimeDropdown)}>
-                <Calendar className="w-4 h-4 mr-2" />
                 {timeRangeOptions.find(t => t.value === timeRange)?.label || 'Last 6 Months'}
               </button>
               {showTimeDropdown && (
@@ -122,11 +120,9 @@ export default function Analytics() {
               )}
             </div>
             <button className="btn-ghost" onClick={() => setShowFilter(!showFilter)}>
-              <Filter className="w-4 h-4 mr-2" />
               Filter
             </button>
             <button className="btn-primary" onClick={handleExportReport}>
-              <Download className="w-4 h-4 mr-2" />
               Export Report
             </button>
           </div>
@@ -141,7 +137,6 @@ export default function Analytics() {
           change={-5.2}
           trend="down"
           variant="success"
-          icon={<Activity className="w-5 h-5 text-accent-primary" />}
         />
         <MetricCard
           title="Average Risk Score"
@@ -149,7 +144,6 @@ export default function Analytics() {
           change={-2.1}
           trend="down"
           variant="success"
-          icon={<TrendingDown className="w-5 h-5 text-emerald-400" />}
         />
         <MetricCard
           title="KRI Compliance"
@@ -157,7 +151,6 @@ export default function Analytics() {
           change={3.5}
           trend="up"
           variant="success"
-          icon={<TrendingUp className="w-5 h-5 text-emerald-400" />}
         />
         <MetricCard
           title="Risk Mitigation Rate"
@@ -165,7 +158,6 @@ export default function Analytics() {
           change={8}
           trend="up"
           variant="success"
-          icon={<TrendingUp className="w-5 h-5 text-emerald-400" />}
         />
       </div>
 

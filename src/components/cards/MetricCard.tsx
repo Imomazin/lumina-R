@@ -1,4 +1,3 @@
-import { TrendingUp, TrendingDown, Minus } from 'lucide-react';
 import { cn } from '../../utils';
 
 interface MetricCardProps {
@@ -23,9 +22,9 @@ export function MetricCard({
   className,
 }: MetricCardProps) {
   const getTrendIcon = () => {
-    if (trend === 'up') return <TrendingUp className="w-4 h-4" />;
-    if (trend === 'down') return <TrendingDown className="w-4 h-4" />;
-    return <Minus className="w-4 h-4" />;
+    if (trend === 'up') return <span className="text-sm">↑</span>;
+    if (trend === 'down') return <span className="text-sm">↓</span>;
+    return <span className="text-sm">−</span>;
   };
 
   const getChangeColor = () => {

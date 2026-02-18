@@ -1,31 +1,6 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import {
-  AlertTriangle,
-  Target,
-  TrendingUp,
-  TrendingDown,
-  ArrowRight,
-  Zap,
-  Shield,
-  ChevronRight,
-  ChevronDown,
-  Gauge,
-  BarChart3,
-  LineChart,
-  FileText,
-  Sparkles,
-  Filter,
-  Download,
-  RefreshCw,
-  Eye,
-  Info,
-  History,
-  Settings,
-  Upload,
-  FileSpreadsheet,
-  Database,
-} from 'lucide-react';
+import { ChevronRight, ChevronDown } from 'lucide-react';
 import { PageHeader, SectionCard } from '../../components';
 import { RiskTrendChart, CategoryDistributionChart } from '../../components/charts';
 import { risks, kris, controls, riskAppetite } from '../../data';
@@ -183,8 +158,8 @@ function ControlEffectivenessCard({ control }: { control: Control }) {
 
   return (
     <div className="flex items-center gap-3 p-3 rounded-lg bg-navy-800/20 border border-navy-700/30">
-      <div className={cn('w-10 h-10 rounded-lg flex items-center justify-center', getEffectivenessColor())}>
-        <Shield className="w-5 h-5" />
+      <div className={cn('w-10 h-10 rounded-lg flex items-center justify-center font-bold text-sm', getEffectivenessColor())}>
+        C
       </div>
       <div className="flex-1 min-w-0">
         <p className="text-sm font-medium text-navy-200 truncate">{control.name}</p>
@@ -347,15 +322,12 @@ export default function Dashboard() {
                 ))}
               </div>
               <button className="btn-secondary btn-sm" onClick={() => setShowFilterPanel(!showFilterPanel)}>
-                <Filter className="w-4 h-4" />
                 <span className="hidden sm:inline">Filter</span>
               </button>
               <button className="btn-secondary btn-sm" onClick={handleExport}>
-                <Download className="w-4 h-4" />
                 <span className="hidden sm:inline">Export</span>
               </button>
               <button className="btn-primary btn-sm" onClick={handleGenerateReport}>
-                <Zap className="w-4 h-4" />
                 <span className="hidden sm:inline">Generate Report</span>
               </button>
             </div>
@@ -372,7 +344,7 @@ export default function Dashboard() {
               <div className="flex items-center gap-5">
                 <div className="relative">
                   <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-accent-primary/30 to-accent-secondary/30 flex items-center justify-center border border-accent-primary/40">
-                    <Upload className="w-8 h-8 text-accent-primary" />
+                    <span className="text-2xl font-bold text-accent-primary">+</span>
                   </div>
                   <div className="absolute -top-1 -right-1 w-5 h-5 bg-amber-500 rounded-full flex items-center justify-center animate-bounce">
                     <span className="text-xs font-bold text-navy-950">!</span>
@@ -384,18 +356,9 @@ export default function Dashboard() {
                     Import your risk register, KRIs, controls, and events to unlock intelligent AI analysis across Monte Carlo, Bow-Tie, Decision Trees, and more.
                   </p>
                   <div className="flex items-center gap-6 mt-3">
-                    <div className="flex items-center gap-2 text-xs text-navy-500">
-                      <FileSpreadsheet className="w-4 h-4" />
-                      <span>Excel / CSV</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-xs text-navy-500">
-                      <Database className="w-4 h-4" />
-                      <span>Auto-mapping</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-xs text-navy-500">
-                      <Sparkles className="w-4 h-4" />
-                      <span>AI-powered gaps detection</span>
-                    </div>
+                    <span className="text-xs text-navy-500">Excel / CSV</span>
+                    <span className="text-xs text-navy-500">Auto-mapping</span>
+                    <span className="text-xs text-navy-500">AI-powered gaps detection</span>
                   </div>
                 </div>
               </div>
@@ -411,8 +374,7 @@ export default function Dashboard() {
                   onClick={() => navigate('/dashboard/risk-workspace')}
                   className="btn-primary text-base px-6 py-3 flex items-center gap-2 shadow-lg shadow-accent-primary/25"
                 >
-                  <Upload className="w-5 h-5" />
-                  Upload Data Now
+                  Upload Data Now →
                 </button>
               </div>
             </div>
@@ -450,12 +412,9 @@ export default function Dashboard() {
           {/* Risk Exposure Gauge */}
           <div className="glass-card p-6">
             <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-2">
-                <Gauge className="w-5 h-5 text-accent-primary" />
-                <h3 className="text-sm font-semibold text-navy-200">Risk Exposure</h3>
-              </div>
-              <button className="p-1 rounded hover:bg-navy-700/50">
-                <Info className="w-4 h-4 text-navy-500" />
+              <h3 className="text-sm font-semibold text-navy-200">Risk Exposure</h3>
+              <button className="p-1 rounded hover:bg-navy-700/50 text-navy-500 text-xs">
+                ?
               </button>
             </div>
             <RiskExposureGauge value={riskExposureScore} />
@@ -470,10 +429,7 @@ export default function Dashboard() {
           {/* Residual Risk Index */}
           <div className="glass-card p-6">
             <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-2">
-                <TrendingDown className="w-5 h-5 text-emerald-400" />
-                <h3 className="text-sm font-semibold text-navy-200">Residual Risk Index</h3>
-              </div>
+              <h3 className="text-sm font-semibold text-navy-200">Residual Risk Index</h3>
               <span className="px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 text-xs">
                 -12% from last month
               </span>
@@ -493,15 +449,11 @@ export default function Dashboard() {
           {/* Constraint Breach Count */}
           <div className="glass-card p-6">
             <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-2">
-                <AlertTriangle className="w-5 h-5 text-red-400" />
-                <h3 className="text-sm font-semibold text-navy-200">Constraint Breaches</h3>
-              </div>
+              <h3 className="text-sm font-semibold text-navy-200">Constraint Breaches</h3>
               <Link
                 to="/dashboard/ai-advisor"
-                className="flex items-center gap-1 px-2 py-1 rounded-lg bg-accent-primary/20 text-accent-primary text-xs hover:bg-accent-primary/30 transition-colors"
+                className="px-2 py-1 rounded-lg bg-accent-primary/20 text-accent-primary text-xs hover:bg-accent-primary/30 transition-colors"
               >
-                <Sparkles className="w-3 h-3" />
                 AI Advisor
               </Link>
             </div>
@@ -529,8 +481,8 @@ export default function Dashboard() {
             title="Risk Heatmap"
             subtitle="Likelihood vs Impact distribution"
             actions={
-              <button className="text-sm text-accent-primary hover:text-accent-primary/80 flex items-center gap-1">
-                <Eye className="w-4 h-4" /> Details
+              <button className="text-sm text-accent-primary hover:text-accent-primary/80">
+                Details →
               </button>
             }
           >
@@ -585,8 +537,8 @@ export default function Dashboard() {
             title="Top Risks"
             subtitle="Highest scoring risks requiring attention"
             actions={
-              <Link to="/dashboard/risk-register" className="text-sm text-accent-primary hover:text-accent-primary/80 flex items-center gap-1">
-                View All <ArrowRight className="w-4 h-4" />
+              <Link to="/dashboard/risk-register" className="text-sm text-accent-primary hover:text-accent-primary/80">
+                View All →
               </Link>
             }
           >
@@ -620,7 +572,7 @@ export default function Dashboard() {
                         </span>
                       </td>
                       <td className="py-3 px-3 text-center">
-                        <TrendingUp className="w-4 h-4 text-red-400 mx-auto" />
+                        <span className="text-red-400 text-sm">↑</span>
                       </td>
                       <td className="py-3 px-3 text-center">
                         <span className={cn(
@@ -648,8 +600,8 @@ export default function Dashboard() {
               title="Risk Trend Analysis"
               subtitle="6-month risk evolution by severity"
               actions={
-                <Link to="/dashboard/monte-carlo" className="text-sm text-accent-primary hover:text-accent-primary/80 flex items-center gap-1">
-                  <LineChart className="w-4 h-4" /> Run Simulation
+                <Link to="/dashboard/monte-carlo" className="text-sm text-accent-primary hover:text-accent-primary/80">
+                  Run Simulation →
                 </Link>
               }
             >
@@ -673,8 +625,8 @@ export default function Dashboard() {
             title="KRI Tracker"
             subtitle={`${kris.filter(k => k.status === 'green').length}/${kris.length} within threshold`}
             actions={
-              <Link to="/dashboard/ai-advisor" className="text-sm text-accent-primary hover:text-accent-primary/80 flex items-center gap-1">
-                Configure <Settings className="w-4 h-4" />
+              <Link to="/dashboard/ai-advisor" className="text-sm text-accent-primary hover:text-accent-primary/80">
+                Configure →
               </Link>
             }
           >
@@ -690,8 +642,8 @@ export default function Dashboard() {
             title="Control Effectiveness"
             subtitle={`Average effectiveness: ${avgControlEffectiveness}%`}
             actions={
-              <Link to="/dashboard/bow-tie" className="text-sm text-accent-primary hover:text-accent-primary/80 flex items-center gap-1">
-                Bow-Tie View <ArrowRight className="w-4 h-4" />
+              <Link to="/dashboard/bow-tie" className="text-sm text-accent-primary hover:text-accent-primary/80">
+                Bow-Tie View →
               </Link>
             }
           >
@@ -708,7 +660,7 @@ export default function Dashboard() {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <div className="w-12 h-12 rounded-xl bg-accent-primary/20 flex items-center justify-center animate-pulse-glow">
-                <Sparkles className="w-6 h-6 text-accent-primary" />
+                <span className="text-xl font-bold text-accent-primary">AI</span>
               </div>
               <div>
                 <h3 className="text-lg font-semibold text-navy-100">AI Risk Advisor</h3>
@@ -720,8 +672,7 @@ export default function Dashboard() {
               </div>
             </div>
             <Link to="/dashboard/ai-advisor" className="btn-primary">
-              <Sparkles className="w-4 h-4 mr-2" />
-              Launch Advisor
+              Launch Advisor →
             </Link>
           </div>
         </div>
@@ -749,10 +700,7 @@ export default function Dashboard() {
             <>
               {/* Assumptions Panel */}
               <div className="glass-card p-4">
-                <div className="flex items-center gap-2 mb-4">
-                  <FileText className="w-4 h-4 text-accent-primary" />
-                  <h3 className="text-sm font-semibold text-navy-200">Assumptions</h3>
-                </div>
+                <h3 className="text-sm font-semibold text-navy-200 mb-4">Assumptions</h3>
                 <div className="space-y-2">
                   {assumptions.map((assumption) => (
                     <div
@@ -773,10 +721,7 @@ export default function Dashboard() {
 
               {/* Audit Log Panel */}
               <div className="glass-card p-4">
-                <div className="flex items-center gap-2 mb-4">
-                  <History className="w-4 h-4 text-accent-primary" />
-                  <h3 className="text-sm font-semibold text-navy-200">Audit Log</h3>
-                </div>
+                <h3 className="text-sm font-semibold text-navy-200 mb-4">Audit Log</h3>
                 <div className="space-y-3">
                   {auditLog.map((entry) => (
                     <div
@@ -796,21 +741,15 @@ export default function Dashboard() {
 
               {/* Quick Actions */}
               <div className="glass-card p-4">
-                <div className="flex items-center gap-2 mb-4">
-                  <Zap className="w-4 h-4 text-accent-primary" />
-                  <h3 className="text-sm font-semibold text-navy-200">Quick Actions</h3>
-                </div>
+                <h3 className="text-sm font-semibold text-navy-200 mb-4">Quick Actions</h3>
                 <div className="space-y-2">
                   <button className="w-full btn-secondary text-sm py-2" onClick={handleRefreshData}>
-                    <RefreshCw className="w-4 h-4 mr-2" />
                     Refresh Data
                   </button>
                   <Link to="/dashboard/monte-carlo" className="w-full btn-secondary text-sm py-2 flex items-center justify-center">
-                    <BarChart3 className="w-4 h-4 mr-2" />
                     Run Simulation
                   </Link>
                   <Link to="/dashboard/bow-tie" className="w-full btn-secondary text-sm py-2 flex items-center justify-center">
-                    <Target className="w-4 h-4 mr-2" />
                     Bow-Tie Analysis
                   </Link>
                 </div>

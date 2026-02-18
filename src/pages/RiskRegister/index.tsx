@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { Plus, Download, Upload, LayoutGrid, List } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { PageHeader, RiskCard } from '../../components';
 import { RiskTable } from '../../components/tables';
@@ -50,16 +49,13 @@ export default function RiskRegister() {
         actions={
           <div className="flex items-center gap-3">
             <button className="btn-ghost" onClick={handleImport}>
-              <Upload className="w-4 h-4 mr-2" />
               Import
             </button>
             <button className="btn-ghost" onClick={handleExport}>
-              <Download className="w-4 h-4 mr-2" />
               Export
             </button>
             <button className="btn-primary" onClick={() => setShowAddModal(true)}>
-              <Plus className="w-4 h-4 mr-2" />
-              Add Risk
+              + Add Risk
             </button>
           </div>
         }
@@ -95,24 +91,24 @@ export default function RiskRegister() {
         <button
           onClick={() => setViewMode('table')}
           className={cn(
-            'p-2 rounded-lg transition-colors',
+            'px-3 py-2 rounded-lg transition-colors text-sm font-medium',
             viewMode === 'table'
               ? 'bg-accent-primary/20 text-accent-primary'
               : 'text-navy-400 hover:text-navy-200 hover:bg-navy-800/50'
           )}
         >
-          <List className="w-5 h-5" />
+          Table
         </button>
         <button
           onClick={() => setViewMode('grid')}
           className={cn(
-            'p-2 rounded-lg transition-colors',
+            'px-3 py-2 rounded-lg transition-colors text-sm font-medium',
             viewMode === 'grid'
               ? 'bg-accent-primary/20 text-accent-primary'
               : 'text-navy-400 hover:text-navy-200 hover:bg-navy-800/50'
           )}
         >
-          <LayoutGrid className="w-5 h-5" />
+          Grid
         </button>
       </div>
 

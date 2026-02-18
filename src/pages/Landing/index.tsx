@@ -1,5 +1,4 @@
 import { Link } from 'react-router-dom';
-import { ArrowRight, Shield, Activity, BarChart3, Zap } from 'lucide-react';
 
 export default function Landing() {
 
@@ -11,7 +10,7 @@ export default function Landing() {
           {/* Logo */}
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-red-500 to-red-700 flex items-center justify-center">
-              <Shield className="w-5 h-5 text-white" />
+              <span className="text-sm font-bold text-white">LR</span>
             </div>
             <span className="text-lg font-semibold text-white">Lumina R</span>
           </div>
@@ -62,7 +61,7 @@ export default function Landing() {
                 to="/risk"
                 className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-lg bg-gradient-to-r from-red-500 to-red-700 text-white font-semibold hover:from-red-600 hover:to-red-800 transition-all shadow-lg shadow-red-500/20"
               >
-                Start Risk Assessment <ArrowRight className="w-5 h-5" />
+                Start Risk Assessment →
               </Link>
               <Link
                 to="/dashboard"
@@ -124,25 +123,25 @@ export default function Landing() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {[
               {
-                icon: Shield,
+                abbrev: 'RR',
                 title: 'Risk Register',
                 description: 'Centralized repository for all enterprise risks with full lifecycle tracking',
                 color: 'from-red-500 to-red-700',
               },
               {
-                icon: Activity,
+                abbrev: 'KRI',
                 title: 'KRI Monitoring',
                 description: 'Real-time key risk indicator tracking with automated alerts and thresholds',
                 color: 'from-orange-500 to-red-600',
               },
               {
-                icon: BarChart3,
+                abbrev: 'RA',
                 title: 'Risk Analytics',
                 description: 'Advanced analytics and visualizations for executive risk reporting',
                 color: 'from-amber-500 to-orange-600',
               },
               {
-                icon: Zap,
+                abbrev: 'AI',
                 title: 'AI Insights',
                 description: 'AI-powered risk advisor providing contextual recommendations',
                 color: 'from-red-400 to-pink-600',
@@ -152,8 +151,8 @@ export default function Landing() {
                 key={i}
                 className="group p-6 rounded-2xl bg-white/[0.02] border border-white/5 hover:border-red-500/30 transition-all duration-300"
               >
-                <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${feature.color} flex items-center justify-center mb-4`}>
-                  <feature.icon className="w-6 h-6 text-white" />
+                <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${feature.color} flex items-center justify-center mb-4 text-white font-bold text-sm`}>
+                  {feature.abbrev}
                 </div>
                 <h3 className="text-lg font-semibold text-white mb-2">{feature.title}</h3>
                 <p className="text-sm text-gray-400 leading-relaxed">{feature.description}</p>
@@ -198,7 +197,7 @@ export default function Landing() {
             to="/dashboard"
             className="inline-flex items-center gap-2 px-8 py-4 rounded-lg bg-gradient-to-r from-red-500 to-red-700 text-white font-medium hover:from-red-600 hover:to-red-800 transition-all"
           >
-            Launch Dashboard <ArrowRight className="w-5 h-5" />
+            Launch Dashboard →
           </Link>
         </div>
       </section>
@@ -208,7 +207,7 @@ export default function Landing() {
         <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2">
             <div className="w-6 h-6 rounded bg-gradient-to-br from-red-500 to-red-700 flex items-center justify-center">
-              <Shield className="w-4 h-4 text-white" />
+              <span className="text-xs font-bold text-white">LR</span>
             </div>
             <span className="text-sm text-gray-400">Lumina R</span>
           </div>

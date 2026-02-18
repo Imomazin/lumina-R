@@ -1,15 +1,4 @@
 import { useState } from 'react';
-import {
-  Bot,
-  AlertTriangle,
-  TrendingUp,
-  Shield,
-  Lightbulb,
-  ArrowRight,
-  RefreshCw,
-  Sparkles,
-  ChevronRight,
-} from 'lucide-react';
 import { cn } from '../utils';
 import { risks, kris, riskAppetite } from '../data';
 
@@ -127,13 +116,13 @@ export function RiskAdvisorPanel({ compact = false, maxInsights = 4, className }
   const getTypeIcon = (type: Insight['type']) => {
     switch (type) {
       case 'alert':
-        return <AlertTriangle className="w-4 h-4" />;
+        return <span className="text-xs font-bold">!</span>;
       case 'trend':
-        return <TrendingUp className="w-4 h-4" />;
+        return <span className="text-xs font-bold">↑</span>;
       case 'recommendation':
-        return <Lightbulb className="w-4 h-4" />;
+        return <span className="text-xs font-bold">★</span>;
       case 'observation':
-        return <Shield className="w-4 h-4" />;
+        return <span className="text-xs font-bold">○</span>;
     }
   };
 
@@ -170,7 +159,7 @@ export function RiskAdvisorPanel({ compact = false, maxInsights = 4, className }
               <p className="text-sm font-medium text-navy-100 mb-0.5">{insight.title}</p>
               <p className="text-xs text-navy-400 line-clamp-2">{insight.message}</p>
             </div>
-            <ChevronRight className="w-4 h-4 text-navy-500 mt-1" />
+            <span className="text-navy-500 mt-1">→</span>
           </div>
         ))}
       </div>
@@ -182,22 +171,21 @@ export function RiskAdvisorPanel({ compact = false, maxInsights = 4, className }
       {/* Header */}
       <div className="flex items-center justify-between p-5 border-b border-navy-700/50">
         <div className="flex items-center gap-3">
-          <div className="p-2 rounded-xl bg-gradient-to-br from-accent-primary/20 to-accent-secondary/20 border border-accent-primary/30">
-            <Bot className="w-5 h-5 text-accent-primary" />
+          <div className="p-2 rounded-xl bg-gradient-to-br from-accent-primary/20 to-accent-secondary/20 border border-accent-primary/30 font-bold text-accent-primary text-sm">
+            AI
           </div>
           <div>
-            <h2 className="text-lg font-semibold text-navy-100 flex items-center gap-2">
+            <h2 className="text-lg font-semibold text-navy-100">
               AI Risk Advisor
-              <Sparkles className="w-4 h-4 text-accent-primary" />
             </h2>
             <p className="text-xs text-navy-400">Intelligent insights from your risk data</p>
           </div>
         </div>
         <button
           onClick={handleRefresh}
-          className="p-2 rounded-lg text-navy-400 hover:text-navy-200 hover:bg-navy-800/50 transition-colors"
+          className="p-2 rounded-lg text-navy-400 hover:text-navy-200 hover:bg-navy-800/50 transition-colors text-xs"
         >
-          <RefreshCw className={cn('w-5 h-5', isRefreshing && 'animate-spin')} />
+          {isRefreshing ? '...' : 'Refresh'}
         </button>
       </div>
 
@@ -226,9 +214,8 @@ export function RiskAdvisorPanel({ compact = false, maxInsights = 4, className }
             </div>
 
             {insight.action && (
-              <button className="flex items-center gap-2 text-sm font-medium text-accent-primary hover:text-accent-primary/80 transition-colors">
-                {insight.action}
-                <ArrowRight className="w-4 h-4" />
+              <button className="text-sm font-medium text-accent-primary hover:text-accent-primary/80 transition-colors">
+                {insight.action} →
               </button>
             )}
           </div>
@@ -241,9 +228,8 @@ export function RiskAdvisorPanel({ compact = false, maxInsights = 4, className }
           <p className="text-xs text-navy-500">
             Analysis based on {risks.length} risks, {kris.length} KRIs, and {riskAppetite.length} appetite categories
           </p>
-          <button className="text-sm font-medium text-accent-primary hover:text-accent-primary/80 transition-colors flex items-center gap-1">
-            View Full Analysis
-            <ArrowRight className="w-4 h-4" />
+          <button className="text-sm font-medium text-accent-primary hover:text-accent-primary/80 transition-colors">
+            View Full Analysis →
           </button>
         </div>
       </div>

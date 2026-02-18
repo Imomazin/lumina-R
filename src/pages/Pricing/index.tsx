@@ -1,20 +1,5 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import {
-  Check,
-  X,
-  Zap,
-  Shield,
-  Building2,
-  Sparkles,
-  ArrowRight,
-  Users,
-  BarChart3,
-  Bot,
-  Clock,
-  Lock,
-  Headphones,
-} from 'lucide-react';
 import { cn } from '../../utils';
 
 interface PlanFeature {
@@ -29,7 +14,7 @@ interface Plan {
   description: string;
   price: number | 'Custom';
   period: string;
-  icon: React.ElementType;
+  abbrev: string;
   features: PlanFeature[];
   cta: string;
   popular?: boolean;
@@ -42,7 +27,7 @@ const plans: Plan[] = [
     description: 'Perfect for exploring risk intelligence',
     price: 0,
     period: 'forever',
-    icon: Sparkles,
+    abbrev: 'F',
     cta: 'Get Started Free',
     features: [
       { text: 'Up to 25 risks in register', included: true },
@@ -63,7 +48,7 @@ const plans: Plan[] = [
     description: 'For growing risk management teams',
     price: 79,
     period: 'per user / month',
-    icon: Zap,
+    abbrev: 'Pro',
     cta: 'Start 14-Day Trial',
     popular: true,
     features: [
@@ -85,7 +70,7 @@ const plans: Plan[] = [
     description: 'For large organizations with complex needs',
     price: 'Custom',
     period: 'tailored to your needs',
-    icon: Building2,
+    abbrev: 'Ent',
     cta: 'Contact Sales',
     features: [
       { text: 'Everything in Professional', included: true, highlight: true },
@@ -104,22 +89,22 @@ const plans: Plan[] = [
 
 const featureHighlights = [
   {
-    icon: Bot,
+    abbrev: 'AI',
     title: 'AI-Powered Insights',
     description: 'Get intelligent risk recommendations and predictions powered by advanced AI',
   },
   {
-    icon: BarChart3,
+    abbrev: 'A',
     title: 'Advanced Analytics',
     description: 'Monte Carlo simulations, Bow-Tie analysis, and comprehensive reporting',
   },
   {
-    icon: Shield,
+    abbrev: 'S',
     title: 'Enterprise Security',
     description: 'SOC 2 compliant with encryption at rest and in transit',
   },
   {
-    icon: Clock,
+    abbrev: 'RT',
     title: 'Real-Time Monitoring',
     description: 'Track KRIs and risk events as they happen with instant alerts',
   },
@@ -148,7 +133,7 @@ export default function Pricing() {
             className="flex items-center gap-3"
           >
             <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-accent-primary to-accent-secondary flex items-center justify-center">
-              <Shield className="w-5 h-5 text-white" />
+              <span className="text-sm font-bold text-white">LR</span>
             </div>
             <div>
               <h1 className="text-lg font-bold text-navy-100">Lumina-R</h1>
@@ -219,7 +204,6 @@ export default function Pricing() {
         <div className="max-w-6xl mx-auto">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {plans.map((plan) => {
-              const Icon = plan.icon;
               const displayPrice = typeof plan.price === 'number'
                 ? billingPeriod === 'annual'
                   ? Math.round(plan.price * 0.8)
@@ -237,15 +221,12 @@ export default function Pricing() {
                   {/* Plan Header */}
                   <div className="mb-6">
                     <div className={cn(
-                      'w-12 h-12 rounded-xl flex items-center justify-center mb-4',
+                      'w-12 h-12 rounded-xl flex items-center justify-center mb-4 font-bold',
                       plan.popular
-                        ? 'bg-accent-primary/20'
-                        : 'bg-navy-800/50'
+                        ? 'bg-accent-primary/20 text-accent-primary'
+                        : 'bg-navy-800/50 text-navy-400'
                     )}>
-                      <Icon className={cn(
-                        'w-6 h-6',
-                        plan.popular ? 'text-accent-primary' : 'text-navy-400'
-                      )} />
+                      {plan.abbrev}
                     </div>
                     <h3 className="text-xl font-semibold text-navy-100">{plan.name}</h3>
                     <p className="text-sm text-navy-400 mt-1">{plan.description}</p>
@@ -276,8 +257,7 @@ export default function Pricing() {
                         : 'btn-secondary'
                     )}
                   >
-                    {plan.cta}
-                    <ArrowRight className="w-4 h-4 ml-2" />
+                    {plan.cta} →
                   </button>
 
                   {/* Features */}
@@ -290,14 +270,14 @@ export default function Pricing() {
                           !feature.included && 'pricing-feature-disabled'
                         )}
                       >
-                        {feature.included ? (
-                          <Check className={cn(
-                            'pricing-feature-icon',
-                            feature.highlight && 'text-accent-primary'
-                          )} />
-                        ) : (
-                          <X className="pricing-feature-icon" />
-                        )}
+                        <span className={cn(
+                          'pricing-feature-icon font-bold',
+                          feature.included
+                            ? feature.highlight ? 'text-accent-primary' : 'text-emerald-400'
+                            : 'text-navy-600'
+                        )}>
+                          {feature.included ? '✓' : '✕'}
+                        </span>
                         <span className={cn(feature.highlight && 'font-medium')}>
                           {feature.text}
                         </span>
@@ -318,18 +298,15 @@ export default function Pricing() {
             Everything You Need for Enterprise Risk Management
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {featureHighlights.map((feature, idx) => {
-              const Icon = feature.icon;
-              return (
-                <div key={idx} className="glass-card p-6 text-center">
-                  <div className="w-12 h-12 rounded-xl bg-accent-primary/10 flex items-center justify-center mx-auto mb-4">
-                    <Icon className="w-6 h-6 text-accent-primary" />
-                  </div>
-                  <h3 className="text-lg font-semibold text-navy-100 mb-2">{feature.title}</h3>
-                  <p className="text-sm text-navy-400">{feature.description}</p>
+            {featureHighlights.map((feature, idx) => (
+              <div key={idx} className="glass-card p-6 text-center">
+                <div className="w-12 h-12 rounded-xl bg-accent-primary/10 flex items-center justify-center mx-auto mb-4 font-bold text-accent-primary">
+                  {feature.abbrev}
                 </div>
-              );
-            })}
+                <h3 className="text-lg font-semibold text-navy-100 mb-2">{feature.title}</h3>
+                <p className="text-sm text-navy-400">{feature.description}</p>
+              </div>
+            ))}
           </div>
         </div>
       </section>
@@ -338,18 +315,9 @@ export default function Pricing() {
       <section className="py-16 px-6">
         <div className="max-w-4xl mx-auto text-center">
           <div className="flex items-center justify-center gap-8 mb-8">
-            <div className="flex items-center gap-2 text-navy-400">
-              <Lock className="w-5 h-5" />
-              <span className="text-sm">SOC 2 Compliant</span>
-            </div>
-            <div className="flex items-center gap-2 text-navy-400">
-              <Shield className="w-5 h-5" />
-              <span className="text-sm">256-bit Encryption</span>
-            </div>
-            <div className="flex items-center gap-2 text-navy-400">
-              <Users className="w-5 h-5" />
-              <span className="text-sm">10,000+ Users</span>
-            </div>
+            <span className="text-sm text-navy-400">SOC 2 Compliant</span>
+            <span className="text-sm text-navy-400">256-bit Encryption</span>
+            <span className="text-sm text-navy-400">10,000+ Users</span>
           </div>
           <p className="text-navy-500 text-sm">
             Trusted by risk professionals at leading enterprises worldwide
@@ -405,14 +373,12 @@ export default function Pricing() {
               onClick={() => navigate('/dashboard')}
               className="btn-primary btn-lg"
             >
-              Start Free Today
-              <ArrowRight className="w-5 h-5 ml-2" />
+              Start Free Today →
             </button>
             <button
               onClick={() => alert('Demo booking would open here')}
               className="btn-secondary btn-lg"
             >
-              <Headphones className="w-5 h-5 mr-2" />
               Book a Demo
             </button>
           </div>

@@ -1003,3 +1003,172 @@ export interface StrategicImplementation {
   performance: ImplementationPerformance;
   strategicIntelligence: StrategicImpactIntelligence;
 }
+
+// ============================================
+// STRATEGY IMPLEMENTATION RISK MODULE
+// Enterprise Transformation Risk Science
+// ============================================
+
+export type StrategyHorizon = 'H1' | 'H2' | 'H3';
+
+export type SCIClassification = 'low' | 'moderate' | 'high' | 'extreme';
+export type IRSClassification = 'ready' | 'vulnerable' | 'high_failure_risk';
+export type PSURiskBand = 'green' | 'amber' | 'red' | 'black';
+
+// Section 1: Strategic Initiative Profile
+export interface StrategicInitiative {
+  id: string; // SI-XXX
+  name: string;
+  strategicTheme: string;
+  description: string;
+  horizon: StrategyHorizon;
+  totalInvestment: number; // £
+  timeHorizonMonths: number;
+  executiveSponsor: string;
+  department: string;
+  criticalDependencies: string[];
+  linkedRiskIds: string[]; // Links to Strategic Register
+
+  // SCI input variables (1-5 scale)
+  dependencyDensity: number;
+  technologyNovelty: number;
+  organisationalChangeMagnitude: number;
+  externalUncertainty: number;
+
+  // Section 2: Readiness inputs (0-100 scale)
+  capabilityAlignmentScore: number;
+  talentCapacityRatio: number;
+  digitalMaturityIndex: number;
+  capitalSecurityRatio: number;
+  stakeholderAlignmentScore: number;
+  governanceMaturityScore: number;
+
+  // Section 3: Fragility inputs
+  criticalPathDependencies: number; // count
+  crossFunctionalIntensity: number; // 1-5
+  culturalResistanceIndicator: number; // 1-5
+  leadershipTurnoverProbability: number; // 0-100%
+  changeFatigueIndex: number; // 1-5
+
+  // Section 4: Capital sequencing inputs
+  plannedSpendCurve: number[]; // monthly spend array (first 12 months)
+  cashFlowAvailability: number; // £ per month
+  debtCovenantHeadroom: number; // %
+  ebitdaSensitivity: number; // % impact per £1M spend
+
+  // Section 5: Strategic drift inputs
+  intendedKPIs: { name: string; target: number; actual: number; weight: number }[];
+  competitorMovementScore: number; // 1-10
+  technologyDisplacementRisk: number; // 1-10
+  regulatoryShiftExposure: number; // 1-10
+
+  // Status
+  status: 'planning' | 'active' | 'delayed' | 'at_risk' | 'completed';
+  startDate: string;
+  expectedEndDate: string;
+  actualProgress: number; // 0-100%
+}
+
+// Calculated outputs
+export interface SCIResult {
+  score: number; // 1-5
+  classification: SCIClassification;
+  breakdown: {
+    dependencyDensity: number;
+    technologyNovelty: number;
+    organisationalChange: number;
+    externalUncertainty: number;
+  };
+}
+
+export interface IRSResult {
+  score: number; // 0-100
+  classification: IRSClassification;
+  breakdown: {
+    capabilityAlignment: number;
+    talentCapacity: number;
+    digitalMaturity: number;
+    capitalSecurity: number;
+    stakeholderAlignment: number;
+    governanceMaturity: number;
+  };
+}
+
+export interface SEFSResult {
+  score: number; // 0-100
+  isStructuralRisk: boolean;
+  breakdown: {
+    criticalPath: number;
+    crossFunctional: number;
+    culturalResistance: number;
+    leadershipTurnover: number;
+    changeFatigue: number;
+  };
+}
+
+export interface CSRSResult {
+  score: number; // 0-100
+  spendTimingMismatch: number;
+  liquidityBufferStress: number;
+  earningsVolatility: number;
+  liquidityRunwayMonths: number;
+  capitalBufferRequired: number;
+  delayTriggered: boolean;
+}
+
+export interface SDIResult {
+  score: number; // 0-100%
+  driftPercentage: number;
+  boardVisibilityTriggered: boolean;
+  kpiDeviations: { name: string; deviation: number; weight: number }[];
+  externalThreats: {
+    competitorMovement: number;
+    technologyDisplacement: number;
+    regulatoryShift: number;
+  };
+}
+
+export interface PSUResult {
+  failureProbability: number; // 0-100%
+  confidenceInterval: { lower: number; upper: number };
+  riskBand: PSURiskBand;
+  componentWeights: {
+    sci: number;
+    irs: number;
+    sefs: number;
+    csrs: number;
+    sdi: number;
+  };
+}
+
+// Section 7: Intervention parameters
+export interface InterventionScenario {
+  capitalIncrease: number; // £ additional
+  scopeReduction: number; // % scope removed
+  phaseRollout: number; // months delay for phasing
+  leadershipSupport: number; // 0-100 boost
+  capabilityInvestment: number; // £ additional
+}
+
+// Combined initiative analysis
+export interface InitiativeAnalysis {
+  initiative: StrategicInitiative;
+  sci: SCIResult;
+  irs: IRSResult;
+  sefs: SEFSResult;
+  csrs: CSRSResult;
+  sdi: SDIResult;
+  psu: PSUResult;
+}
+
+// Section 8: Board Intelligence
+export interface BoardIntelligence {
+  totalCapitalDeployed: number;
+  averageIRS: number;
+  averageSEFS: number;
+  portfolioPSU: number;
+  strategicResilienceIndex: number; // Inverse of PSU weighted by importance
+  top3FragileInitiatives: InitiativeAnalysis[];
+  capitalAtRisk: number;
+  probabilityWeightedValueErosion: number;
+}

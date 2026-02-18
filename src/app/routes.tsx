@@ -24,6 +24,7 @@ import Admin from '../pages/Admin';
 import StrategicRegister from '../pages/StrategicRegister';
 import StrategicPortfolio from '../pages/StrategicRegister/PortfolioDashboard';
 import StrategicImplementation from '../pages/StrategicImplementation';
+import StrategyRisk from '../pages/StrategyRisk';
 
 export const router = createBrowserRouter([
   // Landing page (no layout)
@@ -85,6 +86,10 @@ export const router = createBrowserRouter([
       {
         path: 'strategic-implementation',
         element: <StrategicImplementation />,
+      },
+      {
+        path: 'strategy-risk',
+        element: <StrategyRisk />,
       },
       {
         path: 'tools/monte-carlo',

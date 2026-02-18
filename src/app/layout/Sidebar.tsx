@@ -118,6 +118,7 @@ export function Sidebar() {
           <NavItem to="/dashboard/strategic-register" label="Strategic Register" />
           <NavItem to="/dashboard/strategic-portfolio" label="Portfolio Dashboard" />
           <NavItem to="/dashboard/strategic-implementation" label="Implementation" />
+          <NavItem to="/dashboard/strategy-risk" label="Strategy Risk" />
         </div>
 
         {/* Tools Section */}

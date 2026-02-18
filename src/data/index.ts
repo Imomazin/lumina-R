@@ -16,3 +16,4 @@ export { enterpriseControls, getControlStats, getControlsByRiskId, getControlsBy
 export type { EnterpriseControl } from './enterpriseControls';
 export { strategicRisks, workedExample, companyThresholdConfig } from './strategicRisks';
 export { implementationBlueprints } from './implementationBlueprints';
+export { strategicInitiatives } from './strategicInitiatives';

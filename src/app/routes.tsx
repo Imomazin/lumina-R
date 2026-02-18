@@ -23,6 +23,7 @@ import Integrations from '../pages/ApiGateway';
 import Admin from '../pages/Admin';
 import StrategicRegister from '../pages/StrategicRegister';
 import StrategicPortfolio from '../pages/StrategicRegister/PortfolioDashboard';
+import StrategicImplementation from '../pages/StrategicImplementation';
 
 export const router = createBrowserRouter([
   // Landing page (no layout)
@@ -80,6 +81,10 @@ export const router = createBrowserRouter([
       {
         path: 'strategic-portfolio',
         element: <StrategicPortfolio />,
+      },
+      {
+        path: 'strategic-implementation',
+        element: <StrategicImplementation />,
       },
       {
         path: 'tools/monte-carlo',

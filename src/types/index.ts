@@ -838,3 +838,168 @@ export interface StressTestScenario {
   resultingTotalEMV: number;
   resultingEBITDAExposure: number;
 }
+
+// ============================================
+// STRATEGIC RISK IMPLEMENTATION MODULE
+// ============================================
+
+// Risk Execution Priority Index classification
+export type REPIClassification =
+  | 'critical_implementation'
+  | 'high_priority'
+  | 'moderate'
+  | 'monitor';
+
+// Risk velocity scale (1 = slow, 5 = immediate)
+export type RiskVelocityScore = 1 | 2 | 3 | 4 | 5;
+
+// Section 1: Risk Execution Profile
+export interface RiskExecutionProfile {
+  riskId: string;
+  repiScore: number; // Weighted Impact × Velocity × Financial Exposure Multiplier
+  repiClassification: REPIClassification;
+  velocityScore: RiskVelocityScore;
+  financialExposureMultiplier: number; // Worst Case ÷ EBITDA
+  executionUrgency: 'immediate' | 'short_term' | 'medium_term' | 'long_term';
+}
+
+// Section 2: Implementation Blueprint
+export type ControlCategory = 'preventative' | 'detective' | 'corrective' | 'adaptive';
+
+export interface ImplementationAction {
+  id: string;
+  category: ControlCategory;
+  title: string;
+  description: string;
+  owner: string;
+  budgetAllocation: number; // £
+  timeline: string;
+  dependencies: string[];
+  successKPI: string;
+  residualRiskTarget: number;
+  capitalRequirement: number; // £
+  regulatoryAlignmentScore: number; // 1-10
+  status: 'planned' | 'in_progress' | 'completed' | 'blocked';
+  milestoneCompletion: number; // 0-100%
+}
+
+export interface ImplementationBlueprint {
+  riskId: string;
+  strategicObjective: string;
+  actions: ImplementationAction[];
+  totalBudget: number; // Auto-totalled
+  totalCapitalRequired: number;
+  overallResidualTarget: number;
+}
+
+// Section 3: Financial Implementation Analytics
+export interface FinancialImplementationAnalytics {
+  riskId: string;
+  totalMitigationInvestment: number;
+  originalEMV: number;
+  revisedEMV: number;
+  netRiskReductionValue: number; // Original EMV - Revised EMV
+  paybackPeriodMonths: number;
+  riskROI: number; // (Original EMV – Residual EMV – Mitigation Cost) ÷ Mitigation Cost
+  capitalEfficiencyRatio: number; // EMV Reduction ÷ Capital Deployed
+  isFinanciallyEfficient: boolean; // ROI >= 0
+  requiresCFOEscalation: boolean; // Cost > 15% Annual Capex
+}
+
+// Section 4: Scenario Stress Testing (extended)
+export type ScenarioType =
+  | 'regulatory_escalation'
+  | 'market_shock'
+  | 'technology_failure'
+  | 'multi_risk_cascade';
+
+export interface StressScenarioResult {
+  scenarioId: string;
+  scenarioType: ScenarioType;
+  name: string;
+  description: string;
+  revisedProbability: number;
+  revisedImpact: number;
+  liquidityImpact: number; // £
+  ebitdaShockPercent: number;
+  cashRunwayReductionMonths: number;
+  capitalBufferRequired: number; // £
+  affectedRiskIds: string[];
+  waterfallData: { label: string; value: number; cumulative: number }[];
+}
+
+// Section 5: Governance Escalation
+export type GovernanceLevel =
+  | 'operational_committee'
+  | 'executive_committee'
+  | 'board'
+  | 'crisis_committee';
+
+export interface GovernanceEscalation {
+  riskId: string;
+  requiredLevel: GovernanceLevel;
+  triggers: {
+    emvThreshold: boolean;
+    strategicImpact: boolean;
+    legalScore: boolean;
+    interdependencyScore: boolean;
+    velocityScore: boolean;
+  };
+  escalationCountdown?: number; // Days until auto-escalate if worsening
+  isWorsening: boolean;
+}
+
+// Section 6: Contagion Analysis
+export interface ContagionAnalysis {
+  riskId: string;
+  contagionAmplificationFactor: number; // CAF
+  connectedRisks: {
+    riskId: string;
+    strength: number;
+    amplificationPath: string;
+  }[];
+  portfolioExposureAdjustment: number; // % increase to portfolio exposure
+  exceedsThreshold: boolean;
+}
+
+// Section 7: Implementation Performance
+export interface ImplementationPerformance {
+  riskId: string;
+  budgetSpent: number;
+  budgetAllocated: number;
+  budgetUtilisation: number; // %
+  milestoneCompletion: number; // %
+  residualRiskCurrent: number;
+  residualRiskTarget: number;
+  kpiAchievementScore: number; // 0-100
+  capitalDeployed: number;
+  emvReduced: number;
+  scheduleDeviation: number; // % (+/- from plan)
+  costOverrun: number; // %
+  trafficLight: 'green' | 'amber' | 'red';
+}
+
+// Section 8: Strategic Impact Intelligence
+export interface StrategicImpactIntelligence {
+  riskId: string;
+  strategicRealignmentScore: number; // 1-10, does mitigation create new capability?
+  innovationOpportunityIndicator: number; // 1-10, new revenue streams?
+  competitiveAdvantageDelta: {
+    preMitigation: number; // 1-10
+    postMitigation: number; // 1-10
+    delta: number;
+  };
+  isStrategicAsset: boolean; // true if mitigation creates value
+  strategicInsight: string;
+}
+
+// Combined implementation record per risk
+export interface StrategicImplementation {
+  executionProfile: RiskExecutionProfile;
+  blueprint: ImplementationBlueprint;
+  financials: FinancialImplementationAnalytics;
+  governance: GovernanceEscalation;
+  contagion: ContagionAnalysis;
+  performance: ImplementationPerformance;
+  strategicIntelligence: StrategicImpactIntelligence;
+}

@@ -15,3 +15,4 @@ export type { RiskEvent } from './riskEvents';
 export { enterpriseControls, getControlStats, getControlsByRiskId, getControlsByType, getControlsByOwner, getAutomatedControls, getManualControls, getControlEffectivenessScore } from './enterpriseControls';
 export type { EnterpriseControl } from './enterpriseControls';
 export { strategicRisks, workedExample, companyThresholdConfig } from './strategicRisks';
+export { implementationBlueprints } from './implementationBlueprints';

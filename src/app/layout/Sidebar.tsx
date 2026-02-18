@@ -117,6 +117,7 @@ export function Sidebar() {
           </p>
           <NavItem to="/dashboard/strategic-register" label="Strategic Register" />
           <NavItem to="/dashboard/strategic-portfolio" label="Portfolio Dashboard" />
+          <NavItem to="/dashboard/strategic-implementation" label="Implementation" />
         </div>
 
         {/* Tools Section */}

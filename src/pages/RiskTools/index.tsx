@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Search, Sparkles, Lock } from 'lucide-react';
+// Icons removed for cleaner UI
 import { PageHeader, ToolCard } from '../../components';
 import { riskTools } from '../../data';
 import { cn } from '../../utils';
@@ -41,7 +41,7 @@ export default function RiskTools() {
       {/* Search and Filter */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
         <div className="relative flex-1 max-w-md">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-navy-500" />
+          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-navy-500 text-sm">⌕</span>
           <input
             type="text"
             placeholder="Search tools..."
@@ -76,13 +76,11 @@ export default function RiskTools() {
         </span>
         {newTools.length > 0 && (
           <span className="flex items-center gap-1.5 text-accent-primary">
-            <Sparkles className="w-4 h-4" />
             <span className="font-semibold">{newTools.length}</span> new
           </span>
         )}
         {premiumTools.length > 0 && (
           <span className="flex items-center gap-1.5 text-amber-400">
-            <Lock className="w-4 h-4" />
             <span className="font-semibold">{premiumTools.length}</span> premium
           </span>
         )}

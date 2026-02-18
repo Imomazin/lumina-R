@@ -12,16 +12,7 @@ import {
   ReferenceLine,
   Cell,
 } from 'recharts';
-import {
-  Play,
-  Settings,
-  AlertTriangle,
-  Target,
-  Percent,
-  DollarSign,
-  RefreshCw,
-  Download,
-} from 'lucide-react';
+// Icons removed for cleaner UI
 import { PageHeader, SectionCard } from '../../components';
 import { cn } from '../../utils';
 import {
@@ -164,7 +155,6 @@ export default function MonteCarloSimulation() {
                 a.click();
                 URL.revokeObjectURL(url);
               }}>
-                <Download className="w-4 h-4 mr-2" />
                 Export Results
               </button>
             )}
@@ -176,17 +166,7 @@ export default function MonteCarloSimulation() {
                 (isRunning || selectedRisks.length === 0) && 'opacity-50 cursor-not-allowed'
               )}
             >
-              {isRunning ? (
-                <>
-                  <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
-                  Running...
-                </>
-              ) : (
-                <>
-                  <Play className="w-4 h-4 mr-2" />
-                  Run Simulation
-                </>
-              )}
+              {isRunning ? 'Running...' : 'Run Simulation'}
             </button>
           </div>
         }
@@ -283,7 +263,7 @@ export default function MonteCarloSimulation() {
             <SectionCard>
               <div className="flex flex-col items-center justify-center py-16 text-center">
                 <div className="w-16 h-16 rounded-full bg-navy-800/50 flex items-center justify-center mb-4">
-                  <Settings className="w-8 h-8 text-navy-500" />
+                  <span className="text-2xl text-navy-500">⚙</span>
                 </div>
                 <h3 className="text-lg font-semibold text-navy-200 mb-2">Configure & Run</h3>
                 <p className="text-sm text-navy-500 max-w-md">
@@ -298,7 +278,7 @@ export default function MonteCarloSimulation() {
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <div className="glass-card p-4">
                   <div className="flex items-center gap-2 mb-2">
-                    <DollarSign className="w-4 h-4 text-navy-500" />
+                    <span className="text-xs font-bold text-navy-500">$</span>
                     <span className="text-xs text-navy-500">Mean Impact</span>
                   </div>
                   <p className="text-xl font-bold text-navy-100">
@@ -307,7 +287,7 @@ export default function MonteCarloSimulation() {
                 </div>
                 <div className="glass-card p-4">
                   <div className="flex items-center gap-2 mb-2">
-                    <Target className="w-4 h-4 text-navy-500" />
+                    <span className="text-xs font-bold text-navy-500">V</span>
                     <span className="text-xs text-navy-500">VaR ({confidenceLevel}%)</span>
                   </div>
                   <p className="text-xl font-bold text-amber-400">
@@ -316,7 +296,7 @@ export default function MonteCarloSimulation() {
                 </div>
                 <div className="glass-card p-4">
                   <div className="flex items-center gap-2 mb-2">
-                    <AlertTriangle className="w-4 h-4 text-navy-500" />
+                    <span className="text-xs font-bold text-navy-500">C</span>
                     <span className="text-xs text-navy-500">CVaR</span>
                   </div>
                   <p className="text-xl font-bold text-red-400">
@@ -325,7 +305,7 @@ export default function MonteCarloSimulation() {
                 </div>
                 <div className="glass-card p-4">
                   <div className="flex items-center gap-2 mb-2">
-                    <Percent className="w-4 h-4 text-navy-500" />
+                    <span className="text-xs font-bold text-navy-500">σ</span>
                     <span className="text-xs text-navy-500">Std Deviation</span>
                   </div>
                   <p className="text-xl font-bold text-navy-100">

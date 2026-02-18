@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { TrendingUp, TrendingDown, Minus, ChevronDown, ChevronUp, Search, Filter } from 'lucide-react';
+import { ChevronDown, ChevronUp } from 'lucide-react';
 import { cn } from '../../utils';
 import { formatDate } from '../../utils/formatters';
 import { StatusBadge } from '../badges';
@@ -82,11 +82,11 @@ export function RiskTable({ risks, onRowClick, className }: RiskTableProps) {
   const getTrendIcon = (trend: Risk['trend']) => {
     switch (trend) {
       case 'increasing':
-        return <TrendingUp className="w-4 h-4 text-red-400" />;
+        return <span className="text-sm text-red-400">↑</span>;
       case 'decreasing':
-        return <TrendingDown className="w-4 h-4 text-emerald-400" />;
+        return <span className="text-sm text-emerald-400">↓</span>;
       default:
-        return <Minus className="w-4 h-4 text-navy-400" />;
+        return <span className="text-sm text-navy-400">−</span>;
     }
   };
 
@@ -107,18 +107,16 @@ export function RiskTable({ risks, onRowClick, className }: RiskTableProps) {
       {/* Filters */}
       <div className="flex items-center gap-4 mb-4">
         <div className="relative flex-1 max-w-sm">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-navy-500" />
           <input
             type="text"
             placeholder="Search risks..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 bg-navy-800/50 border border-navy-700 rounded-lg text-sm text-navy-100 placeholder-navy-500 focus:outline-none focus:border-accent-primary/50"
+            className="w-full px-4 py-2 bg-navy-800/50 border border-navy-700 rounded-lg text-sm text-navy-100 placeholder-navy-500 focus:outline-none focus:border-accent-primary/50"
           />
         </div>
 
         <div className="flex items-center gap-2">
-          <Filter className="w-4 h-4 text-navy-500" />
           <select
             value={filterSeverity}
             onChange={(e) => setFilterSeverity(e.target.value)}

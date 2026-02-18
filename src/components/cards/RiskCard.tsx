@@ -1,4 +1,3 @@
-import { TrendingUp, TrendingDown, Minus, User, Calendar } from 'lucide-react';
 import { cn } from '../../utils';
 import { formatDate } from '../../utils/formatters';
 import type { Risk } from '../../types';
@@ -41,11 +40,11 @@ export function RiskCard({ risk, compact = false, className }: RiskCardProps) {
   const getTrendIcon = () => {
     switch (risk.trend) {
       case 'increasing':
-        return <TrendingUp className="w-4 h-4 text-red-400" />;
+        return <span className="text-sm text-red-400">↑</span>;
       case 'decreasing':
-        return <TrendingDown className="w-4 h-4 text-emerald-400" />;
+        return <span className="text-sm text-emerald-400">↓</span>;
       default:
-        return <Minus className="w-4 h-4 text-navy-400" />;
+        return <span className="text-sm text-navy-400">−</span>;
     }
   };
 
@@ -103,14 +102,12 @@ export function RiskCard({ risk, compact = false, className }: RiskCardProps) {
 
       <div className="flex items-center justify-between pt-4 border-t border-navy-700/50">
         <div className="flex items-center gap-4">
-          <div className="flex items-center gap-1.5 text-xs text-navy-400">
-            <User className="w-3.5 h-3.5" />
+          <span className="text-xs text-navy-400">
             {risk.owner}
-          </div>
-          <div className="flex items-center gap-1.5 text-xs text-navy-400">
-            <Calendar className="w-3.5 h-3.5" />
+          </span>
+          <span className="text-xs text-navy-400">
             {formatDate(risk.nextReview)}
-          </div>
+          </span>
         </div>
 
         <div className="flex items-center gap-2">

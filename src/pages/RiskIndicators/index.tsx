@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Activity, TrendingUp, TrendingDown, AlertCircle, CheckCircle } from 'lucide-react';
+// Icons removed for cleaner UI
 import { PageHeader, SectionCard, MetricCard } from '../../components';
 import { KRITable } from '../../components/tables';
 import { KRIStatusBadge } from '../../components/badges';
@@ -31,7 +31,6 @@ export default function RiskIndicators() {
         subtitle="Monitor leading indicators of risk exposure"
         actions={
           <button className="btn-primary" onClick={() => setShowConfigModal(true)}>
-            <Activity className="w-4 h-4 mr-2" />
             Configure KRIs
           </button>
         }
@@ -42,12 +41,11 @@ export default function RiskIndicators() {
         <MetricCard
           title="Total KRIs"
           value={kris.length}
-          icon={<Activity className="w-5 h-5 text-accent-primary" />}
         />
         <div className="glass-card p-5 border-l-4 border-l-emerald-500">
           <div className="flex items-center justify-between mb-2">
             <p className="text-sm font-medium text-navy-400">Green Status</p>
-            <CheckCircle className="w-5 h-5 text-emerald-400" />
+            <span className="text-sm font-bold text-emerald-400">✓</span>
           </div>
           <p className="text-3xl font-bold text-emerald-400">{statusCounts.green}</p>
           <p className="text-sm text-navy-500">Within threshold</p>
@@ -55,7 +53,7 @@ export default function RiskIndicators() {
         <div className="glass-card p-5 border-l-4 border-l-amber-500">
           <div className="flex items-center justify-between mb-2">
             <p className="text-sm font-medium text-navy-400">Amber Status</p>
-            <AlertCircle className="w-5 h-5 text-amber-400" />
+            <span className="text-sm font-bold text-amber-400">!</span>
           </div>
           <p className="text-3xl font-bold text-amber-400">{statusCounts.amber}</p>
           <p className="text-sm text-navy-500">Approaching threshold</p>
@@ -63,7 +61,7 @@ export default function RiskIndicators() {
         <div className="glass-card p-5 border-l-4 border-l-red-500">
           <div className="flex items-center justify-between mb-2">
             <p className="text-sm font-medium text-navy-400">Red Status</p>
-            <AlertCircle className="w-5 h-5 text-red-400" />
+            <span className="text-sm font-bold text-red-400">!</span>
           </div>
           <p className="text-3xl font-bold text-red-400">{statusCounts.red}</p>
           <p className="text-sm text-navy-500">Breached</p>
@@ -156,7 +154,7 @@ export default function RiskIndicators() {
                   'flex items-center justify-center gap-2 mt-2',
                   selectedKRI.trend === 'up' ? 'text-red-400' : selectedKRI.trend === 'down' ? 'text-emerald-400' : 'text-navy-400'
                 )}>
-                  {selectedKRI.trend === 'up' ? <TrendingUp className="w-5 h-5" /> : <TrendingDown className="w-5 h-5" />}
+                  <span className="text-lg font-bold">{selectedKRI.trend === 'up' ? '↑' : '↓'}</span>
                   <span className="font-medium">{selectedKRI.trendPercentage > 0 ? '+' : ''}{selectedKRI.trendPercentage}% from last period</span>
                 </div>
               </div>

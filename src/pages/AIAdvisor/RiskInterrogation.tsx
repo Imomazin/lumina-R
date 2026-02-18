@@ -1,31 +1,5 @@
 import { useState, useCallback } from 'react';
-import {
-  Target,
-  Sliders,
-  AlertTriangle,
-  Activity,
-  Shield,
-  Calculator,
-  FileText,
-  Wrench,
-  Play,
-  CheckCircle,
-  ChevronRight,
-  ChevronLeft,
-  Plus,
-  Trash2,
-  HelpCircle,
-  Lock,
-  TrendingUp,
-  TrendingDown,
-  Minus,
-  BarChart3,
-  GitBranch,
-  Dice5,
-  Layers,
-  Download,
-  Eye,
-} from 'lucide-react';
+import { ChevronRight, ChevronLeft } from 'lucide-react';
 import { cn } from '../../utils';
 import type {
   AdvisorPhase,
@@ -47,63 +21,63 @@ const phases: {
   step: number;
   label: string;
   description: string;
-  icon: React.ElementType;
+  abbrev: string;
 }[] = [
   {
     id: 'constraint_architecture',
     step: 1,
     label: 'Constraints',
     description: 'Set boundaries and limits',
-    icon: Sliders,
+    abbrev: 'CO',
   },
   {
     id: 'context_establishment',
     step: 2,
     label: 'Objectives',
     description: 'Define objectives and success metrics',
-    icon: Target,
+    abbrev: 'OB',
   },
   {
     id: 'risk_universe',
     step: 3,
     label: 'Risk Universe',
     description: 'Identify potential risks',
-    icon: AlertTriangle,
+    abbrev: 'RU',
   },
   {
     id: 'likelihood_impact',
     step: 4,
     label: 'Calibration',
     description: 'Likelihood & impact assessment',
-    icon: Activity,
+    abbrev: 'CA',
   },
   {
     id: 'kri_builder',
     step: 5,
     label: 'KRI Builder',
     description: 'Define key risk indicators',
-    icon: BarChart3,
+    abbrev: 'KR',
   },
   {
     id: 'kci_builder',
     step: 6,
     label: 'Controls',
     description: 'Map controls to risks',
-    icon: Shield,
+    abbrev: 'KC',
   },
   {
     id: 'risk_scoring',
     step: 7,
     label: 'Risk Profile',
     description: 'Confirm risk profile',
-    icon: CheckCircle,
+    abbrev: 'RP',
   },
   {
     id: 'tool_selection',
     step: 8,
     label: 'Analytics',
     description: 'Advanced analytics library',
-    icon: Wrench,
+    abbrev: 'AN',
   },
 ];
 
@@ -204,40 +178,40 @@ const impactDimensionLabels: { key: keyof RiskAssessment['impactDimensions']; la
   { key: 'regulatory', label: 'Regulatory Impact', unit: 'score' },
 ];
 
-const simulationTools: { id: SimulationType; name: string; description: string; icon: React.ElementType; useCase: string }[] = [
+const simulationTools: { id: SimulationType; name: string; description: string; abbrev: string; useCase: string }[] = [
   {
     id: 'monte_carlo',
     name: 'Monte Carlo Simulation',
     description: 'Probabilistic modeling using triangular distributions',
-    icon: Dice5,
+    abbrev: 'MC',
     useCase: 'Best for: Quantifying uncertainty ranges and VaR calculations',
   },
   {
     id: 'decision_tree',
     name: 'Decision Tree Analysis',
     description: 'Sequential decision pathways with branch probabilities',
-    icon: GitBranch,
+    abbrev: 'DT',
     useCase: 'Best for: Evaluating options and contingency strategies',
   },
   {
     id: 'bow_tie',
     name: 'Bow-Tie Analysis',
     description: 'Threat → Control → Event → Control → Consequence mapping',
-    icon: Target,
+    abbrev: 'BT',
     useCase: 'Best for: Visualizing cause-effect chains and control gaps',
   },
   {
     id: 'scenario',
     name: 'Scenario Analysis',
     description: 'Base, optimistic, pessimistic, and extreme case modeling',
-    icon: Layers,
+    abbrev: 'SA',
     useCase: 'Best for: Stress testing and planning for multiple futures',
   },
   {
     id: 'tornado',
     name: 'Tornado Sensitivity',
     description: 'Variable sensitivity ranking and impact visualization',
-    icon: BarChart3,
+    abbrev: 'TS',
     useCase: 'Best for: Identifying key risk drivers',
   },
 ];
@@ -591,7 +565,7 @@ export default function RiskInterrogation() {
           <div className="space-y-6">
             <div className="p-4 rounded-xl bg-accent-primary/10 border border-accent-primary/30">
               <div className="flex items-start gap-3">
-                <HelpCircle className="w-5 h-5 text-accent-primary mt-0.5" />
+                <span className="text-sm font-bold text-accent-primary mt-0.5">?</span>
                 <div>
                   <p className="text-sm font-medium text-navy-100">Why this matters</p>
                   <p className="text-sm text-navy-400 mt-1">
@@ -695,7 +669,7 @@ export default function RiskInterrogation() {
                   onClick={addPrimaryObjective}
                   className="flex items-center gap-2 text-sm text-accent-primary hover:text-accent-primary/80"
                 >
-                  <Plus className="w-4 h-4" /> Add another objective
+                  + Add another objective
                 </button>
               </div>
             </div>
@@ -762,7 +736,7 @@ export default function RiskInterrogation() {
 
             <div className="p-4 rounded-xl bg-amber-500/10 border border-amber-500/30">
               <div className="flex items-start gap-3">
-                <Lock className="w-5 h-5 text-amber-400 mt-0.5" />
+                <span className="text-sm font-bold text-amber-400 mt-0.5">⊘</span>
                 <div>
                   <p className="text-sm font-medium text-navy-100">Six Constraints Framework</p>
                   <p className="text-sm text-navy-400 mt-1">
@@ -923,7 +897,7 @@ export default function RiskInterrogation() {
           <div className="space-y-6">
             <div className="p-4 rounded-xl bg-accent-primary/10 border border-accent-primary/30">
               <div className="flex items-start gap-3">
-                <AlertTriangle className="w-5 h-5 text-accent-primary mt-0.5" />
+                <span className="text-sm font-bold text-accent-primary mt-0.5">!</span>
                 <div>
                   <p className="text-sm font-medium text-navy-100">Risk Identification</p>
                   <p className="text-sm text-navy-400 mt-1">
@@ -971,7 +945,7 @@ export default function RiskInterrogation() {
                         onClick={() => removeRiskDraft(risk.id)}
                         className="p-1 text-navy-500 hover:text-red-400 transition-colors"
                       >
-                        <Trash2 className="w-4 h-4" />
+                        <span className="text-xs">✕</span>
                       </button>
                     </div>
 
@@ -1052,7 +1026,7 @@ export default function RiskInterrogation() {
                 onClick={addRiskDraft}
                 className="w-full p-4 rounded-xl border-2 border-dashed border-navy-700 hover:border-accent-primary/50 text-navy-400 hover:text-accent-primary transition-all flex items-center justify-center gap-2"
               >
-                <Plus className="w-5 h-5" />
+                <span className="text-sm font-bold">+</span>
                 Add Risk for {riskCategories.find((c) => c.value === selectedCategory)?.label}
               </button>
             </div>
@@ -1089,7 +1063,7 @@ export default function RiskInterrogation() {
           <div className="space-y-6">
             <div className="p-4 rounded-xl bg-accent-primary/10 border border-accent-primary/30">
               <div className="flex items-start gap-3">
-                <Activity className="w-5 h-5 text-accent-primary mt-0.5" />
+                <span className="text-sm font-bold text-accent-primary mt-0.5">⊕</span>
                 <div>
                   <p className="text-sm font-medium text-navy-100">Impact Assessment</p>
                   <p className="text-sm text-navy-400 mt-1">
@@ -1246,7 +1220,7 @@ export default function RiskInterrogation() {
           <div className="space-y-6">
             <div className="p-4 rounded-xl bg-amber-500/10 border border-amber-500/30">
               <div className="flex items-start gap-3">
-                <Activity className="w-5 h-5 text-amber-400 mt-0.5" />
+                <span className="text-sm font-bold text-amber-400 mt-0.5">⊕</span>
                 <div>
                   <p className="text-sm font-medium text-navy-100">Key Risk Indicators</p>
                   <p className="text-sm text-navy-400 mt-1">
@@ -1365,7 +1339,7 @@ export default function RiskInterrogation() {
                 onClick={addKRI}
                 className="w-full p-4 rounded-xl border-2 border-dashed border-navy-700 hover:border-accent-primary/50 text-navy-400 hover:text-accent-primary transition-all flex items-center justify-center gap-2"
               >
-                <Plus className="w-5 h-5" />
+                <span className="text-sm font-bold">+</span>
                 Add Key Risk Indicator
               </button>
             </div>
@@ -1377,7 +1351,7 @@ export default function RiskInterrogation() {
           <div className="space-y-6">
             <div className="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/30">
               <div className="flex items-start gap-3">
-                <Shield className="w-5 h-5 text-emerald-400 mt-0.5" />
+                <span className="text-sm font-bold text-emerald-400 mt-0.5">⊞</span>
                 <div>
                   <p className="text-sm font-medium text-navy-100">Key Control Indicators</p>
                   <p className="text-sm text-navy-400 mt-1">
@@ -1506,7 +1480,7 @@ export default function RiskInterrogation() {
                 onClick={addKCI}
                 className="w-full p-4 rounded-xl border-2 border-dashed border-navy-700 hover:border-emerald-500/50 text-navy-400 hover:text-emerald-400 transition-all flex items-center justify-center gap-2"
               >
-                <Plus className="w-5 h-5" />
+                <span className="text-sm font-bold">+</span>
                 Add Control
               </button>
             </div>
@@ -1518,7 +1492,7 @@ export default function RiskInterrogation() {
           <div className="space-y-6">
             <div className="p-4 rounded-xl bg-accent-primary/10 border border-accent-primary/30">
               <div className="flex items-start gap-3">
-                <Calculator className="w-5 h-5 text-accent-primary mt-0.5" />
+                <span className="text-sm font-bold text-accent-primary mt-0.5">#</span>
                 <div>
                   <p className="text-sm font-medium text-navy-100">Risk Scoring Engine</p>
                   <p className="text-sm text-navy-400 mt-1">
@@ -1614,11 +1588,11 @@ export default function RiskInterrogation() {
                             </td>
                             <td className="py-3 px-4 text-center">
                               {reduction > 20 ? (
-                                <TrendingDown className="w-4 h-4 text-emerald-400 inline" />
+                                <span className="text-sm font-bold text-emerald-400">↓</span>
                               ) : reduction > 0 ? (
-                                <Minus className="w-4 h-4 text-amber-400 inline" />
+                                <span className="text-sm font-bold text-amber-400">−</span>
                               ) : (
-                                <TrendingUp className="w-4 h-4 text-red-400 inline" />
+                                <span className="text-sm font-bold text-red-400">↑</span>
                               )}
                               <span className="text-xs text-navy-500 ml-1">-{reduction.toFixed(0)}%</span>
                             </td>
@@ -1634,7 +1608,7 @@ export default function RiskInterrogation() {
                     onClick={calculateScores}
                     className="text-sm text-accent-primary hover:text-accent-primary/80 flex items-center gap-1"
                   >
-                    <Calculator className="w-4 h-4" /> Recalculate Scores
+                    Recalculate Scores
                   </button>
 
                   {/* Approve Risk Profile Button */}
@@ -1643,12 +1617,11 @@ export default function RiskInterrogation() {
                       onClick={() => setRiskProfileApproved(true)}
                       className="btn-primary"
                     >
-                      <CheckCircle className="w-4 h-4 mr-2" />
-                      Approve Risk Profile
+                        Approve Risk Profile
                     </button>
                   ) : (
                     <div className="flex items-center gap-2 text-emerald-400">
-                      <CheckCircle className="w-5 h-5" />
+                      <span className="text-sm font-bold">✓</span>
                       <span className="text-sm font-medium">Profile Approved</span>
                     </div>
                   )}
@@ -1663,7 +1636,7 @@ export default function RiskInterrogation() {
           <div className="space-y-6">
             <div className="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/30">
               <div className="flex items-start gap-3">
-                <FileText className="w-5 h-5 text-emerald-400 mt-0.5" />
+                <span className="text-sm font-bold text-emerald-400 mt-0.5">≡</span>
                 <div>
                   <p className="text-sm font-medium text-navy-100">Risk Register Generated</p>
                   <p className="text-sm text-navy-400 mt-1">
@@ -1680,10 +1653,10 @@ export default function RiskInterrogation() {
                 <h4 className="text-sm font-medium text-navy-200">Register Preview</h4>
                 <div className="flex gap-2">
                   <button className="btn-secondary text-xs">
-                    <Eye className="w-3 h-3 mr-1" /> Preview
+                    Preview
                   </button>
                   <button className="btn-primary text-xs">
-                    <Download className="w-3 h-3 mr-1" /> Export
+                    Export
                   </button>
                 </div>
               </div>
@@ -1766,7 +1739,7 @@ export default function RiskInterrogation() {
           <div className="space-y-6">
             <div className="p-4 rounded-xl bg-accent-primary/10 border border-accent-primary/30">
               <div className="flex items-start gap-3">
-                <Wrench className="w-5 h-5 text-accent-primary mt-0.5" />
+                <span className="text-sm font-bold text-accent-primary mt-0.5">⚙</span>
                 <div>
                   <p className="text-sm font-medium text-navy-100">Select Analysis Tools</p>
                   <p className="text-sm text-navy-400 mt-1">
@@ -1794,13 +1767,10 @@ export default function RiskInterrogation() {
                   >
                     <div className="flex items-start gap-3">
                       <div className={cn(
-                        'p-2 rounded-lg',
-                        isSelected ? 'bg-accent-primary/20' : 'bg-navy-700/50'
+                        'p-2 rounded-lg flex items-center justify-center w-9 h-9 text-xs font-bold',
+                        isSelected ? 'bg-accent-primary/20 text-accent-primary' : 'bg-navy-700/50 text-navy-400'
                       )}>
-                        <tool.icon className={cn(
-                          'w-5 h-5',
-                          isSelected ? 'text-accent-primary' : 'text-navy-400'
-                        )} />
+                        {tool.abbrev}
                       </div>
                       <div className="flex-1">
                         <div className="flex items-center justify-between">
@@ -1810,7 +1780,7 @@ export default function RiskInterrogation() {
                           )}>
                             {tool.name}
                           </h4>
-                          {isSelected && <CheckCircle className="w-4 h-4 text-accent-primary" />}
+                          {isSelected && <span className="text-xs font-bold text-accent-primary">✓</span>}
                         </div>
                         <p className="text-xs text-navy-400 mt-1">{tool.description}</p>
                         <p className="text-2xs text-navy-500 mt-2">{tool.useCase}</p>
@@ -1836,7 +1806,7 @@ export default function RiskInterrogation() {
           <div className="space-y-6">
             <div className="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/30">
               <div className="flex items-start gap-3">
-                <Play className="w-5 h-5 text-emerald-400 mt-0.5" />
+                <span className="text-sm font-bold text-emerald-400 mt-0.5">▶</span>
                 <div>
                   <p className="text-sm font-medium text-navy-100">Run Simulations</p>
                   <p className="text-sm text-navy-400 mt-1">
@@ -1855,15 +1825,15 @@ export default function RiskInterrogation() {
                 return (
                   <div key={tool.id} className="p-4 rounded-xl bg-navy-800/50 border border-navy-700/50">
                     <div className="flex items-center gap-3">
-                      <div className="p-2 rounded-lg bg-navy-700/50">
-                        <tool.icon className="w-5 h-5 text-navy-400" />
+                      <div className="p-2 rounded-lg bg-navy-700/50 flex items-center justify-center w-9 h-9 text-xs font-bold text-navy-400">
+                        {tool.abbrev}
                       </div>
                       <div className="flex-1">
                         <h4 className="text-sm font-medium text-navy-200">{tool.name}</h4>
                         <p className="text-xs text-navy-500">{tool.description}</p>
                       </div>
                       {simulationComplete && (
-                        <CheckCircle className="w-5 h-5 text-emerald-400" />
+                        <span className="text-sm font-bold text-emerald-400">✓</span>
                       )}
                     </div>
                   </div>
@@ -1882,17 +1852,7 @@ export default function RiskInterrogation() {
                     simulationRunning && 'opacity-50 cursor-not-allowed'
                   )}
                 >
-                  {simulationRunning ? (
-                    <>
-                      <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2" />
-                      Running Simulations...
-                    </>
-                  ) : (
-                    <>
-                      <Play className="w-4 h-4 mr-2" />
-                      Run All Simulations
-                    </>
-                  )}
+                  {simulationRunning ? 'Running Simulations...' : 'Run All Simulations'}
                 </button>
                 <p className="text-xs text-navy-500 mt-3">
                   This will run {selectedTools.length} analysis tool{selectedTools.length > 1 ? 's' : ''} on {riskDrafts.length} risks
@@ -1900,18 +1860,16 @@ export default function RiskInterrogation() {
               </div>
             ) : (
               <div className="p-6 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-center">
-                <CheckCircle className="w-12 h-12 text-emerald-400 mx-auto mb-3" />
+                <span className="text-4xl text-emerald-400 block mb-3">✓</span>
                 <h3 className="text-lg font-semibold text-navy-100 mb-2">Analysis Complete</h3>
                 <p className="text-sm text-navy-400 mb-4">
                   All simulations have completed successfully. Results are now available.
                 </p>
                 <div className="flex justify-center gap-3">
                   <button className="btn-secondary">
-                    <Eye className="w-4 h-4 mr-2" />
                     View Results
                   </button>
                   <button className="btn-primary">
-                    <Download className="w-4 h-4 mr-2" />
                     Export Report
                   </button>
                 </div>
@@ -1923,8 +1881,8 @@ export default function RiskInterrogation() {
       default:
         return (
           <div className="flex flex-col items-center justify-center py-16 text-center">
-            <div className="w-16 h-16 rounded-full bg-navy-800/50 flex items-center justify-center mb-4">
-              <currentPhase.icon className="w-8 h-8 text-navy-500" />
+            <div className="w-16 h-16 rounded-full bg-navy-800/50 flex items-center justify-center mb-4 text-xl font-bold text-navy-500">
+              {currentPhase.abbrev}
             </div>
             <h3 className="text-lg font-semibold text-navy-200 mb-2">{currentPhase.label}</h3>
             <p className="text-sm text-navy-500 max-w-md">
@@ -1962,11 +1920,11 @@ export default function RiskInterrogation() {
                 )}
               >
                 {isComplete ? (
-                  <CheckCircle className="w-4 h-4" />
+                  <span className="text-xs font-bold">✓</span>
                 ) : isLocked ? (
-                  <Lock className="w-4 h-4" />
+                  <span className="text-xs font-bold">⊘</span>
                 ) : (
-                  <phase.icon className="w-4 h-4" />
+                  <span className="text-xs font-bold">{phase.abbrev}</span>
                 )}
                 <span className="text-sm font-medium">{phase.label}</span>
               </button>
@@ -1978,8 +1936,8 @@ export default function RiskInterrogation() {
       {/* Phase Content */}
       <div className="glass-card p-6">
         <div className="flex items-center gap-3 mb-6">
-          <div className="p-2 rounded-lg bg-accent-primary/20">
-            <currentPhase.icon className="w-5 h-5 text-accent-primary" />
+          <div className="p-2 rounded-lg bg-accent-primary/20 flex items-center justify-center w-9 h-9 text-xs font-bold text-accent-primary">
+            {currentPhase.abbrev}
           </div>
           <div>
             <h2 className="text-lg font-semibold text-navy-100">{currentPhase.label}</h2>

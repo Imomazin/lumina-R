@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Users, Settings, Activity, Plus, Search, MoreVertical } from 'lucide-react';
+// Icons removed for cleaner UI
 import { PageHeader, SectionCard } from '../../components';
 import { cn } from '../../utils';
 
@@ -68,21 +68,20 @@ export default function Admin() {
       {/* Tab Navigation */}
       <div className="flex items-center gap-2 border-b border-navy-700/50 pb-4">
         {[
-          { id: 'users', label: 'Users', icon: Users },
-          { id: 'settings', label: 'Settings', icon: Settings },
-          { id: 'audit', label: 'Audit Log', icon: Activity },
+          { id: 'users', label: 'Users' },
+          { id: 'settings', label: 'Settings' },
+          { id: 'audit', label: 'Audit Log' },
         ].map((tab) => (
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id as typeof activeTab)}
             className={cn(
-              'flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors',
+              'px-4 py-2 rounded-lg text-sm font-medium transition-colors',
               activeTab === tab.id
                 ? 'bg-accent-primary/20 text-accent-primary'
                 : 'text-navy-400 hover:text-navy-200 hover:bg-navy-800/50'
             )}
           >
-            <tab.icon className="w-4 h-4" />
             {tab.label}
           </button>
         ))}
@@ -93,18 +92,16 @@ export default function Admin() {
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <div className="relative max-w-sm">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-navy-500" />
               <input
                 type="text"
                 placeholder="Search users..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 bg-navy-800/50 border border-navy-700 rounded-lg text-sm text-navy-100 placeholder-navy-500 focus:outline-none focus:border-accent-primary/50"
+                className="w-full px-4 py-2 bg-navy-800/50 border border-navy-700 rounded-lg text-sm text-navy-100 placeholder-navy-500 focus:outline-none focus:border-accent-primary/50"
               />
             </div>
             <button className="btn-primary" onClick={() => setShowAddUserModal(true)}>
-              <Plus className="w-4 h-4 mr-2" />
-              Add User
+              + Add User
             </button>
           </div>
 
@@ -159,8 +156,8 @@ export default function Admin() {
                       </span>
                     </td>
                     <td className="relative">
-                      <button className="p-1 rounded hover:bg-navy-800/50" onClick={() => setShowUserMenu(showUserMenu === user.id ? null : user.id)}>
-                        <MoreVertical className="w-4 h-4 text-navy-400" />
+                      <button className="p-1 rounded hover:bg-navy-800/50 text-navy-400 text-sm" onClick={() => setShowUserMenu(showUserMenu === user.id ? null : user.id)}>
+                        ⋮
                       </button>
                       {showUserMenu === user.id && (
                         <div className="absolute right-0 top-8 z-10 w-40 rounded-lg bg-navy-800 border border-navy-700 shadow-xl py-1">
@@ -315,8 +312,8 @@ export default function Admin() {
                 key={i}
                 className="flex items-center gap-4 p-4 rounded-xl bg-navy-800/30 border border-navy-700/50"
               >
-                <div className="p-2 rounded-lg bg-navy-700/50">
-                  <Activity className="w-4 h-4 text-navy-400" />
+                <div className="p-2 rounded-lg bg-navy-700/50 text-xs font-bold text-navy-400">
+                  •
                 </div>
                 <div className="flex-1">
                   <p className="text-sm text-navy-200">{entry.action}</p>

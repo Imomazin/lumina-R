@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Download, Settings, AlertTriangle, CheckCircle, ArrowRight, Info } from 'lucide-react';
+// Icons removed for cleaner UI
 import { PageHeader, SectionCard } from '../../components';
 import { riskAppetite } from '../../data';
 import { cn } from '../../utils';
@@ -49,11 +49,11 @@ export default function RiskAppetitePage() {
   const getStatusIcon = (status: RiskAppetite['status']) => {
     switch (status) {
       case 'within':
-        return <CheckCircle className="w-5 h-5 text-emerald-400" />;
+        return <span className="text-lg font-bold text-emerald-400">✓</span>;
       case 'approaching':
-        return <AlertTriangle className="w-5 h-5 text-amber-400" />;
+        return <span className="text-lg font-bold text-amber-400">!</span>;
       case 'breached':
-        return <AlertTriangle className="w-5 h-5 text-red-400" />;
+        return <span className="text-lg font-bold text-red-400">!</span>;
     }
   };
 
@@ -77,11 +77,9 @@ export default function RiskAppetitePage() {
         actions={
           <div className="flex items-center gap-3">
             <button className="btn-ghost" onClick={handleExport}>
-              <Download className="w-4 h-4 mr-2" />
               Export Report
             </button>
             <button className="btn-primary" onClick={() => setShowConfigModal(true)}>
-              <Settings className="w-4 h-4 mr-2" />
               Configure
             </button>
           </div>
@@ -92,7 +90,7 @@ export default function RiskAppetitePage() {
       <SectionCard>
         <div className="flex items-start gap-4">
           <div className="p-3 rounded-xl bg-accent-primary/10 border border-accent-primary/30">
-            <Info className="w-6 h-6 text-accent-primary" />
+            <span className="text-lg font-bold text-accent-primary">ℹ</span>
           </div>
           <div>
             <h3 className="text-lg font-semibold text-navy-100 mb-2">Risk Appetite Statement</h3>
@@ -113,7 +111,7 @@ export default function RiskAppetitePage() {
       <div className="grid grid-cols-3 gap-4">
         <div className="glass-card p-5 border-l-4 border-l-emerald-500">
           <div className="flex items-center gap-3">
-            <CheckCircle className="w-6 h-6 text-emerald-400" />
+            <span className="text-lg font-bold text-emerald-400">✓</span>
             <div>
               <p className="text-2xl font-bold text-emerald-400">
                 {riskAppetite.filter(a => a.status === 'within').length}
@@ -124,7 +122,7 @@ export default function RiskAppetitePage() {
         </div>
         <div className="glass-card p-5 border-l-4 border-l-amber-500">
           <div className="flex items-center gap-3">
-            <AlertTriangle className="w-6 h-6 text-amber-400" />
+            <span className="text-lg font-bold text-amber-400">!</span>
             <div>
               <p className="text-2xl font-bold text-amber-400">
                 {riskAppetite.filter(a => a.status === 'approaching').length}
@@ -135,7 +133,7 @@ export default function RiskAppetitePage() {
         </div>
         <div className="glass-card p-5 border-l-4 border-l-red-500">
           <div className="flex items-center gap-3">
-            <AlertTriangle className="w-6 h-6 text-red-400" />
+            <span className="text-lg font-bold text-red-400">!</span>
             <div>
               <p className="text-2xl font-bold text-red-400">
                 {riskAppetite.filter(a => a.status === 'breached').length}
@@ -221,7 +219,7 @@ export default function RiskAppetitePage() {
               </div>
 
               <div className="flex items-center justify-end mt-4 text-sm text-accent-primary">
-                View Details <ArrowRight className="w-4 h-4 ml-1" />
+                View Details →
               </div>
             </div>
           </div>
@@ -287,7 +285,7 @@ export default function RiskAppetitePage() {
                 <ul className="space-y-2">
                   {selectedAppetite.rationale.map((item, i) => (
                     <li key={i} className="flex items-start gap-2 text-navy-400">
-                      <CheckCircle className="w-4 h-4 text-accent-primary mt-0.5 flex-shrink-0" />
+                      <span className="text-xs font-bold text-accent-primary mt-0.5 flex-shrink-0">✓</span>
                       {item}
                     </li>
                   ))}

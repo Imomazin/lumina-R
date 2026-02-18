@@ -1,16 +1,5 @@
 import { useState } from 'react';
-import {
-  AlertTriangle,
-  Shield,
-  Plus,
-  CheckCircle,
-  XCircle,
-  AlertCircle,
-  Target,
-  ArrowRight,
-  Save,
-  Download,
-} from 'lucide-react';
+// Icons removed for cleaner UI
 import { PageHeader, SectionCard } from '../../components';
 import { cn } from '../../utils';
 import type { BowTieModel, BowTieThreat, BowTieConsequence, BowTieControl } from '../../types';
@@ -107,11 +96,11 @@ export default function BowTieAnalysis() {
   const getStatusIcon = (status: BowTieControl['status']) => {
     switch (status) {
       case 'active':
-        return <CheckCircle className="w-3 h-3 text-emerald-400" />;
+        return <span className="text-xs font-bold text-emerald-400">✓</span>;
       case 'degraded':
-        return <AlertCircle className="w-3 h-3 text-amber-400" />;
+        return <span className="text-xs font-bold text-amber-400">!</span>;
       case 'failed':
-        return <XCircle className="w-3 h-3 text-red-400" />;
+        return <span className="text-xs font-bold text-red-400">✕</span>;
     }
   };
 
@@ -209,11 +198,9 @@ export default function BowTieAnalysis() {
               {editMode ? 'View Mode' : 'Edit Mode'}
             </button>
             <button className="btn-secondary" onClick={handleExportBowTie}>
-              <Download className="w-4 h-4 mr-2" />
               Export
             </button>
             <button className="btn-primary" onClick={handleSave}>
-              <Save className="w-4 h-4 mr-2" />
               {isSaved ? 'Saved!' : 'Save'}
             </button>
           </div>
@@ -252,13 +239,12 @@ export default function BowTieAnalysis() {
           {/* Threats Column */}
           <div className="flex-1 space-y-4">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-sm font-semibold text-navy-200 flex items-center gap-2">
-                <AlertTriangle className="w-4 h-4 text-red-400" />
+              <h3 className="text-sm font-semibold text-navy-200">
                 Threats
               </h3>
               {editMode && (
-                <button onClick={addThreat} className="p-1 text-navy-400 hover:text-accent-primary">
-                  <Plus className="w-4 h-4" />
+                <button onClick={addThreat} className="p-1 text-navy-400 hover:text-accent-primary text-sm font-bold">
+                  +
                 </button>
               )}
             </div>
@@ -318,22 +304,20 @@ export default function BowTieAnalysis() {
           {/* Preventive Controls Bar */}
           <div className="flex flex-col items-center justify-center px-2">
             <div className="w-2 h-8 bg-emerald-500/30 rounded-full" />
-            <div className="flex items-center my-2">
-              <Shield className="w-5 h-5 text-emerald-400" />
-            </div>
+            <span className="my-2 text-sm font-bold text-emerald-400">P</span>
             <p className="text-2xs text-navy-500 text-center writing-vertical">Preventive</p>
             <div className="flex-1 w-0.5 bg-navy-700" />
           </div>
 
           {/* Arrow to Central Event */}
           <div className="flex items-center">
-            <ArrowRight className="w-6 h-6 text-navy-600" />
+            <span className="text-xl text-navy-600">→</span>
           </div>
 
           {/* Central Event */}
           <div className="flex items-center">
             <div className="w-40 p-6 rounded-2xl bg-gradient-to-br from-red-500/20 to-amber-500/20 border-2 border-red-500/50 text-center">
-              <Target className="w-8 h-8 text-red-400 mx-auto mb-2" />
+              <span className="text-2xl font-bold text-red-400 block mb-2">⊗</span>
               <p className="text-sm font-bold text-navy-100">{bowTie.centralEvent}</p>
               <p className="text-2xs text-navy-400 mt-1">Risk Event</p>
             </div>
@@ -341,15 +325,13 @@ export default function BowTieAnalysis() {
 
           {/* Arrow from Central Event */}
           <div className="flex items-center">
-            <ArrowRight className="w-6 h-6 text-navy-600" />
+            <span className="text-xl text-navy-600">→</span>
           </div>
 
           {/* Mitigating Controls Bar */}
           <div className="flex flex-col items-center justify-center px-2">
             <div className="w-2 h-8 bg-blue-500/30 rounded-full" />
-            <div className="flex items-center my-2">
-              <Shield className="w-5 h-5 text-blue-400" />
-            </div>
+            <span className="my-2 text-sm font-bold text-blue-400">M</span>
             <p className="text-2xs text-navy-500 text-center writing-vertical">Mitigating</p>
             <div className="flex-1 w-0.5 bg-navy-700" />
           </div>
@@ -357,13 +339,12 @@ export default function BowTieAnalysis() {
           {/* Consequences Column */}
           <div className="flex-1 space-y-4">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-sm font-semibold text-navy-200 flex items-center gap-2">
-                <AlertCircle className="w-4 h-4 text-amber-400" />
+              <h3 className="text-sm font-semibold text-navy-200">
                 Consequences
               </h3>
               {editMode && (
-                <button onClick={addConsequence} className="p-1 text-navy-400 hover:text-accent-primary">
-                  <Plus className="w-4 h-4" />
+                <button onClick={addConsequence} className="p-1 text-navy-400 hover:text-accent-primary text-sm font-bold">
+                  +
                 </button>
               )}
             </div>
@@ -481,15 +462,15 @@ export default function BowTieAnalysis() {
       <div className="glass-card p-4">
         <div className="flex flex-wrap items-center justify-center gap-6 text-xs text-navy-400">
           <div className="flex items-center gap-2">
-            <CheckCircle className="w-4 h-4 text-emerald-400" />
+            <span className="text-sm font-bold text-emerald-400">✓</span>
             <span>Active Control</span>
           </div>
           <div className="flex items-center gap-2">
-            <AlertCircle className="w-4 h-4 text-amber-400" />
+            <span className="text-sm font-bold text-amber-400">!</span>
             <span>Degraded Control</span>
           </div>
           <div className="flex items-center gap-2">
-            <XCircle className="w-4 h-4 text-red-400" />
+            <span className="text-sm font-bold text-red-400">✕</span>
             <span>Failed Control</span>
           </div>
           <div className="flex items-center gap-2">

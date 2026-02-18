@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ArrowRight, Building2, Target, CheckCircle, ChevronLeft, ChevronRight, ExternalLink } from 'lucide-react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { PageHeader } from '../../components';
 import { caseStudies } from '../../data';
 import type { CaseStudy } from '../../types';
@@ -33,7 +33,6 @@ export default function CaseStudiesPage() {
           <div className="p-8 lg:p-10 flex flex-col justify-between">
             <div>
               <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-accent-primary/20 text-accent-primary text-sm font-medium mb-4">
-                <Building2 className="w-4 h-4" />
                 {featuredStudy.industry}
               </span>
 
@@ -44,7 +43,6 @@ export default function CaseStudiesPage() {
               <div className="space-y-4 mb-6">
                 <div>
                   <h3 className="text-sm font-semibold text-navy-300 mb-2 flex items-center gap-2">
-                    <Target className="w-4 h-4 text-amber-400" />
                     Challenge
                   </h3>
                   <p className="text-navy-400 text-sm leading-relaxed">
@@ -54,7 +52,6 @@ export default function CaseStudiesPage() {
 
                 <div>
                   <h3 className="text-sm font-semibold text-navy-300 mb-2 flex items-center gap-2">
-                    <CheckCircle className="w-4 h-4 text-emerald-400" />
                     Solution
                   </h3>
                   <p className="text-navy-400 text-sm leading-relaxed">
@@ -69,8 +66,7 @@ export default function CaseStudiesPage() {
                 onClick={() => setSelectedStudy(featuredStudy)}
                 className="btn-primary"
               >
-                Read Full Story
-                <ArrowRight className="w-4 h-4 ml-2" />
+                Read Full Story →
               </button>
 
               <div className="flex items-center gap-2">
@@ -159,7 +155,7 @@ export default function CaseStudiesPage() {
 
               <div className="flex items-center text-sm text-accent-primary font-medium">
                 Read More
-                <ArrowRight className="w-4 h-4 ml-1" />
+ →
               </div>
             </div>
           ))}
@@ -180,8 +176,7 @@ export default function CaseStudiesPage() {
               <div className="flex items-start justify-between">
                 <div>
                   <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-accent-primary/20 text-accent-primary text-sm font-medium mb-3">
-                    <Building2 className="w-4 h-4" />
-                    {selectedStudy.industry}
+                        {selectedStudy.industry}
                   </span>
                   <h2 className="text-2xl font-bold text-navy-100">{selectedStudy.title}</h2>
                 </div>
@@ -251,7 +246,6 @@ export default function CaseStudiesPage() {
                 setCopied(true);
                 setTimeout(() => setCopied(false), 2000);
               }}>
-                <ExternalLink className="w-4 h-4 mr-2" />
                 {copied ? 'Link Copied!' : 'Share Case Study'}
               </button>
             </div>

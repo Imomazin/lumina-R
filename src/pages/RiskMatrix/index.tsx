@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Info, Download, Filter } from 'lucide-react';
+// Icons removed for cleaner UI
 import { PageHeader, SectionCard } from '../../components';
 import { RiskHeatMap } from '../../components/charts';
 import { StatusBadge } from '../../components/badges';
@@ -52,11 +52,9 @@ export default function RiskMatrix() {
         actions={
           <div className="flex items-center gap-3">
             <button className="btn-ghost" onClick={() => setShowFilterPanel(!showFilterPanel)}>
-              <Filter className="w-4 h-4 mr-2" />
               Filter
             </button>
             <button className="btn-ghost" onClick={handleExport}>
-              <Download className="w-4 h-4 mr-2" />
               Export
             </button>
           </div>
@@ -160,7 +158,7 @@ export default function RiskMatrix() {
           ) : (
             <SectionCard>
               <div className="flex flex-col items-center justify-center py-12 text-center">
-                <Info className="w-12 h-12 text-navy-600 mb-4" />
+                <span className="text-4xl text-navy-600 mb-4">ℹ</span>
                 <h3 className="text-lg font-medium text-navy-300 mb-2">
                   Select a Cell
                 </h3>

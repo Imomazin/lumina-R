@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Settings, CheckCircle, XCircle, Clock, Plus } from 'lucide-react';
+// Icons removed for cleaner UI
 import { PageHeader, SectionCard } from '../../components';
 import { integrations } from '../../data';
 import { cn } from '../../utils';
@@ -14,11 +14,11 @@ export default function ApiGateway() {
   const getStatusIcon = (status: string) => {
     switch (status) {
       case 'connected':
-        return <CheckCircle className="w-5 h-5 text-emerald-400" />;
+        return <span className="text-lg font-bold text-emerald-400">✓</span>;
       case 'disconnected':
-        return <XCircle className="w-5 h-5 text-red-400" />;
+        return <span className="text-lg font-bold text-red-400">✕</span>;
       case 'pending':
-        return <Clock className="w-5 h-5 text-amber-400" />;
+        return <span className="text-lg font-bold text-amber-400">…</span>;
     }
   };
 
@@ -40,8 +40,7 @@ export default function ApiGateway() {
         subtitle="Connect and manage external systems and data sources"
         actions={
           <button className="btn-primary" onClick={() => setShowAddModal(true)}>
-            <Plus className="w-4 h-4 mr-2" />
-            Add Integration
+            + Add Integration
           </button>
         }
       />
@@ -216,7 +215,6 @@ export default function ApiGateway() {
                 Close
               </button>
               <button className="btn-primary" onClick={() => { setSelectedIntegration(null); }}>
-                <Settings className="w-4 h-4 mr-2" />
                 Configure
               </button>
             </div>

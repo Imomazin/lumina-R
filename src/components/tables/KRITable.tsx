@@ -1,4 +1,3 @@
-import { TrendingUp, TrendingDown, Minus } from 'lucide-react';
 import { cn } from '../../utils';
 import { formatDate } from '../../utils/formatters';
 import { KRIStatusBadge } from '../badges';
@@ -15,11 +14,11 @@ export function KRITable({ kris, onRowClick, compact = false, className }: KRITa
   const getTrendIcon = (trend: KRI['trend']) => {
     switch (trend) {
       case 'up':
-        return <TrendingUp className="w-4 h-4" />;
+        return <span className="text-sm">↑</span>;
       case 'down':
-        return <TrendingDown className="w-4 h-4" />;
+        return <span className="text-sm">↓</span>;
       default:
-        return <Minus className="w-4 h-4 text-navy-400" />;
+        return <span className="text-sm text-navy-400">−</span>;
     }
   };
 

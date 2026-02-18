@@ -1,6 +1,4 @@
 import { Link } from 'react-router-dom';
-import { ArrowRight, Sparkles, Lock, Wrench, type LucideIcon } from 'lucide-react';
-import * as Icons from 'lucide-react';
 import { cn } from '../../utils';
 import type { RiskTool } from '../../types';
 
@@ -9,10 +7,12 @@ interface ToolCardProps {
   className?: string;
 }
 
-export function ToolCard({ tool, className }: ToolCardProps) {
-  // Dynamically get the icon component
-  const IconComponent = (Icons[tool.icon as keyof typeof Icons] as LucideIcon) || Wrench;
+// Generate a short abbreviation from tool name
+function getToolAbbrev(name: string): string {
+  return name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
+}
 
+export function ToolCard({ tool, className }: ToolCardProps) {
   return (
     <Link
       to={tool.route}
@@ -22,20 +22,18 @@ export function ToolCard({ tool, className }: ToolCardProps) {
       )}
     >
       <div className="flex items-start justify-between mb-4">
-        <div className="p-3 rounded-xl bg-gradient-to-br from-navy-700/50 to-navy-800/50 border border-navy-600/30 group-hover:from-accent-primary/20 group-hover:to-accent-secondary/20 group-hover:border-accent-primary/30 transition-all duration-300">
-          <IconComponent className="w-6 h-6 text-navy-300 group-hover:text-accent-primary transition-colors" />
+        <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-navy-700/50 to-navy-800/50 border border-navy-600/30 group-hover:from-accent-primary/20 group-hover:to-accent-secondary/20 group-hover:border-accent-primary/30 transition-all duration-300 flex items-center justify-center text-sm font-bold text-navy-300 group-hover:text-accent-primary">
+          {getToolAbbrev(tool.name)}
         </div>
 
         <div className="flex items-center gap-2">
           {tool.isNew && (
-            <span className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-accent-primary/20 text-accent-primary text-2xs font-medium">
-              <Sparkles className="w-3 h-3" />
+            <span className="px-2 py-0.5 rounded-full bg-accent-primary/20 text-accent-primary text-2xs font-medium">
               New
             </span>
           )}
           {tool.isPremium && (
-            <span className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-400 text-2xs font-medium">
-              <Lock className="w-3 h-3" />
+            <span className="px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-400 text-2xs font-medium">
               Premium
             </span>
           )}
@@ -50,9 +48,8 @@ export function ToolCard({ tool, className }: ToolCardProps) {
         {tool.description}
       </p>
 
-      <div className="flex items-center gap-2 text-sm font-medium text-navy-400 group-hover:text-accent-primary transition-colors">
-        Launch Tool
-        <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+      <div className="text-sm font-medium text-navy-400 group-hover:text-accent-primary transition-colors">
+        Launch Tool →
       </div>
     </Link>
   );

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Bell, AlertTriangle, Activity, Shield, Settings, Check, Clock, Filter } from 'lucide-react';
+// Icons removed for cleaner UI
 import { PageHeader } from '../../components';
 import { cn } from '../../utils';
 
@@ -93,13 +93,13 @@ export default function Alerts() {
   const getTypeIcon = (type: Alert['type']) => {
     switch (type) {
       case 'risk':
-        return <AlertTriangle className="w-5 h-5" />;
+        return <span className="text-sm font-bold">!</span>;
       case 'kri':
-        return <Activity className="w-5 h-5" />;
+        return <span className="text-sm font-bold">K</span>;
       case 'appetite':
-        return <Shield className="w-5 h-5" />;
+        return <span className="text-sm font-bold">A</span>;
       case 'system':
-        return <Settings className="w-5 h-5" />;
+        return <span className="text-sm font-bold">S</span>;
     }
   };
 
@@ -143,7 +143,6 @@ export default function Alerts() {
             className="btn-ghost"
             disabled={unreadCount === 0}
           >
-            <Check className="w-4 h-4 mr-2" />
             Mark All Read
           </button>
         }
@@ -152,50 +151,29 @@ export default function Alerts() {
       {/* Summary Stats */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <div className="glass-card p-4 border-l-4 border-l-accent-primary">
-          <div className="flex items-center gap-3">
-            <Bell className="w-5 h-5 text-accent-primary" />
-            <div>
-              <p className="text-2xl font-bold text-navy-100">{alerts.length}</p>
-              <p className="text-sm text-navy-400">Total Alerts</p>
-            </div>
-          </div>
+          <p className="text-2xl font-bold text-navy-100">{alerts.length}</p>
+          <p className="text-sm text-navy-400">Total Alerts</p>
         </div>
         <div className="glass-card p-4 border-l-4 border-l-amber-500">
-          <div className="flex items-center gap-3">
-            <Clock className="w-5 h-5 text-amber-400" />
-            <div>
-              <p className="text-2xl font-bold text-amber-400">{unreadCount}</p>
-              <p className="text-sm text-navy-400">Unread</p>
-            </div>
-          </div>
+          <p className="text-2xl font-bold text-amber-400">{unreadCount}</p>
+          <p className="text-sm text-navy-400">Unread</p>
         </div>
         <div className="glass-card p-4 border-l-4 border-l-red-500">
-          <div className="flex items-center gap-3">
-            <AlertTriangle className="w-5 h-5 text-red-400" />
-            <div>
-              <p className="text-2xl font-bold text-red-400">
-                {alerts.filter(a => a.severity === 'critical').length}
-              </p>
-              <p className="text-sm text-navy-400">Critical</p>
-            </div>
-          </div>
+          <p className="text-2xl font-bold text-red-400">
+            {alerts.filter(a => a.severity === 'critical').length}
+          </p>
+          <p className="text-sm text-navy-400">Critical</p>
         </div>
         <div className="glass-card p-4 border-l-4 border-l-orange-500">
-          <div className="flex items-center gap-3">
-            <AlertTriangle className="w-5 h-5 text-orange-400" />
-            <div>
-              <p className="text-2xl font-bold text-orange-400">
-                {alerts.filter(a => a.severity === 'high').length}
-              </p>
-              <p className="text-sm text-navy-400">High Priority</p>
-            </div>
-          </div>
+          <p className="text-2xl font-bold text-orange-400">
+            {alerts.filter(a => a.severity === 'high').length}
+          </p>
+          <p className="text-sm text-navy-400">High Priority</p>
         </div>
       </div>
 
       {/* Filter Tabs */}
       <div className="flex items-center gap-2">
-        <Filter className="w-4 h-4 text-navy-500" />
         {(['all', 'unread', 'critical'] as const).map((f) => (
           <button
             key={f}
@@ -271,7 +249,6 @@ export default function Alerts() {
 
         {filteredAlerts.length === 0 && (
           <div className="text-center py-12">
-            <Bell className="w-12 h-12 text-navy-600 mx-auto mb-4" />
             <p className="text-navy-400">No alerts matching your filter</p>
           </div>
         )}

@@ -115,7 +115,6 @@ export function Sidebar() {
           <p className="px-3 mb-2 text-2xs font-semibold text-navy-600 uppercase tracking-wider">
             Strategic
           </p>
-          <NavItem to="/dashboard/strategic-implementation" label="Strategic Implementation" />
           <NavItem to="/dashboard/strategy-risk" label="Strategy Risk Implementation" />
         </div>
 

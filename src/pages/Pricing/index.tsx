@@ -18,16 +18,17 @@ interface Plan {
   features: PlanFeature[];
   cta: string;
   popular?: boolean;
+  gradient?: string;
 }
 
 const plans: Plan[] = [
   {
-    id: 'free',
-    name: 'Free',
+    id: 'starter',
+    name: 'Starter',
     description: 'Perfect for exploring risk intelligence',
     price: 0,
     period: 'forever',
-    abbrev: 'F',
+    abbrev: 'S',
     cta: 'Get Started Free',
     features: [
       { text: 'Up to 25 risks in register', included: true },
@@ -50,18 +51,40 @@ const plans: Plan[] = [
     period: 'per user / month',
     abbrev: 'Pro',
     cta: 'Start 14-Day Trial',
+    features: [
+      { text: 'Up to 100 risks in register', included: true, highlight: true },
+      { text: '25 Key Risk Indicators', included: true },
+      { text: 'Advanced risk matrix & heatmaps', included: true },
+      { text: 'Excel & CSV import/export', included: true },
+      { text: 'Email support (48h response)', included: true },
+      { text: 'AI Risk Advisor (50 queries/month)', included: true, highlight: true },
+      { text: 'Monte Carlo simulation', included: true },
+      { text: 'Bow-Tie analysis', included: true },
+      { text: 'Standard PDF reports', included: true },
+      { text: 'API access (500 calls/month)', included: true },
+    ],
+  },
+  {
+    id: 'business',
+    name: 'Business',
+    description: 'For established risk functions',
+    price: 199,
+    period: 'per user / month',
+    abbrev: 'Biz',
+    cta: 'Start 14-Day Trial',
     popular: true,
+    gradient: 'from-accent-primary to-accent-secondary',
     features: [
       { text: 'Unlimited risks in register', included: true, highlight: true },
       { text: 'Unlimited KRIs', included: true, highlight: true },
-      { text: 'Advanced risk matrix & heatmaps', included: true },
-      { text: 'Excel & CSV import/export', included: true },
-      { text: 'Priority email support', included: true },
+      { text: 'Strategic risk register (Tier 4)', included: true, highlight: true },
+      { text: 'Portfolio risk dashboard', included: true },
+      { text: 'Priority email support (24h)', included: true },
       { text: 'AI Risk Advisor (unlimited)', included: true, highlight: true },
-      { text: 'Monte Carlo simulation', included: true },
-      { text: 'Bow-Tie analysis', included: true },
-      { text: 'Custom PDF reports', included: true },
-      { text: 'API access (1000 calls/month)', included: true },
+      { text: 'All simulation & analysis tools', included: true },
+      { text: 'Custom branded reports', included: true },
+      { text: 'API access (5,000 calls/month)', included: true },
+      { text: 'Team collaboration features', included: true },
     ],
   },
   {
@@ -73,7 +96,7 @@ const plans: Plan[] = [
     abbrev: 'Ent',
     cta: 'Contact Sales',
     features: [
-      { text: 'Everything in Professional', included: true, highlight: true },
+      { text: 'Everything in Business', included: true, highlight: true },
       { text: 'Unlimited API access', included: true },
       { text: 'SSO / SAML authentication', included: true },
       { text: 'Custom integrations', included: true },
@@ -116,7 +139,6 @@ export default function Pricing() {
 
   const handleSelectPlan = (planId: string) => {
     if (planId === 'enterprise') {
-      // Would open contact form
       alert('Contact form would open here');
     } else {
       navigate('/dashboard');
@@ -199,10 +221,10 @@ export default function Pricing() {
         </div>
       </section>
 
-      {/* Pricing Cards */}
+      {/* Pricing Cards - 4 columns */}
       <section className="pb-20 px-6">
-        <div className="max-w-6xl mx-auto">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div className="max-w-7xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {plans.map((plan) => {
               const displayPrice = typeof plan.price === 'number'
                 ? billingPeriod === 'annual'
@@ -214,71 +236,82 @@ export default function Pricing() {
                 <div
                   key={plan.id}
                   className={cn(
-                    'pricing-card',
-                    plan.popular && 'featured'
+                    'pricing-card relative',
+                    plan.popular && 'featured ring-2 ring-accent-primary'
                   )}
                 >
+                  {/* Popular Badge */}
+                  {plan.popular && (
+                    <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+                      <span className="px-3 py-1 rounded-full text-xs font-semibold bg-gradient-to-r from-accent-primary to-accent-secondary text-white">
+                        Most Popular
+                      </span>
+                    </div>
+                  )}
+
                   {/* Plan Header */}
-                  <div className="mb-6">
+                  <div className="mb-5">
                     <div className={cn(
-                      'w-12 h-12 rounded-xl flex items-center justify-center mb-4 font-bold',
+                      'w-11 h-11 rounded-lg flex items-center justify-center mb-3 font-bold text-sm',
                       plan.popular
-                        ? 'bg-accent-primary/20 text-accent-primary'
+                        ? 'bg-gradient-to-br from-accent-primary to-accent-secondary text-white'
                         : 'bg-navy-800/50 text-navy-400'
                     )}>
                       {plan.abbrev}
                     </div>
-                    <h3 className="text-xl font-semibold text-navy-100">{plan.name}</h3>
+                    <h3 className="text-lg font-semibold text-navy-100">{plan.name}</h3>
                     <p className="text-sm text-navy-400 mt-1">{plan.description}</p>
                   </div>
 
                   {/* Price */}
-                  <div className="mb-6">
+                  <div className="mb-5">
                     <div className="flex items-baseline gap-1">
                       {typeof displayPrice === 'number' ? (
                         <>
                           <span className="text-sm text-navy-400">$</span>
-                          <span className="pricing-price">{displayPrice}</span>
+                          <span className="text-4xl font-bold text-navy-100">{displayPrice}</span>
                         </>
                       ) : (
-                        <span className="pricing-price text-3xl">{displayPrice}</span>
+                        <span className="text-2xl font-bold text-navy-100">{displayPrice}</span>
                       )}
                     </div>
-                    <p className="pricing-period mt-1">{plan.period}</p>
+                    <p className="text-xs text-navy-500 mt-1">{plan.period}</p>
                   </div>
 
                   {/* CTA Button */}
                   <button
                     onClick={() => handleSelectPlan(plan.id)}
                     className={cn(
-                      'w-full py-3 rounded-xl font-medium mb-6 transition-all',
+                      'w-full py-2.5 rounded-lg font-medium mb-5 transition-all text-sm',
                       plan.popular
-                        ? 'btn-primary'
+                        ? 'bg-gradient-to-r from-accent-primary to-accent-secondary text-white hover:opacity-90'
                         : 'btn-secondary'
                     )}
                   >
-                    {plan.cta} →
+                    {plan.cta}
                   </button>
 
                   {/* Features */}
-                  <div className="space-y-1">
+                  <div className="space-y-2">
                     {plan.features.map((feature, idx) => (
                       <div
                         key={idx}
                         className={cn(
-                          'pricing-feature',
-                          !feature.included && 'pricing-feature-disabled'
+                          'flex items-start gap-2 text-sm',
+                          !feature.included && 'opacity-40'
                         )}
                       >
                         <span className={cn(
-                          'pricing-feature-icon font-bold',
+                          'mt-0.5 text-xs',
                           feature.included
                             ? feature.highlight ? 'text-accent-primary' : 'text-emerald-400'
                             : 'text-navy-600'
                         )}>
                           {feature.included ? '✓' : '✕'}
                         </span>
-                        <span className={cn(feature.highlight && 'font-medium')}>
+                        <span className={cn(
+                          feature.highlight ? 'text-navy-100 font-medium' : 'text-navy-400'
+                        )}>
                           {feature.text}
                         </span>
                       </div>
@@ -311,13 +344,60 @@ export default function Pricing() {
         </div>
       </section>
 
-      {/* Trust Section */}
+      {/* Comparison Table */}
       <section className="py-16 px-6">
+        <div className="max-w-6xl mx-auto">
+          <h2 className="text-2xl font-bold text-navy-100 text-center mb-12">
+            Compare Plans
+          </h2>
+          <div className="glass-card overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-navy-700">
+                    <th className="text-left py-4 px-6 text-navy-400 font-medium">Feature</th>
+                    <th className="text-center py-4 px-4 text-navy-400 font-medium">Starter</th>
+                    <th className="text-center py-4 px-4 text-navy-400 font-medium">Professional</th>
+                    <th className="text-center py-4 px-4 text-navy-400 font-medium bg-accent-primary/5">Business</th>
+                    <th className="text-center py-4 px-4 text-navy-400 font-medium">Enterprise</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {[
+                    { feature: 'Risks in Register', starter: '25', pro: '100', biz: 'Unlimited', ent: 'Unlimited' },
+                    { feature: 'Key Risk Indicators', starter: '5', pro: '25', biz: 'Unlimited', ent: 'Unlimited' },
+                    { feature: 'Strategic Risk Register', starter: '—', pro: '—', biz: '✓', ent: '✓' },
+                    { feature: 'Portfolio Dashboard', starter: '—', pro: '—', biz: '✓', ent: '✓' },
+                    { feature: 'AI Risk Advisor', starter: '5/mo', pro: '50/mo', biz: 'Unlimited', ent: 'Unlimited' },
+                    { feature: 'Monte Carlo Simulation', starter: '—', pro: '✓', biz: '✓', ent: '✓' },
+                    { feature: 'Bow-Tie Analysis', starter: '—', pro: '✓', biz: '✓', ent: '✓' },
+                    { feature: 'API Calls/Month', starter: '—', pro: '500', biz: '5,000', ent: 'Unlimited' },
+                    { feature: 'SSO/SAML', starter: '—', pro: '—', biz: '—', ent: '✓' },
+                    { feature: 'Dedicated Support', starter: '—', pro: '—', biz: '—', ent: '✓' },
+                  ].map((row, idx) => (
+                    <tr key={idx} className="border-b border-navy-800">
+                      <td className="py-3 px-6 text-navy-200">{row.feature}</td>
+                      <td className="py-3 px-4 text-center text-navy-400">{row.starter}</td>
+                      <td className="py-3 px-4 text-center text-navy-400">{row.pro}</td>
+                      <td className="py-3 px-4 text-center text-navy-100 bg-accent-primary/5 font-medium">{row.biz}</td>
+                      <td className="py-3 px-4 text-center text-navy-400">{row.ent}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Trust Section */}
+      <section className="py-12 px-6">
         <div className="max-w-4xl mx-auto text-center">
-          <div className="flex items-center justify-center gap-8 mb-8">
+          <div className="flex items-center justify-center gap-8 mb-8 flex-wrap">
             <span className="text-sm text-navy-400">SOC 2 Compliant</span>
             <span className="text-sm text-navy-400">256-bit Encryption</span>
             <span className="text-sm text-navy-400">10,000+ Users</span>
+            <span className="text-sm text-navy-400">99.9% Uptime</span>
           </div>
           <p className="text-navy-500 text-sm">
             Trusted by risk professionals at leading enterprises worldwide
@@ -331,7 +411,7 @@ export default function Pricing() {
           <h2 className="text-2xl font-bold text-navy-100 text-center mb-12">
             Frequently Asked Questions
           </h2>
-          <div className="space-y-6">
+          <div className="space-y-4">
             {[
               {
                 q: 'Can I switch plans at any time?',
@@ -343,16 +423,20 @@ export default function Pricing() {
               },
               {
                 q: 'Is there a free trial for paid plans?',
-                a: 'Yes! Professional plan includes a 14-day free trial with full access to all features. No credit card required.',
+                a: 'Yes! Professional and Business plans include a 14-day free trial with full access to all features. No credit card required.',
               },
               {
                 q: 'How does the AI Risk Advisor work?',
                 a: 'Our AI analyzes your risk data, industry benchmarks, and regulatory requirements to provide actionable insights and recommendations.',
               },
+              {
+                q: 'What is the Strategic Risk Register?',
+                a: 'The Strategic Risk Register (Tier 4) includes advanced financial modelling with EMV calculations, EBITDA exposure analysis, capital allocation, and executive escalation triggers.',
+              },
             ].map((item, idx) => (
-              <div key={idx} className="glass-card p-6">
-                <h3 className="text-lg font-medium text-navy-100 mb-2">{item.q}</h3>
-                <p className="text-navy-400">{item.a}</p>
+              <div key={idx} className="glass-card p-5">
+                <h3 className="text-base font-medium text-navy-100 mb-2">{item.q}</h3>
+                <p className="text-sm text-navy-400">{item.a}</p>
               </div>
             ))}
           </div>
@@ -368,16 +452,16 @@ export default function Pricing() {
           <p className="text-lg text-navy-400 mb-8">
             Join thousands of risk professionals using Lumina-R to make smarter decisions.
           </p>
-          <div className="flex items-center justify-center gap-4">
+          <div className="flex items-center justify-center gap-4 flex-wrap">
             <button
               onClick={() => navigate('/dashboard')}
-              className="btn-primary btn-lg"
+              className="px-8 py-3 rounded-xl font-medium bg-gradient-to-r from-accent-primary to-accent-secondary text-white hover:opacity-90 transition-opacity"
             >
-              Start Free Today →
+              Start Free Today
             </button>
             <button
               onClick={() => alert('Demo booking would open here')}
-              className="btn-secondary btn-lg"
+              className="btn-secondary px-8 py-3"
             >
               Book a Demo
             </button>
@@ -387,8 +471,8 @@ export default function Pricing() {
 
       {/* Footer */}
       <footer className="py-8 px-6 border-t border-navy-800/50">
-        <div className="max-w-6xl mx-auto flex items-center justify-between text-sm text-navy-500">
-          <p>&copy; 2024 Lumina-R. All rights reserved.</p>
+        <div className="max-w-6xl mx-auto flex items-center justify-between text-sm text-navy-500 flex-wrap gap-4">
+          <p>© 2024 Lumina-R. All rights reserved.</p>
           <div className="flex items-center gap-6">
             <a href="#" className="hover:text-navy-300">Privacy Policy</a>
             <a href="#" className="hover:text-navy-300">Terms of Service</a>

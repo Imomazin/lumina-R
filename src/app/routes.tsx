@@ -21,7 +21,6 @@ import Reports from '../pages/Reports';
 import AIAdvisor from '../pages/AIAdvisor';
 import Integrations from '../pages/ApiGateway';
 import Admin from '../pages/Admin';
-import StrategicImplementation from '../pages/StrategicImplementation';
 import StrategyRisk from '../pages/StrategyRisk';
 
 export const router = createBrowserRouter([
@@ -72,10 +71,6 @@ export const router = createBrowserRouter([
       {
         path: 'risk-workspace',
         element: <RiskWorkspace />,
-      },
-      {
-        path: 'strategic-implementation',
-        element: <StrategicImplementation />,
       },
       {
         path: 'strategy-risk',

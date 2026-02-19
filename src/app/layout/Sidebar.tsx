@@ -7,10 +7,11 @@ interface NavItemProps {
   to: string;
   label: string;
   badge?: number;
+  step?: number;
   children?: { to: string; label: string }[];
 }
 
-function NavItem({ to, label, badge, children }: NavItemProps) {
+function NavItem({ to, label, badge, step, children }: NavItemProps) {
   const location = useLocation();
   const [isExpanded, setIsExpanded] = useState(false);
   const isActive = location.pathname === to || location.pathname.startsWith(to + '/');
@@ -71,7 +72,14 @@ function NavItem({ to, label, badge, children }: NavItemProps) {
         )
       }
     >
-      <span>{label}</span>
+      <span className="flex items-center gap-2">
+        {step && (
+          <span className="w-5 h-5 rounded-full bg-navy-700/50 flex items-center justify-center text-xs font-mono text-navy-400">
+            {step}
+          </span>
+        )}
+        {label}
+      </span>
       {badge !== undefined && badge > 0 && (
         <span className="px-2 py-0.5 text-xs font-semibold rounded-full bg-risk-critical/20 text-risk-critical">
           {badge}
@@ -97,21 +105,36 @@ export function Sidebar() {
 
       {/* Navigation */}
       <nav className="flex-1 overflow-y-auto py-4 px-3 space-y-1">
-        {/* Main Section */}
-        <div className="mb-6">
+        {/* Journey Section - Data Capture */}
+        <div className="mb-5">
           <p className="px-3 mb-2 text-2xs font-semibold text-navy-600 uppercase tracking-wider">
-            Main
+            Capture
           </p>
           <NavItem to="/dashboard" label="Dashboard" />
-          <NavItem to="/dashboard/risk-register" label="Risk Register" />
+          <NavItem to="/dashboard/risk-workspace" label="Risk Workspace" step={1} />
+          <NavItem to="/dashboard/ai-advisor" label="AI Risk Advisor" step={2} />
+        </div>
+
+        {/* Register Section */}
+        <div className="mb-5">
+          <p className="px-3 mb-2 text-2xs font-semibold text-navy-600 uppercase tracking-wider">
+            Register
+          </p>
+          <NavItem to="/dashboard/risk-register" label="Risk Register" step={3} />
+        </div>
+
+        {/* Outputs Section - What comes from the register */}
+        <div className="mb-5">
+          <p className="px-3 mb-2 text-2xs font-semibold text-navy-600 uppercase tracking-wider">
+            Outputs
+          </p>
+          <NavItem to="/dashboard/risk-matrix" label="Risk Matrix" />
           <NavItem to="/dashboard/risk-indicators" label="Risk Indicators" badge={1} />
           <NavItem to="/dashboard/risk-appetite" label="Risk Appetite" />
-          <NavItem to="/dashboard/risk-matrix" label="Risk Matrix" />
-          <NavItem to="/dashboard/risk-workspace" label="Risk Workspace" />
         </div>
 
         {/* Strategic Section */}
-        <div className="mb-6">
+        <div className="mb-5">
           <p className="px-3 mb-2 text-2xs font-semibold text-navy-600 uppercase tracking-wider">
             Strategic
           </p>
@@ -119,7 +142,7 @@ export function Sidebar() {
         </div>
 
         {/* Tools Section */}
-        <div className="mb-6">
+        <div className="mb-5">
           <p className="px-3 mb-2 text-2xs font-semibold text-navy-600 uppercase tracking-wider">
             Tools
           </p>
@@ -129,17 +152,16 @@ export function Sidebar() {
         </div>
 
         {/* Intelligence Section */}
-        <div className="mb-6">
+        <div className="mb-5">
           <p className="px-3 mb-2 text-2xs font-semibold text-navy-600 uppercase tracking-wider">
             Intelligence
           </p>
           <NavItem to="/dashboard/alerts" label="Alerts" badge={3} />
           <NavItem to="/dashboard/reports" label="Reports" />
-          <NavItem to="/dashboard/ai-advisor" label="AI Risk Advisor" />
         </div>
 
         {/* System Section */}
-        <div className="mb-6">
+        <div className="mb-5">
           <p className="px-3 mb-2 text-2xs font-semibold text-navy-600 uppercase tracking-wider">
             System
           </p>
@@ -164,12 +186,6 @@ export function Sidebar() {
         >
           View Pricing Plans
         </Link>
-        <NavLink
-          to="/dashboard/ai-advisor"
-          className="block w-full text-center py-2 px-3 mt-2 rounded-lg bg-navy-800/50 text-navy-300 text-sm hover:bg-navy-800 transition-colors"
-        >
-          AI Risk Advisor
-        </NavLink>
       </div>
     </aside>
   );

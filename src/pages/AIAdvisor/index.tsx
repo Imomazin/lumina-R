@@ -69,29 +69,67 @@ export default function AIAdvisor() {
   const outsideAppetite = enterpriseRisks.filter(r => r.riskAppetiteAlignment === 'Outside Appetite').length;
   const escalatedRisks = enterpriseRisks.filter(r => r.riskStatus === 'Escalated').length;
 
+  const handleDiagnosticClick = (action: string) => {
+    setQuery(action);
+    // Auto-submit the diagnostic action
+    const userMessage: ChatMessage = {
+      id: `user-${Date.now()}`,
+      role: 'user',
+      content: action,
+      timestamp: new Date(),
+    };
+    setMessages(prev => [...prev, userMessage]);
+    setIsLoading(true);
+    setTimeout(() => {
+      const response = processMessage(action);
+      setMessages(prev => [...prev, response]);
+      setIsLoading(false);
+      setQuery('');
+    }, 800 + Math.random() * 700);
+  };
+
   const renderMessageContent = (content: string) => {
     const lines = content.split('\n');
     return lines.map((line, i) => {
-      // Headers
-      if (line.startsWith('**') && line.endsWith('**')) {
-        return <p key={i} className="font-bold text-navy-100 mt-4 mb-2 text-base">{line.replace(/\*\*/g, '')}</p>;
+      // Horizontal rule
+      if (line.trim() === '---') {
+        return <hr key={i} className="border-navy-700/50 my-3" />;
       }
-      // Bold sections
+      // Headers (bold line standalone)
+      if (line.startsWith('**') && line.endsWith('**')) {
+        const text = line.replace(/\*\*/g, '');
+        // Section headers like EXECUTIVE SUMMARY, QUANTITATIVE ANALYSIS
+        if (text === text.toUpperCase() || text.includes('(Board Ready)') || text.includes('EXECUTIVE') || text.includes('QUANTITATIVE') || text.includes('RISK INTELLIGENCE') || text.includes('DECISION PATH') || text.includes('GOVERNANCE') || text.includes('ACTION')) {
+          return <p key={i} className="font-bold text-accent-primary mt-4 mb-2 text-sm uppercase tracking-wider">{text}</p>;
+        }
+        return <p key={i} className="font-bold text-navy-100 mt-4 mb-2 text-base">{text}</p>;
+      }
+      // Italic lines (scenario titles)
+      if (line.startsWith('*') && line.endsWith('*') && !line.startsWith('**')) {
+        return <p key={i} className="italic text-navy-200 mt-3 mb-1 text-sm">{line.replace(/\*/g, '')}</p>;
+      }
+      // Bold sections within lines
       if (line.includes('**')) {
         const parts = line.split(/\*\*(.*?)\*\*/g);
         return (
-          <p key={i} className="text-navy-200 my-1">
+          <p key={i} className="text-navy-200 my-1 text-sm">
             {parts.map((part, j) => j % 2 === 1 ? <strong key={j} className="text-navy-100">{part}</strong> : part)}
           </p>
         );
       }
-      // List items
+      // Numbered list items
       if (line.match(/^\d+\./)) {
-        return <p key={i} className="text-navy-300 my-2 ml-2">{line}</p>;
+        return <p key={i} className="text-navy-300 my-2 ml-2 text-sm">{line}</p>;
       }
+      // Sub-items with indentation
+      if (line.match(/^\s{2,}-\s/)) {
+        return <p key={i} className="text-navy-400 my-0.5 ml-8 text-xs font-mono">{line.trim()}</p>;
+      }
+      // Bullet list items
       if (line.startsWith('- ')) {
-        return <p key={i} className="text-navy-300 my-1 ml-4">{line}</p>;
+        return <p key={i} className="text-navy-300 my-1 ml-4 text-sm">{line}</p>;
       }
+      // Tree-style items
       if (line.startsWith('├─') || line.startsWith('└─')) {
         return <p key={i} className="text-navy-400 my-0.5 ml-6 font-mono text-xs">{line}</p>;
       }
@@ -99,7 +137,7 @@ export default function AIAdvisor() {
       if (!line.trim()) {
         return <br key={i} />;
       }
-      return <p key={i} className="text-navy-200 my-1">{line}</p>;
+      return <p key={i} className="text-navy-200 my-1 text-sm">{line}</p>;
     });
   };
 
@@ -107,7 +145,7 @@ export default function AIAdvisor() {
     <div className="space-y-6 animate-fade-in">
       <PageHeader
         title="AI Risk Advisor"
-        subtitle="Intelligent risk analysis and structured interrogation"
+        subtitle="Five-Layer Risk Reasoning Engine with Quantitative Analytics"
         actions={
           <div className="flex items-center gap-3">
             <button
@@ -228,7 +266,7 @@ export default function AIAdvisor() {
               </div>
 
               {/* Messages */}
-              <div className="p-5 space-y-6 max-h-[500px] overflow-y-auto">
+              <div className="p-5 space-y-6 max-h-[600px] overflow-y-auto">
                 {messages.map((msg) => (
                   <div key={msg.id} className={cn('flex gap-3', msg.role === 'user' ? 'flex-row-reverse' : '')}>
                     <div className={cn(
@@ -250,12 +288,31 @@ export default function AIAdvisor() {
                           <div className="text-sm leading-relaxed">
                             {renderMessageContent(msg.content)}
                           </div>
+                          {/* Diagnostic Options (Proactive Mode) */}
+                          {msg.metadata?.diagnosticOptions && msg.metadata.diagnosticOptions.length > 0 && (
+                            <div className="mt-4 space-y-2">
+                              {msg.metadata.diagnosticOptions.map((opt, i) => (
+                                <button
+                                  key={i}
+                                  onClick={() => handleDiagnosticClick(opt.action)}
+                                  className="w-full text-left px-4 py-3 rounded-xl bg-navy-800/60 border border-navy-700/50 hover:border-accent-primary/50 hover:bg-navy-800 transition-all group"
+                                >
+                                  <div className="flex items-center justify-between">
+                                    <span className="text-sm font-medium text-navy-100 group-hover:text-accent-primary">{opt.label}</span>
+                                    <span className="text-xs text-navy-500">→</span>
+                                  </div>
+                                  <p className="text-xs text-navy-400 mt-1">{opt.description}</p>
+                                </button>
+                              ))}
+                            </div>
+                          )}
+                          {/* Suggested Follow-up Actions */}
                           {msg.metadata?.suggestedActions && (
-                            <div className="mt-4 flex flex-wrap gap-2">
+                            <div className="mt-3 flex flex-wrap gap-2">
                               {msg.metadata.suggestedActions.slice(0, 3).map((action, i) => (
                                 <button
                                   key={i}
-                                  onClick={() => handleSuggestionClick(action)}
+                                  onClick={() => handleDiagnosticClick(action)}
                                   className="px-3 py-1.5 rounded-lg bg-accent-primary/10 border border-accent-primary/30 text-xs text-accent-primary hover:bg-accent-primary/20 transition-colors"
                                 >
                                   {action}
@@ -330,13 +387,14 @@ export default function AIAdvisor() {
             <RiskAdvisorPanel maxInsights={4} />
 
             {/* Capabilities */}
-            <SectionCard title="AI Capabilities">
+            <SectionCard title="Five-Layer Reasoning">
               <div className="space-y-3">
                 {[
-                  { abbrev: 'RA', label: 'Risk Analysis', desc: 'Analyze 30 risks, 40 KRIs, 25 controls' },
-                  { abbrev: 'MC', label: 'Monte Carlo', desc: 'Run probability simulations' },
-                  { abbrev: 'BT', label: 'Bow-Tie Analysis', desc: 'Visualize cause-consequence' },
-                  { abbrev: 'DT', label: 'Decision Trees', desc: 'Evaluate treatment options' },
+                  { abbrev: 'L1', label: 'Structural Interpretation', desc: 'What the data represents' },
+                  { abbrev: 'L2', label: 'Quantitative Analysis', desc: 'EMV, probability, financial impact' },
+                  { abbrev: 'L3', label: 'Strategic Context', desc: 'Business objective implications' },
+                  { abbrev: 'L4', label: 'Governance Implication', desc: 'Regulatory and oversight actions' },
+                  { abbrev: 'L5', label: 'Action Prescription', desc: 'Immediate, 30-day, 90-day plans' },
                 ].map((cap, i) => (
                   <div key={i} className="flex items-start gap-3 p-3 rounded-lg bg-navy-800/30 hover:bg-navy-800/50 cursor-pointer transition-colors">
                     <span className="w-8 h-8 rounded-lg bg-accent-primary/20 flex items-center justify-center text-xs font-bold text-accent-primary">{cap.abbrev}</span>
@@ -354,14 +412,17 @@ export default function AIAdvisor() {
               <div className="space-y-2">
                 {[
                   'Show executive summary',
-                  'Top 5 urgent risks',
-                  'Breached KRIs',
-                  'Control effectiveness',
-                  'Risk #13 details',
+                  'Top 5 priority risks',
+                  'Breached KRIs with trends',
+                  'Run Monte Carlo simulation',
+                  'Appetite breach analysis',
+                  'Control effectiveness gaps',
+                  'Risk cluster detection',
+                  'Urgent actions needed',
                 ].map((cmd, i) => (
                   <button
                     key={i}
-                    onClick={() => handleSuggestionClick(cmd)}
+                    onClick={() => handleDiagnosticClick(cmd)}
                     className="w-full text-left px-3 py-2 rounded-lg bg-navy-800/30 text-xs text-navy-300 hover:bg-navy-700/50 hover:text-navy-100 transition-colors"
                   >
                     → {cmd}

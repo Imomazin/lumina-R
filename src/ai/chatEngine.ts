@@ -1,9 +1,17 @@
-// Lumina-R AI Risk Intelligence Engine
-// Advanced Chat Engine with 100+ Scenarios, Pattern Recognition, and Deep Data Analysis
-import { enterpriseRisks, getRiskStats, getHighRisks, getEscalatedRisks, getOutsideAppetiteRisks, getRisksByCategory, getRisksByRegion } from '../data/enterpriseRisks';
-import { getKRIStats, getBreachedKRIs, getKRIsByRiskId, getKRIHealthScore, getKRIsWithTrend } from '../data/enterpriseKRIs';
-import { getEventStats, getEventsByRiskId, getHighImpactEvents, getRecentEvents } from '../data/riskEvents';
-import { getControlStats, getControlsByRiskId, getControlEffectivenessScore, getAutomatedControls, getManualControls } from '../data/enterpriseControls';
+// ============================================================================
+// LUMINA-R AI RISK INTELLIGENCE ENGINE
+// Five-Layer Reasoning System with Quantitative Analytics
+// ============================================================================
+
+import { enterpriseRisks, getRiskStats, getEscalatedRisks, getOutsideAppetiteRisks, getRisksByCategory, type EnterpriseRisk } from '../data/enterpriseRisks';
+import { enterpriseKRIs, getKRIStats, getBreachedKRIs, getKRIsByRiskId, getKRIHealthScore, type EnterpriseKRI } from '../data/enterpriseKRIs';
+import { getEventsByRiskId } from '../data/riskEvents';
+import { getControlStats, getControlsByRiskId } from '../data/enterpriseControls';
+import { riskAppetite, getBreachedAppetites } from '../data/appetite';
+
+// ============================================================================
+// INTERFACES
+// ============================================================================
 
 export interface ChatMessage {
   id: string;
@@ -15,968 +23,1199 @@ export interface ChatMessage {
     confidence?: number;
     dataUsed?: string[];
     suggestedActions?: string[];
+    diagnosticOptions?: DiagnosticOption[];
   };
 }
 
-export interface ChatIntent {
-  pattern: RegExp;
-  intent: string;
-  handler: (match?: RegExpMatchArray) => string;
-  suggestedFollowups?: string[];
+export interface DiagnosticOption {
+  label: string;
+  action: string;
+  description: string;
 }
 
-// Get current data analysis
-const riskStats = () => getRiskStats();
-const kriStats = () => getKRIStats();
-const eventStats = () => getEventStats();
-const controlStats = () => getControlStats();
+export interface RiskQuantification {
+  riskId: number;
+  inherentEMV: number;
+  residualEMV: number;
+  controlReductionPercent: number;
+  appetiteGapPercent: number;
+  probabilityToTarget: number;
+  requiredInvestment: number;
+}
 
-// Utility functions
+interface FiveLayerAnalysis {
+  structural: string;
+  quantitative: string;
+  strategic: string;
+  governance: string;
+  action: string;
+}
+
+// ============================================================================
+// CONSTANTS AND CONFIGURATION
+// ============================================================================
+
+// Financial impact multipliers by impact score (in currency units)
+const IMPACT_MULTIPLIERS: Record<number, number> = {
+  1: 100000,    // £100K
+  2: 500000,    // £500K
+  3: 1500000,   // £1.5M
+  4: 5000000,   // £5M
+  5: 15000000,  // £15M
+};
+
+// Probability multipliers by likelihood score
+const PROBABILITY_MULTIPLIERS: Record<number, number> = {
+  1: 0.05,  // 5%
+  2: 0.15,  // 15%
+  3: 0.35,  // 35%
+  4: 0.55,  // 55%
+  5: 0.80,  // 80%
+};
+
+// Control investment estimates per effectiveness point improvement
+const CONTROL_INVESTMENT_PER_POINT = 35000; // £35K per effectiveness point
+
+// Risk appetite thresholds by category are defined in the appetite data module
+
+// ============================================================================
+// QUANTITATIVE CALCULATION ENGINE
+// ============================================================================
+
+function calculateEMV(likelihood: number, impact: number): number {
+  const probability = PROBABILITY_MULTIPLIERS[likelihood] || 0.35;
+  const impactValue = IMPACT_MULTIPLIERS[impact] || 1500000;
+  return probability * impactValue;
+}
+
+function calculateResidualEMV(risk: EnterpriseRisk): number {
+  const inherentEMV = calculateEMV(risk.likelihood, risk.impact);
+  const controlEffectiveness = risk.controlEffectiveness === 'High' ? 0.70 :
+                               risk.controlEffectiveness === 'Medium' ? 0.45 : 0.20;
+  return inherentEMV * (1 - controlEffectiveness);
+}
+
+function calculateAppetiteBreachPercent(currentLevel: number, maxTolerance: number): number {
+  if (currentLevel <= maxTolerance) return 0;
+  return ((currentLevel - maxTolerance) / maxTolerance) * 100;
+}
+
+function calculateProbabilityReductionRequired(risk: EnterpriseRisk, targetReduction: number): { newProbability: number; investmentRequired: number } {
+  const currentProbability = PROBABILITY_MULTIPLIERS[risk.likelihood];
+  const newProbability = currentProbability * (1 - targetReduction / 100);
+
+  // Estimate investment: each 10% probability reduction costs based on risk severity
+  const baseInvestment = risk.inherentRiskScore * 15000;
+  const investmentRequired = (targetReduction / 10) * baseInvestment;
+
+  return { newProbability, investmentRequired };
+}
+
+function getPortfolioEMV(): { totalInherent: number; totalResidual: number; reduction: number } {
+  let totalInherent = 0;
+  let totalResidual = 0;
+
+  enterpriseRisks.forEach(risk => {
+    totalInherent += calculateEMV(risk.likelihood, risk.impact);
+    totalResidual += calculateResidualEMV(risk);
+  });
+
+  return {
+    totalInherent,
+    totalResidual,
+    reduction: ((totalInherent - totalResidual) / totalInherent) * 100
+  };
+}
+
 function formatCurrency(amount: number): string {
-  if (amount >= 1000000) return `$${(amount / 1000000).toFixed(2)}M`;
-  if (amount >= 1000) return `$${(amount / 1000).toFixed(0)}K`;
-  return `$${amount.toFixed(0)}`;
+  if (amount >= 1000000000) return `£${(amount / 1000000000).toFixed(2)}B`;
+  if (amount >= 1000000) return `£${(amount / 1000000).toFixed(2)}M`;
+  if (amount >= 1000) return `£${(amount / 1000).toFixed(0)}K`;
+  return `£${amount.toFixed(0)}`;
 }
 
-function getMostCommonCategory(risks: typeof enterpriseRisks) {
-  const counts = new Map<string, number>();
-  risks.forEach(r => counts.set(r.riskCategory, (counts.get(r.riskCategory) || 0) + 1));
-  return Array.from(counts.entries()).sort((a, b) => b[1] - a[1])[0]?.[0] || 'N/A';
+function formatPercent(value: number): string {
+  return `${value.toFixed(1)}%`;
 }
 
-function getRiskSeverityLabel(score: number): string {
-  if (score >= 20) return 'Critical';
-  if (score >= 15) return 'High';
-  if (score >= 10) return 'Medium';
-  if (score >= 5) return 'Low';
-  return 'Very Low';
+// ============================================================================
+// RISK PRIORITIZATION ENGINE
+// ============================================================================
+
+interface PrioritizedRisk {
+  risk: EnterpriseRisk;
+  residualEMV: number;
+  appetiteGap: number;
+  controlWeakness: number;
+  volatilityScore: number;
+  priorityScore: number;
 }
 
-function getTrendIndicator(trend: string): string {
-  if (trend === 'Up') return 'Increasing';
-  if (trend === 'Down') return 'Decreasing';
-  return 'Stable';
+function prioritizeRisks(): PrioritizedRisk[] {
+  return enterpriseRisks.map(risk => {
+    const residualEMV = calculateResidualEMV(risk);
+
+    // Calculate appetite gap
+    const appetiteGap = risk.riskAppetiteAlignment === 'Outside Appetite' ?
+      (risk.residualRiskScore - 12) * 5 : 0; // Assuming 12 is within appetite threshold
+
+    // Calculate control weakness (inverse of effectiveness)
+    const controlWeakness = risk.controlEffectiveness === 'Low' ? 80 :
+                           risk.controlEffectiveness === 'Medium' ? 40 : 10;
+
+    // Calculate volatility from linked KRIs
+    const linkedKRIs = getKRIsByRiskId(risk.riskId);
+    const volatilityScore = linkedKRIs.reduce((score, kri) => {
+      if (kri.status === 'Red') score += 30;
+      if (kri.status === 'Amber') score += 15;
+      if (kri.trend === 'Up') score += 20;
+      return score;
+    }, 0);
+
+    // Composite priority score
+    const priorityScore = (residualEMV / 100000) + appetiteGap + controlWeakness + volatilityScore;
+
+    return { risk, residualEMV, appetiteGap, controlWeakness, volatilityScore, priorityScore };
+  }).sort((a, b) => b.priorityScore - a.priorityScore);
 }
 
-// Intent patterns and handlers - 50+ comprehensive intents
-export const chatIntents: ChatIntent[] = [
-  // ============ GREETING & GENERAL INTENTS ============
-  {
-    pattern: /^(hi|hello|hey|good morning|good afternoon|good evening|greetings)/i,
-    intent: 'greeting',
-    handler: () => {
-      const stats = riskStats();
-      const kri = kriStats();
-      const ctrl = controlStats();
-      return `Welcome to Lumina-R Risk Intelligence. Here's your current risk posture:
-
-**Risk Portfolio Overview:**
-- ${stats.total} Total Risks tracked across 9 categories
-- ${stats.escalated} Escalated Risks requiring immediate attention
-- ${stats.outsideAppetite} Risks Outside Appetite need mitigation
-- ${stats.highRisk} High-severity risks (score 15+)
-
-**KRI Health Status:**
-- ${kri.byStatus.red} KRIs Breached (${kri.breachRate}% breach rate)
-- ${kri.byStatus.amber} KRIs in Warning status
-- Health Score: ${getKRIHealthScore()}%
-
-**Control Effectiveness:**
-- Average effectiveness: ${ctrl.avgEffectiveness}%
-- Coverage: ${ctrl.riskCoverage.coveragePercent}%
-
-**Priority Actions:**
-1. Review the ${stats.escalated} escalated risks
-2. Address ${kri.byStatus.red} breached KRIs
-3. Improve ${ctrl.lowEffectivenessControls.length} low-effectiveness controls
-
-How can I help you analyze your risk portfolio?`;
-    },
-    suggestedFollowups: ['Show top risks', 'Which KRIs are breached?', 'What needs immediate attention?'],
-  },
-
-  // ============ TOP RISKS INTENTS ============
-  {
-    pattern: /top\s*(\d+)?\s*risks?|highest\s*risk|critical\s*risks?|major\s*risks?|biggest\s*risks?|worst\s*risks?/i,
-    intent: 'top_risks',
-    handler: (match) => {
-      const count = match?.[1] ? parseInt(match[1]) : 5;
-      const highRisks = getHighRisks().sort((a, b) => b.inherentRiskScore - a.inherentRiskScore).slice(0, Math.min(count, 10));
-
-      const riskList = highRisks.map((r, i) =>
-        `${i + 1}. **Risk #${r.riskId}**: ${r.riskDescription.substring(0, 55)}...
-   - Category: ${r.riskCategory} | Score: ${r.inherentRiskScore} (${getRiskSeverityLabel(r.inherentRiskScore)})
-   - Owner: ${r.riskOwner} | Region: ${r.region}
-   - Status: ${r.riskStatus} | Controls: ${r.controlEffectiveness}`
-      ).join('\n\n');
-
-      const avgScore = highRisks.reduce((s, r) => s + r.inherentRiskScore, 0) / highRisks.length;
-      const escalatedCount = highRisks.filter(r => r.riskStatus === 'Escalated').length;
-
-      return `**Top ${highRisks.length} Highest-Scoring Risks:**
-
-${riskList}
-
-**Analysis:**
-- Average inherent score: ${avgScore.toFixed(1)} (${getRiskSeverityLabel(avgScore)})
-- Most common category: ${getMostCommonCategory(highRisks)}
-- ${escalatedCount} of these are already escalated
-- ${highRisks.filter(r => r.riskAppetiteAlignment === 'Outside Appetite').length} are outside appetite
-
-**Recommended Actions:**
-1. Prioritize Risk #${highRisks[0].riskId} - highest score at ${highRisks[0].inherentRiskScore}
-2. Review control effectiveness for risks with "Low" ratings
-3. Run Monte Carlo simulation on financial impact scenarios`;
-    },
-    suggestedFollowups: ['Show details for Risk #' + getHighRisks()[0]?.riskId, 'Run Monte Carlo analysis', 'What controls cover these?'],
-  },
-
-  // ============ KRI ANALYSIS INTENTS ============
-  {
-    pattern: /kri|key\s*risk\s*indicator|breached|threshold|indicator|kri\s*status|kri\s*health/i,
-    intent: 'kri_analysis',
-    handler: () => {
-      const stats = kriStats();
-      const breached = getBreachedKRIs().slice(0, 5);
-
-      const kriList = breached.map((k, i) =>
-        `${i + 1}. **${k.indicator}** (KRI-${k.kriId})
-   - Current: ${k.currentValue} vs Threshold: ${k.threshold} (${((k.currentValue / k.threshold) * 100).toFixed(0)}% of limit)
-   - Trend: ${getTrendIndicator(k.trend)}
-   - Linked to Risk #${k.riskId}`
-      ).join('\n\n');
-
-      return `**KRI Health Dashboard:**
-
-**Overall Status:**
-- Total KRIs: ${stats.total}
-- Breached (Red): ${stats.byStatus.red}
-- Warning (Amber): ${stats.byStatus.amber}
-- Healthy (Green): ${stats.byStatus.green}
-- Health Score: ${getKRIHealthScore()}%
-
-**Top 5 Breached KRIs:**
-${kriList}
-
-**Trend Analysis:**
-- ${stats.byTrend.increasing} KRIs trending upward (worsening)
-- ${stats.byTrend.decreasing} KRIs improving
-- ${stats.byTrend.stable} KRIs stable
-
-**Immediate Actions:**
-1. Convene risk owners for the ${stats.byStatus.red} red-status KRIs
-2. Investigate root causes for upward-trending indicators
-3. Update thresholds if business context has changed`;
-    },
-    suggestedFollowups: ['Show KRIs for Risk #12', 'Which KRIs are trending up?', 'KRI threshold recommendations'],
-  },
-
-  {
-    pattern: /kri.*trend|trending\s*(up|down|worse|better)|worsening\s*kri/i,
-    intent: 'kri_trends',
-    handler: () => {
-      const increasing = getKRIsWithTrend('Up');
-      const decreasing = getKRIsWithTrend('Down');
-
-      return `**KRI Trend Analysis:**
-
-**Worsening KRIs (${increasing.length} trending up):**
-${increasing.slice(0, 5).map((k, i) =>
-  `${i + 1}. ${k.indicator} - Current: ${k.currentValue} (Risk #${k.riskId})`
-).join('\n')}
-
-**Improving KRIs (${decreasing.length} trending down):**
-${decreasing.slice(0, 5).map((k, i) =>
-  `${i + 1}. ${k.indicator} - Current: ${k.currentValue} (Risk #${k.riskId})`
-).join('\n')}
-
-**Recommendations:**
-- Focus on the ${increasing.length} worsening indicators
-- Investigate root causes before they breach thresholds
-- Document improvement drivers for decreasing KRIs`;
-    },
-    suggestedFollowups: ['Show all breached KRIs', 'Risk details for worsening KRIs', 'Update KRI thresholds'],
-  },
-
-  // ============ CONTROL EFFECTIVENESS INTENTS ============
-  {
-    pattern: /control|effectiveness|mitigation|prevention|detection|control\s*analysis/i,
-    intent: 'control_analysis',
-    handler: () => {
-      const stats = controlStats();
-      const lowControls = stats.lowEffectivenessControls.slice(0, 3);
-      const highControls = stats.highEffectivenessControls.slice(0, 3);
-
-      return `**Control Effectiveness Analysis:**
-
-**Control Portfolio:**
-- Total Controls: ${stats.total}
-- Average Effectiveness: ${stats.avgEffectiveness}%
-- Risk Coverage: ${stats.riskCoverage.coveragePercent}% (${stats.riskCoverage.risksWithControls}/${stats.riskCoverage.totalRisks} risks)
-
-**By Type:**
-- Preventive: ${stats.byType.preventive} controls
-- Detective: ${stats.byType.detective} controls
-- Corrective: ${stats.byType.corrective} controls
-
-**By Automation:**
-- Automated: ${stats.byAutomation.automated} (highest reliability)
-- Semi-Automated: ${stats.byAutomation.semiAutomated}
-- Manual: ${stats.byAutomation.manual} (candidates for automation)
-
-**Weakest Controls (Need Improvement):**
-${lowControls.map((c, i) => `${i + 1}. ${c.controlName} - ${c.effectivenessScore}%`).join('\n')}
-
-**Strongest Controls:**
-${highControls.map((c, i) => `${i + 1}. ${c.controlName} - ${c.effectivenessScore}%`).join('\n')}
-
-**Recommendations:**
-1. Prioritize automation of ${stats.byAutomation.manual} manual controls
-2. Enhance testing for controls below 70% effectiveness
-3. Consider redundant controls for critical risks`;
-    },
-    suggestedFollowups: ['Show controls for Risk #12', 'Which controls need testing?', 'Automation opportunities'],
-  },
-
-  {
-    pattern: /manual\s*control|automat|control\s*automation/i,
-    intent: 'control_automation',
-    handler: () => {
-      const manual = getManualControls();
-      const automated = getAutomatedControls();
-
-      return `**Control Automation Analysis:**
-
-**Manual Controls (${manual.length}):**
-${manual.slice(0, 5).map((c, i) =>
-  `${i + 1}. ${c.controlName} - ${c.effectivenessScore}% effective
-   Owner: ${c.owner} | Covers ${c.mappedRiskIds.length} risks`
-).join('\n\n')}
-
-**Automated Controls (${automated.length}):**
-${automated.slice(0, 5).map((c, i) =>
-  `${i + 1}. ${c.controlName} - ${c.effectivenessScore}% effective`
-).join('\n')}
-
-**Automation Opportunities:**
-- ${manual.length} manual controls are candidates for automation
-- Average manual control effectiveness: ${Math.round(manual.reduce((s, c) => s + (c.effectivenessScore || 0), 0) / manual.length)}%
-- Average automated control effectiveness: ${Math.round(automated.reduce((s, c) => s + (c.effectivenessScore || 0), 0) / automated.length)}%
-
-**Recommendation:** Automated controls show higher effectiveness. Prioritize automation.`;
-    },
-    suggestedFollowups: ['Control testing schedule', 'Control gaps analysis', 'Investment recommendations'],
-  },
-
-  // ============ RISK EVENT INTENTS ============
-  {
-    pattern: /event|incident|loss|financial\s*impact|occurred|happened|historical/i,
-    intent: 'risk_events',
-    handler: () => {
-      const stats = eventStats();
-      const recent = getRecentEvents(90).slice(0, 5);
-
-      return `**Risk Event Analysis:**
-
-**Event Portfolio:**
-- Total Events: ${stats.total}
-- Total Financial Impact: ${formatCurrency(stats.totalFinancialImpact)}
-- Average Impact: ${formatCurrency(stats.avgFinancialImpact)}
-
-**By Operational Severity:**
-- High Impact: ${stats.byOperationalImpact.high} events
-- Medium Impact: ${stats.byOperationalImpact.medium} events
-- Low Impact: ${stats.byOperationalImpact.low} events
-
-**Recent Events (Last 90 Days):**
-${recent.map((e, i) => `${i + 1}. **${e.eventDescription.substring(0, 50)}...**
-   - Date: ${e.eventDate} | Impact: ${formatCurrency(e.financialImpact)}
-   - Severity: ${e.operationalImpact} | Risk #${e.relatedRiskId}`).join('\n\n')}
-
-**Top Risks by Event Frequency:**
-${stats.topRisksWithEvents.slice(0, 3).map(([riskId, data]) =>
-  `- Risk #${riskId}: ${data.count} events, ${formatCurrency(data.totalImpact)} total impact`
-).join('\n')}
-
-**Event Trend:** ${stats.recentTrend.trend === 'increasing' ? 'Increasing event frequency - requires attention' : 'Decreasing event frequency - positive trend'}`;
-    },
-    suggestedFollowups: ['High impact events only', 'Events for Risk #30', 'Calculate potential losses'],
-  },
-
-  {
-    pattern: /high\s*impact|major\s*event|significant\s*loss|big\s*incident/i,
-    intent: 'high_impact_events',
-    handler: () => {
-      const highEvents = getHighImpactEvents().slice(0, 8);
-      const totalImpact = highEvents.reduce((s, e) => s + e.financialImpact, 0);
-
-      return `**High-Impact Risk Events:**
-
-${highEvents.map((e, i) =>
-  `${i + 1}. **${e.eventDescription}**
-   - Date: ${e.eventDate}
-   - Financial Impact: ${formatCurrency(e.financialImpact)}
-   - Related Risk: #${e.relatedRiskId}
-   - Root Cause Confirmed: ${e.rootCauseConfirmed ? 'Yes' : 'Pending'}`
-).join('\n\n')}
-
-**Summary:**
-- Total high-impact events: ${highEvents.length}
-- Combined financial impact: ${formatCurrency(totalImpact)}
-- Average impact per event: ${formatCurrency(totalImpact / highEvents.length)}
-
-**Actions Required:**
-1. Ensure root cause analysis completed for all events
-2. Update controls based on lessons learned
-3. Review insurance coverage adequacy`;
-    },
-    suggestedFollowups: ['Root cause analysis', 'Update controls', 'Insurance review'],
-  },
-
-  // ============ MONTE CARLO INTENTS ============
-  {
-    pattern: /monte\s*carlo|simulation|forecast|probability|distribution|var|value\s*at\s*risk/i,
-    intent: 'monte_carlo',
-    handler: () => {
-      const highRisks = getHighRisks();
-      const avgScore = highRisks.reduce((s, r) => s + r.inherentRiskScore, 0) / highRisks.length;
-      const events = eventStats();
-
-      return `**Monte Carlo Simulation Recommendations:**
-
-Based on your risk data, here are optimal simulation parameters:
-
-**Suggested Simulations:**
-
-1. **Aggregate Loss Distribution**
-   - Risks to include: ${highRisks.length} high-scoring risks
-   - Distribution: LogNormal (fits financial loss patterns)
-   - Iterations: 10,000 minimum for 95% confidence
-
-2. **Cyber Risk Scenario**
-   - Risk IDs: 12, 20, 196-200 (Cyber category)
-   - Mean Loss: ${formatCurrency(events.avgFinancialImpact * 1.5)}
-   - Max Loss: ${formatCurrency(events.avgFinancialImpact * 10)}
-
-3. **Operational Risk Portfolio**
-   - Risks: All Operational category (${getRisksByCategory('Operational').length} risks)
-   - Correlation factor: 0.3 (moderate interdependence)
-
-**Key Parameters from Your Data:**
-- Average Inherent Score: ${avgScore.toFixed(1)}
-- Historical Event Avg: ${formatCurrency(events.avgFinancialImpact)}
-- Control Effectiveness: ${getControlEffectivenessScore()}%
-
-**VaR Estimates:**
-- 95% VaR: ~${formatCurrency(events.avgFinancialImpact * 3)}
-- 99% VaR: ~${formatCurrency(events.avgFinancialImpact * 5)}
-
-Navigate to **Risk Tools > Monte Carlo** to run simulations.`;
-    },
-    suggestedFollowups: ['Run simulation for cyber risks', 'Show distribution curves', 'Calculate VaR at 95%'],
-  },
-
-  // ============ BOW-TIE INTENTS ============
-  {
-    pattern: /bow[\s-]*tie|cause|consequence|barrier|root\s*cause/i,
-    intent: 'bow_tie',
-    handler: () => {
-      const topRisk = getHighRisks()[0];
-      const controls = getControlsByRiskId(topRisk.riskId);
-      const events = getEventsByRiskId(topRisk.riskId);
-      const kris = getKRIsByRiskId(topRisk.riskId);
-
-      return `**Bow-Tie Analysis Ready:**
-
-Recommended analysis for highest-scoring risk:
-
-**Risk #${topRisk.riskId}: ${topRisk.riskDescription.substring(0, 55)}...**
-
-**LEFT SIDE (Causes/Threats):**
-- Root Cause: ${topRisk.rootCause}
-- Likelihood: ${topRisk.likelihood}/5
-- Velocity: ${topRisk.velocity}
-
-**CENTER (Risk Event):**
-- Inherent Score: ${topRisk.inherentRiskScore} (${getRiskSeverityLabel(topRisk.inherentRiskScore)})
-- Category: ${topRisk.riskCategory}
-- Current Status: ${topRisk.riskStatus}
-
-**RIGHT SIDE (Consequences):**
-- Historical Events: ${events.length}
-- Total Impact: ${formatCurrency(events.reduce((s, e) => s + e.financialImpact, 0))}
-- High-severity events: ${events.filter(e => e.operationalImpact === 'High').length}
-
-**PREVENTIVE BARRIERS:**
-${controls.filter(c => c.controlType === 'Preventive').map(c => `- ${c.controlName} (${c.effectivenessScore}%)`).join('\n') || '- No preventive controls mapped'}
-
-**DETECTIVE BARRIERS:**
-${controls.filter(c => c.controlType === 'Detective').map(c => `- ${c.controlName} (${c.effectivenessScore}%)`).join('\n') || '- No detective controls mapped'}
-
-**RECOVERY BARRIERS:**
-${controls.filter(c => c.controlType === 'Corrective').map(c => `- ${c.controlName} (${c.effectivenessScore}%)`).join('\n') || '- No corrective controls mapped'}
-
-**KRI MONITORING:**
-${kris.map(k => `- ${k.indicator}: ${k.currentValue}/${k.threshold} (${k.status})`).join('\n') || '- No KRIs linked'}
-
-Navigate to **Risk Tools > Bow-Tie** to visualize.`;
-    },
-    suggestedFollowups: ['Show Bow-Tie for another risk', 'Add more controls', 'Export analysis'],
-  },
-
-  // ============ DECISION TREE INTENTS ============
-  {
-    pattern: /decision\s*tree|treatment\s*option|what\s*if|alternative|mitigate|transfer|accept|avoid/i,
-    intent: 'decision_tree',
-    handler: () => {
-      const outsideAppetite = getOutsideAppetiteRisks();
-      const topRisk = outsideAppetite[0];
-      const events = getEventsByRiskId(topRisk.riskId);
-      const avgImpact = events.length > 0 ? events.reduce((s, e) => s + e.financialImpact, 0) / events.length : topRisk.inherentRiskScore * 50000;
-
-      return `**Decision Tree Analysis:**
-
-**Risk #${topRisk.riskId}: ${topRisk.riskDescription.substring(0, 50)}...**
-Current: Outside Appetite | Score: ${topRisk.residualRiskScore}
-
-**OPTION 1: MITIGATE (Reduce)**
-- Cost: ${formatCurrency(avgImpact * 0.3)} - ${formatCurrency(avgImpact * 0.5)}
-- Expected Reduction: 30-40% of residual score
-- Probability of Success: 75%
-- Timeline: 6-12 months
-- NPV: Positive if >3 events expected
-
-**OPTION 2: TRANSFER (Insure)**
-- Cost: ${formatCurrency(topRisk.inherentRiskScore * 5000)}/year premium
-- Coverage: Up to ${formatCurrency(avgImpact * 5)} per event
-- Probability of Claim: ${(topRisk.likelihood * 20)}%
-- Timeline: 1-2 months
-- Best for: Low-frequency, high-impact risks
-
-**OPTION 3: ACCEPT (Monitor)**
-- Cost: Monitoring only
-- Expected Annual Loss: ${formatCurrency(avgImpact * topRisk.likelihood * 0.2)}
-- Risk: Potential appetite breach
-- Timeline: Immediate
-- Best for: Risks within tolerance
-
-**OPTION 4: AVOID (Eliminate)**
-- Cost: Discontinue activity
-- Benefit: Zero residual risk
-- Trade-off: Lost opportunity cost
-- Timeline: 3-6 months
-- Best for: Unacceptable risk/reward
-
-**Recommendation:** ${topRisk.inherentRiskScore >= 15 ? 'Option 1 (Mitigate) - Best cost/benefit for high-severity risk' : 'Option 3 (Accept) with enhanced monitoring'}`;
-    },
-    suggestedFollowups: ['Compare options for another risk', 'Calculate ROI of mitigation', 'Insurance analysis'],
-  },
-
-  // ============ CATEGORY ANALYSIS INTENTS ============
-  {
-    pattern: /cyber|financial|operational|compliance|strategic|reputational|people|third\s*party|ai\s*ethics|category/i,
-    intent: 'category_analysis',
-    handler: (match) => {
-      const stats = riskStats();
-      const input = match?.[0]?.toLowerCase() || '';
-
-      // Determine which category to focus on
-      let focusCategory: string | null = null;
-      if (input.includes('cyber')) focusCategory = 'Cybersecurity';
-      else if (input.includes('financial')) focusCategory = 'Financial';
-      else if (input.includes('operational')) focusCategory = 'Operational';
-      else if (input.includes('compliance')) focusCategory = 'Compliance';
-      else if (input.includes('strategic')) focusCategory = 'Strategic';
-      else if (input.includes('reputational')) focusCategory = 'Reputational';
-      else if (input.includes('people')) focusCategory = 'People';
-      else if (input.includes('third')) focusCategory = 'Third Party';
-      else if (input.includes('ai')) focusCategory = 'AI Ethics';
-
-      const categories = Object.entries(stats.categoryDistribution)
-        .sort((a, b) => b[1] - a[1])
-        .map(([cat, count]) => `- **${cat}**: ${count} risks`)
-        .join('\n');
-
-      if (focusCategory) {
-        const categoryRisks = getRisksByCategory(focusCategory as any);
-        const escalated = categoryRisks.filter(r => r.riskStatus === 'Escalated');
-        const outsideAppetite = categoryRisks.filter(r => r.riskAppetiteAlignment === 'Outside Appetite');
-
-        return `**${focusCategory} Risk Analysis:**
-
-**Summary:**
-- Total ${focusCategory} Risks: ${categoryRisks.length}
-- Escalated: ${escalated.length}
-- Outside Appetite: ${outsideAppetite.length}
-- Avg Inherent Score: ${(categoryRisks.reduce((s, r) => s + r.inherentRiskScore, 0) / categoryRisks.length).toFixed(1)}
-
-**Top ${focusCategory} Risks:**
-${categoryRisks.sort((a, b) => b.inherentRiskScore - a.inherentRiskScore).slice(0, 5).map((r, i) =>
-  `${i + 1}. Risk #${r.riskId}: ${r.riskDescription.substring(0, 45)}...
-   Score: ${r.inherentRiskScore} | Status: ${r.riskStatus}`
-).join('\n\n')}
-
-**Key Insights:**
-- ${escalated.length > 0 ? `${escalated.length} risks require immediate escalation review` : 'No escalated risks in this category'}
-- ${outsideAppetite.length > 0 ? `${outsideAppetite.length} risks exceed risk appetite` : 'All risks within appetite'}`;
-      }
-
-      return `**Risk Category Distribution:**
-
-${categories}
-
-**Category Insights:**
-- Highest concentration: ${Object.entries(stats.categoryDistribution).sort((a, b) => b[1] - a[1])[0][0]}
-- Categories with escalated risks: ${Object.entries(stats.categoryDistribution).filter(([cat]) =>
-  getRisksByCategory(cat as any).some(r => r.riskStatus === 'Escalated')
-).length}
-
-Ask about a specific category for detailed analysis (e.g., "Show cyber risks")`;
-    },
-    suggestedFollowups: ['Show Cyber risks', 'Compliance risk details', 'Compare all categories'],
-  },
-
-  // ============ OWNERSHIP & REGIONAL INTENTS ============
-  {
-    pattern: /owner|responsible|who\s*owns|cro|cfo|ciso|coo|director|assigned/i,
-    intent: 'ownership_analysis',
-    handler: () => {
-      const ownerDistribution = new Map<string, number>();
-      const ownerEscalated = new Map<string, number>();
-      enterpriseRisks.forEach(r => {
-        ownerDistribution.set(r.riskOwner, (ownerDistribution.get(r.riskOwner) || 0) + 1);
-        if (r.riskStatus === 'Escalated') {
-          ownerEscalated.set(r.riskOwner, (ownerEscalated.get(r.riskOwner) || 0) + 1);
-        }
-      });
-
-      return `**Risk Ownership Analysis:**
-
-**By Risk Owner:**
-${Array.from(ownerDistribution.entries())
-  .sort((a, b) => b[1] - a[1])
-  .map(([owner, count]) => `- **${owner}**: ${count} risks (${ownerEscalated.get(owner) || 0} escalated)`)
-  .join('\n')}
-
-**Ownership Insights:**
-- Most assigned: ${Array.from(ownerDistribution.entries()).sort((a, b) => b[1] - a[1])[0][0]}
-- Highest escalation rate: ${Array.from(ownerEscalated.entries()).sort((a, b) => b[1] - a[1])[0]?.[0] || 'N/A'}
-
-**Actions:**
-1. Ensure balanced risk ownership distribution
-2. Review workload of owners with most risks
-3. Verify all escalated risks have active owner engagement`;
-    },
-    suggestedFollowups: ['Show CRO risks', 'Risks by CFO', 'Escalated risks by owner'],
-  },
-
-  {
-    pattern: /region|nigeria|uk|us|eu|global|apac|latam|middle\s*east|geographic/i,
-    intent: 'regional_analysis',
-    handler: (match) => {
-      const input = match?.[0]?.toLowerCase() || '';
-
-      const regionDistribution = new Map<string, number>();
-      enterpriseRisks.forEach(r => {
-        regionDistribution.set(r.region, (regionDistribution.get(r.region) || 0) + 1);
-      });
-
-      // Check if asking about specific region
-      let focusRegion: string | null = null;
-      if (input.includes('nigeria')) focusRegion = 'Nigeria';
-      else if (input.includes('uk')) focusRegion = 'UK';
-      else if (input.includes('us')) focusRegion = 'US';
-      else if (input.includes('eu')) focusRegion = 'EU';
-      else if (input.includes('global')) focusRegion = 'Global';
-      else if (input.includes('apac')) focusRegion = 'APAC';
-      else if (input.includes('latam')) focusRegion = 'LATAM';
-      else if (input.includes('middle')) focusRegion = 'Middle East';
-
-      if (focusRegion) {
-        const regionRisks = getRisksByRegion(focusRegion);
-        return `**${focusRegion} Regional Risk Analysis:**
-
-**Summary:**
-- Total Risks: ${regionRisks.length}
-- Escalated: ${regionRisks.filter(r => r.riskStatus === 'Escalated').length}
-- Outside Appetite: ${regionRisks.filter(r => r.riskAppetiteAlignment === 'Outside Appetite').length}
-
-**Top Risks in ${focusRegion}:**
-${regionRisks.sort((a, b) => b.inherentRiskScore - a.inherentRiskScore).slice(0, 5).map((r, i) =>
-  `${i + 1}. Risk #${r.riskId}: ${r.riskDescription.substring(0, 45)}...
-   Category: ${r.riskCategory} | Score: ${r.inherentRiskScore}`
-).join('\n\n')}`;
-      }
-
-      return `**Regional Risk Distribution:**
-
-${Array.from(regionDistribution.entries())
-  .sort((a, b) => b[1] - a[1])
-  .map(([region, count]) => `- **${region}**: ${count} risks`)
-  .join('\n')}
-
-**Regional Insights:**
-- Highest concentration: ${Array.from(regionDistribution.entries()).sort((a, b) => b[1] - a[1])[0][0]}
-- Global risks: ${regionDistribution.get('Global') || 0}
-
-Ask about a specific region for details (e.g., "Show Nigeria risks")`;
-    },
-    suggestedFollowups: ['Nigeria region analysis', 'EU risks', 'Global risk overview'],
-  },
-
-  // ============ APPETITE ANALYSIS INTENTS ============
-  {
-    pattern: /appetite|tolerance|outside|breach|within|limit|threshold/i,
-    intent: 'appetite_analysis',
-    handler: () => {
-      const outsideAppetite = getOutsideAppetiteRisks();
-      const within = enterpriseRisks.filter(r => r.riskAppetiteAlignment === 'Within Appetite');
-
-      return `**Risk Appetite Analysis:**
-
-**Alignment Status:**
-- Within Appetite: ${within.length} risks (${Math.round(within.length / enterpriseRisks.length * 100)}%)
-- Outside Appetite: ${outsideAppetite.length} risks (${Math.round(outsideAppetite.length / enterpriseRisks.length * 100)}%)
-
-**Risks Outside Appetite (Priority):**
-${outsideAppetite.slice(0, 5).map((r, i) =>
-  `${i + 1}. **Risk #${r.riskId}**: ${r.riskDescription.substring(0, 45)}...
-   - Category: ${r.riskCategory} | Score: ${r.residualRiskScore}
-   - Owner: ${r.riskOwner} | Status: ${r.riskStatus}`
-).join('\n\n')}
-
-**Appetite Breach Analysis:**
-- Most breached category: ${getMostCommonCategory(outsideAppetite)}
-- Avg residual score (outside): ${(outsideAppetite.reduce((s, r) => s + r.residualRiskScore, 0) / outsideAppetite.length).toFixed(1)}
-- Non-escalated breaches: ${outsideAppetite.filter(r => r.riskStatus !== 'Escalated').length}
-
-**Required Actions:**
-1. Escalate ${outsideAppetite.filter(r => r.riskStatus !== 'Escalated').length} non-escalated outside-appetite risks
-2. Develop treatment plans for top 5
-3. Report to Risk Committee within 48 hours`;
-    },
-    suggestedFollowups: ['Treatment options for outside appetite', 'Update appetite thresholds', 'Escalate remaining risks'],
-  },
-
-  // ============ SUMMARY & EXECUTIVE INTENTS ============
-  {
-    pattern: /summary|executive|overview|dashboard|status|posture|report/i,
-    intent: 'executive_summary',
-    handler: () => {
-      const stats = riskStats();
-      const kri = kriStats();
-      const ctrl = controlStats();
-      const evt = eventStats();
-
-      return `**Executive Risk Summary**
-
-**RISK PORTFOLIO**
-- Total Risks: ${stats.total} | Avg Score: ${stats.avgInherentScore}
-- Escalated: ${stats.escalated} (${Math.round(stats.escalated / stats.total * 100)}%)
-- Outside Appetite: ${stats.outsideAppetite} (${Math.round(stats.outsideAppetite / stats.total * 100)}%)
-- High Risk Count: ${stats.highRisk}
-
-**KRI STATUS**
-- Health Score: ${getKRIHealthScore()}%
-- Breached: ${kri.byStatus.red} | Warning: ${kri.byStatus.amber} | Healthy: ${kri.byStatus.green}
-- Trending Worse: ${kri.byTrend.increasing}
-
-**CONTROL EFFECTIVENESS**
-- Avg Effectiveness: ${ctrl.avgEffectiveness}%
-- Coverage: ${ctrl.riskCoverage.coveragePercent}%
-- Needs Improvement: ${ctrl.lowEffectivenessControls.length}
-
-**RISK EVENTS**
-- Total Events: ${evt.total}
-- Total Impact: ${formatCurrency(evt.totalFinancialImpact)}
-- High Severity: ${evt.byOperationalImpact.high}
-
-**IMMEDIATE PRIORITIES:**
-1. Address ${kri.byStatus.red} breached KRIs
-2. Escalate ${stats.outsideAppetite - stats.escalated} outside-appetite risks
-3. Improve ${ctrl.lowEffectivenessControls.length} weak controls
-4. Investigate ${evt.byOperationalImpact.high} high-impact events
-
-**RISK TREND:** ${evt.recentTrend.trend === 'increasing' ? 'Deteriorating - action required' : 'Improving - maintain vigilance'}`;
-    },
-    suggestedFollowups: ['Generate full report', 'Top risks', 'Detailed action plan'],
-  },
-
-  // ============ URGENT/PRIORITY INTENTS ============
-  {
-    pattern: /urgent|immediate|priority|action|attention|critical|now|asap|emergency/i,
-    intent: 'urgent_actions',
-    handler: () => {
-      const escalated = getEscalatedRisks();
-      const breachedKRIs = getBreachedKRIs().slice(0, 3);
-      const highEvents = getHighImpactEvents().slice(0, 3);
-
-      return `**IMMEDIATE ACTION REQUIRED**
-
-**CRITICAL RISKS (${escalated.length} Escalated):**
-${escalated.slice(0, 3).map((r, i) =>
-  `${i + 1}. **Risk #${r.riskId}**: ${r.riskDescription.substring(0, 40)}...
-   - Score: ${r.inherentRiskScore} | Owner: ${r.riskOwner}
-   - ACTION: Review within 24 hours`
-).join('\n\n')}
-
-**BREACHED KRIs (${getBreachedKRIs().length} total):**
-${breachedKRIs.map((k, i) =>
-  `${i + 1}. **${k.indicator}**: ${k.currentValue} vs ${k.threshold} threshold
-   - Linked to Risk #${k.riskId}
-   - ACTION: Investigate root cause immediately`
-).join('\n\n')}
-
-**HIGH-IMPACT EVENTS:**
-${highEvents.map((e, i) =>
-  `${i + 1}. **${e.eventDescription.substring(0, 40)}...**
-   - Impact: ${formatCurrency(e.financialImpact)} | Date: ${e.eventDate}
-   - ACTION: Ensure lessons learned captured`
-).join('\n\n')}
-
-**RECOMMENDED IMMEDIATE ACTIONS:**
-1. Convene emergency risk committee
-2. Notify stakeholders of ${escalated.length} escalated risks
-3. Deploy additional monitoring for ${breachedKRIs.length} breached KRIs
-4. Review controls for effectiveness gaps`;
-    },
-    suggestedFollowups: ['Generate incident report', 'Contact risk owners', 'Schedule review meeting'],
-  },
-
-  // ============ HELP INTENTS ============
-  {
-    pattern: /help|what\s*can\s*you|capabilities?|features?|how\s*to|guide|commands?/i,
-    intent: 'help',
-    handler: () => {
-      return `**Lumina-R AI Risk Advisor - Capabilities Guide**
-
-**Risk Analysis:**
-- "Show top 5 risks" - Prioritized risk list
-- "Analyze cyber risks" - Category deep-dive
-- "Risks outside appetite" - Appetite breach analysis
-- "Risk #12 details" - Individual risk analysis
-
-**KRI Monitoring:**
-- "Show breached KRIs" - Threshold violations
-- "KRI trends" - Indicator movement analysis
-- "KRI health score" - Overall KRI status
-
-**Control Analysis:**
-- "Control effectiveness" - Control portfolio review
-- "Weak controls" - Improvement priorities
-- "Controls for Risk #X" - Mapped controls
-- "Automation opportunities" - Manual control candidates
-
-**Event Analysis:**
-- "Recent events" - Event timeline
-- "High impact events" - Severity analysis
-- "Financial losses" - Impact quantification
-
-**Advanced Tools:**
-- "Monte Carlo simulation" - Probability modeling
-- "Bow-Tie analysis" - Cause-consequence mapping
-- "Decision tree" - Treatment options
-- "What-if scenarios" - Stress testing
-
-**Organizational:**
-- "Risks by owner" - Ownership distribution
-- "Regional analysis" - Geographic breakdown
-- "Summary" - Executive overview
-- "Urgent actions" - Immediate priorities
-
-What would you like to explore?`;
-    },
-    suggestedFollowups: ['Show summary', 'Top risks', 'Breached KRIs'],
-  },
-
-  // ============ SPECIFIC RISK INTENTS ============
-  {
-    pattern: /risk\s*#?(\d+)|risk\s*id\s*(\d+)|details?\s*(?:for|of|about)?\s*risk\s*#?(\d+)/i,
-    intent: 'specific_risk',
-    handler: () => {
-      return 'SPECIFIC_RISK_TEMPLATE';
-    },
-  },
-
-  // ============ COMPARISON INTENTS ============
-  {
-    pattern: /compare|versus|vs|difference|between/i,
-    intent: 'comparison',
-    handler: () => {
-      const stats = riskStats();
-      const highVsLow = {
-        high: enterpriseRisks.filter(r => r.controlEffectiveness === 'High'),
-        low: enterpriseRisks.filter(r => r.controlEffectiveness === 'Low'),
-      };
-
-      return `**Risk Comparison Analysis:**
-
-**By Control Effectiveness:**
-- High Effectiveness (${highVsLow.high.length} risks):
-  - Avg Inherent: ${(highVsLow.high.reduce((s, r) => s + r.inherentRiskScore, 0) / highVsLow.high.length).toFixed(1)}
-  - Avg Residual: ${(highVsLow.high.reduce((s, r) => s + r.residualRiskScore, 0) / highVsLow.high.length).toFixed(1)}
-
-- Low Effectiveness (${highVsLow.low.length} risks):
-  - Avg Inherent: ${(highVsLow.low.reduce((s, r) => s + r.inherentRiskScore, 0) / highVsLow.low.length).toFixed(1)}
-  - Avg Residual: ${(highVsLow.low.reduce((s, r) => s + r.residualRiskScore, 0) / highVsLow.low.length).toFixed(1)}
-
-**Key Insight:** Strong controls reduce risk scores by ~${Math.round(((highVsLow.low.reduce((s, r) => s + r.residualRiskScore, 0) / highVsLow.low.length) - (highVsLow.high.reduce((s, r) => s + r.residualRiskScore, 0) / highVsLow.high.length)))} points on average.
-
-**By Category Severity:**
-${Object.entries(stats.categoryDistribution)
-  .map(([cat, count]) => {
-    const catRisks = getRisksByCategory(cat as any);
-    const avgScore = catRisks.reduce((s, r) => s + r.inherentRiskScore, 0) / catRisks.length;
-    return { cat, count, avgScore };
-  })
-  .sort((a, b) => b.avgScore - a.avgScore)
-  .slice(0, 5)
-  .map((c, i) => `${i + 1}. ${c.cat}: Avg Score ${c.avgScore.toFixed(1)} (${c.count} risks)`)
-  .join('\n')}`;
-    },
-    suggestedFollowups: ['Compare specific risks', 'Category breakdown', 'Control effectiveness by type'],
-  },
-
-  // ============ FALLBACK INTENT ============
-  {
-    pattern: /.*/,
-    intent: 'fallback',
-    handler: () => {
-      return `I can help you with risk management analysis. Here are some things you can ask:
-
-**Common Questions:**
-- "Show top risks" - See highest priority risks
-- "KRI status" - Check indicator breaches
-- "Control effectiveness" - Review control portfolio
-- "Risk events" - Analyze incident history
-- "Monte Carlo" - Run probability simulations
-- "Bow-Tie analysis" - Visualize causes and consequences
-
-**Quick Actions:**
-- "Summary" - Get executive overview
-- "Urgent actions" - See immediate priorities
-- "Help" - Full capability guide
-
-Could you rephrase your question or try one of these options?`;
-    },
-    suggestedFollowups: ['Help', 'Summary', 'Top risks'],
-  },
-];
-
-// Main chat processing function
-export function processMessage(userMessage: string): ChatMessage {
-  const message = userMessage.trim().toLowerCase();
-
-  // Check for specific risk number first
-  const riskMatch = userMessage.match(/risk\s*#?(\d+)/i);
-  if (riskMatch) {
-    const riskId = parseInt(riskMatch[1]);
-    const risk = enterpriseRisks.find(r => r.riskId === riskId);
-    if (risk) {
-      const krisForRisk = getKRIsByRiskId(riskId);
-      const eventsForRisk = getEventsByRiskId(riskId);
-      const controlsForRisk = getControlsByRiskId(riskId);
-
-      const response = `**Risk #${risk.riskId} Deep Dive**
-
-**Risk Details:**
-- **Description:** ${risk.riskDescription}
-- **Category:** ${risk.riskCategory}
-- **Root Cause:** ${risk.rootCause}
-
-**Risk Scoring:**
-- Likelihood: ${risk.likelihood}/5 | Impact: ${risk.impact}/5
-- Velocity: ${risk.velocity}
-- Inherent Score: ${risk.inherentRiskScore} (${getRiskSeverityLabel(risk.inherentRiskScore)})
-- Residual Score: ${risk.residualRiskScore}
-
-**Status:**
-- Current Status: ${risk.riskStatus}
-- Appetite Alignment: ${risk.riskAppetiteAlignment}
-- Owner: ${risk.riskOwner} | Region: ${risk.region}
-- Control Effectiveness: ${risk.controlEffectiveness}
-
-**Existing Controls:**
-${risk.existingControls}
-
-**Linked KRIs (${krisForRisk.length}):**
-${krisForRisk.length > 0 ? krisForRisk.map(k =>
-  `- ${k.indicator}: ${k.currentValue}/${k.threshold} (${k.status})`
-).join('\n') : '- No KRIs linked'}
-
-**Historical Events (${eventsForRisk.length}):**
-${eventsForRisk.length > 0 ? eventsForRisk.slice(0, 3).map(e =>
-  `- ${e.eventDate}: ${formatCurrency(e.financialImpact)} (${e.operationalImpact})`
-).join('\n') : '- No events recorded'}
-${eventsForRisk.length > 3 ? `\n... and ${eventsForRisk.length - 3} more events` : ''}
-
-**Mapped Controls (${controlsForRisk.length}):**
-${controlsForRisk.length > 0 ? controlsForRisk.map(c =>
-  `- ${c.controlName} (${c.controlType}) - ${c.effectivenessScore}%`
-).join('\n') : '- No controls mapped'}
-
-**Recommended Actions:**
-1. ${risk.riskStatus === 'Escalated' ? 'Already escalated - ensure active monitoring' : 'Consider escalation based on appetite breach'}
-2. ${krisForRisk.filter(k => k.status === 'Red').length > 0 ? 'Address breached KRIs immediately' : 'Continue KRI monitoring'}
-3. Run Bow-Tie analysis for cause-consequence mapping`;
-
-      return {
-        id: `msg-${Date.now()}`,
-        role: 'assistant',
-        content: response,
-        timestamp: new Date(),
-        metadata: {
-          intent: 'specific_risk',
-          confidence: 100,
-          dataUsed: ['enterpriseRisks', 'enterpriseKRIs', 'riskEvents', 'enterpriseControls'],
-          suggestedActions: ['Run Monte Carlo', 'Show Bow-Tie', 'View Controls'],
-        },
-      };
-    }
+function getTopPrioritizedRisks(count: number = 5): PrioritizedRisk[] {
+  return prioritizeRisks().slice(0, count);
+}
+
+// ============================================================================
+// CLUSTER DETECTION ENGINE
+// ============================================================================
+
+interface RiskCluster {
+  type: 'cyber' | 'vendor' | 'geographic' | 'control' | 'regulatory';
+  name: string;
+  riskIds: number[];
+  aggregateEMV: number;
+  correlationStrength: 'high' | 'medium' | 'low';
+  description: string;
+}
+
+function detectRiskClusters(): RiskCluster[] {
+  const clusters: RiskCluster[] = [];
+
+  // Cyber Risk Cluster
+  const cyberRisks = enterpriseRisks.filter(r => r.riskCategory === 'Cybersecurity');
+  if (cyberRisks.length >= 3) {
+    const aggregateEMV = cyberRisks.reduce((sum, r) => sum + calculateResidualEMV(r), 0);
+    clusters.push({
+      type: 'cyber',
+      name: 'Cyber Threat Correlation',
+      riskIds: cyberRisks.slice(0, 5).map(r => r.riskId),
+      aggregateEMV,
+      correlationStrength: cyberRisks.filter(r => r.residualRiskScore >= 12).length >= 3 ? 'high' : 'medium',
+      description: `${cyberRisks.length} interconnected cyber risks with aggregate EMV of ${formatCurrency(aggregateEMV)}`
+    });
   }
 
-  // Find matching intent
-  for (const intent of chatIntents) {
-    const match = message.match(intent.pattern);
-    if (match && intent.intent !== 'fallback') {
-      return {
-        id: `msg-${Date.now()}`,
-        role: 'assistant',
-        content: intent.handler(match),
-        timestamp: new Date(),
-        metadata: {
-          intent: intent.intent,
-          confidence: 95,
-          suggestedActions: intent.suggestedFollowups,
-        },
-      };
-    }
+  // Vendor Concentration Cluster
+  const vendorRisks = enterpriseRisks.filter(r => r.riskCategory === 'Third Party');
+  if (vendorRisks.length >= 2) {
+    const aggregateEMV = vendorRisks.reduce((sum, r) => sum + calculateResidualEMV(r), 0);
+    clusters.push({
+      type: 'vendor',
+      name: 'Third Party Concentration',
+      riskIds: vendorRisks.slice(0, 5).map(r => r.riskId),
+      aggregateEMV,
+      correlationStrength: vendorRisks.filter(r => r.riskAppetiteAlignment === 'Outside Appetite').length >= 2 ? 'high' : 'medium',
+      description: `${vendorRisks.length} vendor risks with potential cascade effects`
+    });
   }
 
-  // Fallback
-  const fallbackIntent = chatIntents.find(i => i.intent === 'fallback')!;
+  // Geographic Cluster (Nigeria focus from data)
+  const nigeriaRisks = enterpriseRisks.filter(r => r.region === 'Nigeria');
+  if (nigeriaRisks.length >= 3) {
+    const aggregateEMV = nigeriaRisks.reduce((sum, r) => sum + calculateResidualEMV(r), 0);
+    clusters.push({
+      type: 'geographic',
+      name: 'Nigeria Regional Concentration',
+      riskIds: nigeriaRisks.slice(0, 5).map(r => r.riskId),
+      aggregateEMV,
+      correlationStrength: 'medium',
+      description: `${nigeriaRisks.length} risks concentrated in Nigeria region`
+    });
+  }
+
+  // Control Gap Cluster
+  const lowControlRisks = enterpriseRisks.filter(r => r.controlEffectiveness === 'Low');
+  if (lowControlRisks.length >= 3) {
+    const aggregateEMV = lowControlRisks.reduce((sum, r) => sum + calculateResidualEMV(r), 0);
+    clusters.push({
+      type: 'control',
+      name: 'Control Effectiveness Gap',
+      riskIds: lowControlRisks.slice(0, 5).map(r => r.riskId),
+      aggregateEMV,
+      correlationStrength: 'high',
+      description: `${lowControlRisks.length} risks with inadequate control coverage`
+    });
+  }
+
+  return clusters;
+}
+
+// ============================================================================
+// MONTE CARLO INTELLIGENCE
+// ============================================================================
+
+interface MonteCarloOutput {
+  p50: number;
+  p75: number;
+  p95: number;
+  p99: number;
+  expectedLoss: number;
+  maxLoss: number;
+  tailRisk: number;
+  sensitivityFactors: { factor: string; impact: number }[];
+}
+
+function runSimulatedMonteCarlo(riskIds?: number[]): MonteCarloOutput {
+  const risks = riskIds ?
+    enterpriseRisks.filter(r => riskIds.includes(r.riskId)) :
+    enterpriseRisks;
+
+  const portfolioEMV = risks.reduce((sum, r) => sum + calculateResidualEMV(r), 0);
+
+  // Simulate percentile outcomes based on portfolio characteristics
+  const volatilityFactor = risks.filter(r => r.velocity === 'Fast').length / risks.length;
+  const highSeverityRatio = risks.filter(r => r.inherentRiskScore >= 15).length / risks.length;
+
+  return {
+    p50: portfolioEMV * 0.85,
+    p75: portfolioEMV * 1.15,
+    p95: portfolioEMV * (1.5 + volatilityFactor * 0.5),
+    p99: portfolioEMV * (2.0 + highSeverityRatio * 0.8),
+    expectedLoss: portfolioEMV,
+    maxLoss: portfolioEMV * 3.5,
+    tailRisk: portfolioEMV * (2.5 + volatilityFactor),
+    sensitivityFactors: [
+      { factor: 'Cyber breach frequency', impact: 0.28 },
+      { factor: 'Vendor failure', impact: 0.22 },
+      { factor: 'Regulatory penalty', impact: 0.18 },
+      { factor: 'Market volatility', impact: 0.15 },
+      { factor: 'Operational failure', impact: 0.12 },
+      { factor: 'Other', impact: 0.05 }
+    ]
+  };
+}
+
+// ============================================================================
+// FIVE-LAYER REASONING ENGINE
+// ============================================================================
+
+function generateFiveLayerAnalysis(_context: string, risks: EnterpriseRisk[], _kris: EnterpriseKRI[]): FiveLayerAnalysis {
+  const portfolioEMV = getPortfolioEMV();
+  const kriStats = getKRIStats();
+  const controlStats = getControlStats();
+  const breachedAppetites = getBreachedAppetites();
+
+  // Layer 1: Structural Interpretation
+  const structural = `The risk register contains ${risks.length} identified risks across ${new Set(risks.map(r => r.riskCategory)).size} categories. Currently ${risks.filter(r => r.riskStatus === 'Escalated').length} risks are escalated and ${risks.filter(r => r.riskAppetiteAlignment === 'Outside Appetite').length} exceed appetite thresholds. KRI monitoring shows ${kriStats.byStatus.red} breached indicators with ${kriStats.byTrend.increasing} trending adversely.`;
+
+  // Layer 2: Quantitative Analysis
+  const quantitative = `Portfolio inherent EMV: ${formatCurrency(portfolioEMV.totalInherent)}. Residual EMV after controls: ${formatCurrency(portfolioEMV.totalResidual)} (${formatPercent(portfolioEMV.reduction)} reduction). Control effectiveness averages ${controlStats.avgEffectiveness}% with ${controlStats.lowEffectivenessControls.length} controls below threshold requiring remediation investment.`;
+
+  // Layer 3: Strategic Context
+  const breachedCategories = breachedAppetites.map(a => a.category).join(', ') || 'none';
+  const strategic = `Risk profile impacts strategic objectives through ${breachedCategories !== 'none' ? `breached appetite in ${breachedCategories}` : 'elevated operational exposure'}. Current trajectory suggests ${kriStats.byTrend.increasing > kriStats.byTrend.decreasing ? 'deteriorating' : 'stable'} risk posture requiring ${kriStats.byTrend.increasing > 10 ? 'urgent intervention' : 'continued monitoring'}.`;
+
+  // Layer 4: Governance Implication
+  const governance = `${risks.filter(r => r.riskStatus === 'Escalated').length} escalated risks require Board-level visibility. ${breachedAppetites.length} appetite breaches mandate Risk Committee review. ${kriStats.byStatus.red} KRI breaches trigger notification protocols to CRO and affected risk owners.`;
+
+  // Layer 5: Action Prescription
+  const action = `IMMEDIATE (0-7 days): Address ${kriStats.byStatus.red} breached KRIs and review ${risks.filter(r => r.riskStatus === 'Escalated').length} escalated risks. 30-DAY: Implement control enhancements for ${controlStats.lowEffectivenessControls.length} weak controls. 90-DAY: Complete appetite framework realignment and Monte Carlo scenario refresh.`;
+
+  return { structural, quantitative, strategic, governance, action };
+}
+
+// ============================================================================
+// EXECUTIVE OUTPUT FORMATTER
+// ============================================================================
+
+function formatExecutiveResponse(
+  title: string,
+  analysis: FiveLayerAnalysis,
+  additionalData?: string
+): string {
+  return `**${title}**
+
+---
+
+**EXECUTIVE SUMMARY (Board Ready)**
+${analysis.structural}
+
+---
+
+**QUANTITATIVE ANALYSIS**
+${analysis.quantitative}
+${additionalData || ''}
+
+---
+
+**RISK INTELLIGENCE INSIGHT**
+${analysis.strategic}
+
+---
+
+**DECISION PATH**
+${analysis.action}
+
+---
+
+**GOVERNANCE IMPLICATIONS**
+${analysis.governance}`;
+}
+
+// ============================================================================
+// PROACTIVE DIAGNOSTIC OPTIONS
+// ============================================================================
+
+function generateDiagnosticOptions(_context: string): DiagnosticOption[] {
+  const options: DiagnosticOption[] = [];
+  const kriStats = getKRIStats();
+  const riskStats = getRiskStats();
+
+  if (kriStats.byStatus.red > 0) {
+    options.push({
+      label: 'Analyze Breached KRIs',
+      action: 'Show me the breached KRIs with root cause analysis',
+      description: `${kriStats.byStatus.red} KRIs currently in breach`
+    });
+  }
+
+  if (riskStats.outsideAppetite > 0) {
+    options.push({
+      label: 'Appetite Breach Analysis',
+      action: 'Quantify the appetite breach with remediation costs',
+      description: `${riskStats.outsideAppetite} risks outside appetite`
+    });
+  }
+
+  options.push({
+    label: 'Run Monte Carlo',
+    action: 'Run Monte Carlo simulation on top 10 risks',
+    description: 'Probabilistic loss distribution analysis'
+  });
+
+  options.push({
+    label: 'Control Gap Analysis',
+    action: 'Show control effectiveness gaps with investment requirements',
+    description: 'Identify and quantify control improvements needed'
+  });
+
+  options.push({
+    label: 'Cluster Detection',
+    action: 'Identify correlated risk clusters',
+    description: 'Detect interconnected risks for holistic treatment'
+  });
+
+  return options.slice(0, 4);
+}
+
+// ============================================================================
+// INTENT HANDLERS WITH FIVE-LAYER REASONING
+// ============================================================================
+
+function handleExecutiveSummary(): ChatMessage {
+  const riskStats = getRiskStats();
+  const kriStats = getKRIStats();
+  const portfolioEMV = getPortfolioEMV();
+  const topRisks = getTopPrioritizedRisks(5);
+  const clusters = detectRiskClusters();
+
+  const analysis = generateFiveLayerAnalysis('executive', enterpriseRisks, enterpriseKRIs);
+
+  const additionalData = `
+**Portfolio Risk Metrics:**
+- Total Risks: ${riskStats.total} | Escalated: ${riskStats.escalated} | Outside Appetite: ${riskStats.outsideAppetite}
+- Inherent EMV: ${formatCurrency(portfolioEMV.totalInherent)}
+- Residual EMV: ${formatCurrency(portfolioEMV.totalResidual)}
+- Control Reduction: ${formatPercent(portfolioEMV.reduction)}
+
+**KRI Health:**
+- Breached: ${kriStats.byStatus.red} | Warning: ${kriStats.byStatus.amber} | Healthy: ${kriStats.byStatus.green}
+- Health Score: ${getKRIHealthScore()}%
+- Trending Adverse: ${kriStats.byTrend.increasing}
+
+**Top 5 Priority Risks by Composite Score:**
+${topRisks.map((pr, i) =>
+  `${i + 1}. Risk #${pr.risk.riskId}: ${pr.risk.riskDescription.substring(0, 50)}...
+     Residual EMV: ${formatCurrency(pr.residualEMV)} | Priority Score: ${pr.priorityScore.toFixed(0)}`
+).join('\n')}
+
+**Active Risk Clusters:**
+${clusters.slice(0, 3).map(c =>
+  `- ${c.name}: ${c.riskIds.length} risks, ${formatCurrency(c.aggregateEMV)} aggregate EMV (${c.correlationStrength} correlation)`
+).join('\n')}`;
+
+  const content = formatExecutiveResponse('EXECUTIVE RISK INTELLIGENCE BRIEFING', analysis, additionalData);
+
   return {
     id: `msg-${Date.now()}`,
     role: 'assistant',
-    content: fallbackIntent.handler(),
+    content,
     timestamp: new Date(),
     metadata: {
-      intent: 'fallback',
-      confidence: 50,
-      suggestedActions: fallbackIntent.suggestedFollowups,
-    },
+      intent: 'executive_summary',
+      confidence: 100,
+      dataUsed: ['enterpriseRisks', 'enterpriseKRIs', 'enterpriseControls', 'riskAppetite'],
+      suggestedActions: ['Drill into top risk', 'Run Monte Carlo', 'View cluster analysis'],
+      diagnosticOptions: generateDiagnosticOptions('executive')
+    }
+  };
+}
+
+function handleTopRisks(count: number = 5): ChatMessage {
+  const prioritizedRisks = getTopPrioritizedRisks(count);
+  const portfolioEMV = getPortfolioEMV();
+
+  const analysis = generateFiveLayerAnalysis('top_risks',
+    prioritizedRisks.map(pr => pr.risk),
+    enterpriseKRIs.filter(k => prioritizedRisks.some(pr => k.riskId === pr.risk.riskId))
+  );
+
+  const riskDetails = prioritizedRisks.map((pr, i) => {
+    const linkedKRIs = getKRIsByRiskId(pr.risk.riskId);
+    const breachedKRIs = linkedKRIs.filter(k => k.status === 'Red');
+    const controls = getControlsByRiskId(pr.risk.riskId);
+
+    return `**${i + 1}. Risk #${pr.risk.riskId}: ${pr.risk.riskDescription.substring(0, 60)}...**
+   - Category: ${pr.risk.riskCategory} | Owner: ${pr.risk.riskOwner} | Region: ${pr.risk.region}
+   - Inherent Score: ${pr.risk.inherentRiskScore} | Residual Score: ${pr.risk.residualRiskScore}
+   - **Residual EMV: ${formatCurrency(pr.residualEMV)}** | Appetite: ${pr.risk.riskAppetiteAlignment}
+   - KRIs: ${linkedKRIs.length} linked (${breachedKRIs.length} breached)
+   - Controls: ${controls.length} mapped | Effectiveness: ${pr.risk.controlEffectiveness}
+   - Priority Score: ${pr.priorityScore.toFixed(0)} (EMV + Appetite Gap + Control Weakness + Volatility)`;
+  }).join('\n\n');
+
+  const totalResidualEMV = prioritizedRisks.reduce((sum, pr) => sum + pr.residualEMV, 0);
+
+  const additionalData = `
+**Top ${count} Risks by Priority Score:**
+
+${riskDetails}
+
+---
+
+**Aggregate Analysis:**
+- Combined Residual EMV: ${formatCurrency(totalResidualEMV)} (${formatPercent(totalResidualEMV / portfolioEMV.totalResidual * 100)} of portfolio)
+- Outside Appetite: ${prioritizedRisks.filter(pr => pr.risk.riskAppetiteAlignment === 'Outside Appetite').length}
+- Escalated: ${prioritizedRisks.filter(pr => pr.risk.riskStatus === 'Escalated').length}
+- Weak Controls: ${prioritizedRisks.filter(pr => pr.risk.controlEffectiveness === 'Low').length}`;
+
+  return {
+    id: `msg-${Date.now()}`,
+    role: 'assistant',
+    content: formatExecutiveResponse(`TOP ${count} PRIORITY RISKS`, analysis, additionalData),
+    timestamp: new Date(),
+    metadata: {
+      intent: 'top_risks',
+      confidence: 100,
+      dataUsed: ['enterpriseRisks', 'enterpriseKRIs', 'enterpriseControls'],
+      suggestedActions: prioritizedRisks.slice(0, 3).map(pr => `Deep dive Risk #${pr.risk.riskId}`)
+    }
+  };
+}
+
+function handleKRIAnalysis(): ChatMessage {
+  const kriStats = getKRIStats();
+  const breachedKRIs = getBreachedKRIs().slice(0, 8);
+
+  const analysis = generateFiveLayerAnalysis('kri', enterpriseRisks, enterpriseKRIs);
+
+  const kriDetails = breachedKRIs.map((kri, i) => {
+    const linkedRisk = enterpriseRisks.find(r => r.riskId === kri.riskId);
+    const breachSeverity = ((kri.currentValue / kri.threshold) * 100).toFixed(0);
+
+    return `**${i + 1}. ${kri.indicator}** (KRI-${kri.kriId})
+   - Current: ${kri.currentValue} vs Threshold: ${kri.threshold} (${breachSeverity}% of limit)
+   - Trend: ${kri.trend === 'Up' ? 'Worsening' : kri.trend === 'Down' ? 'Improving' : 'Stable'}
+   - Linked Risk #${kri.riskId}: ${linkedRisk?.riskDescription.substring(0, 40)}...
+   - Risk Owner: ${linkedRisk?.riskOwner || 'N/A'}`;
+  }).join('\n\n');
+
+  const additionalData = `
+**KRI Portfolio Status:**
+- Total KRIs: ${kriStats.total}
+- Breached (Red): ${kriStats.byStatus.red} (${formatPercent(kriStats.breachRate)})
+- Warning (Amber): ${kriStats.byStatus.amber}
+- Healthy (Green): ${kriStats.byStatus.green}
+- Health Score: ${getKRIHealthScore()}%
+
+**Trend Analysis:**
+- Worsening: ${kriStats.byTrend.increasing} KRIs
+- Improving: ${kriStats.byTrend.decreasing} KRIs
+- Stable: ${kriStats.byTrend.stable} KRIs
+
+---
+
+**Top Breached KRIs:**
+
+${kriDetails}`;
+
+  return {
+    id: `msg-${Date.now()}`,
+    role: 'assistant',
+    content: formatExecutiveResponse('KRI THRESHOLD INTELLIGENCE', analysis, additionalData),
+    timestamp: new Date(),
+    metadata: {
+      intent: 'kri_analysis',
+      confidence: 100,
+      dataUsed: ['enterpriseKRIs', 'enterpriseRisks'],
+      suggestedActions: ['Root cause analysis', 'Threshold review', 'Owner notification']
+    }
+  };
+}
+
+function handleAppetiteAnalysis(): ChatMessage {
+  const outsideAppetite = getOutsideAppetiteRisks();
+
+  const analysis = generateFiveLayerAnalysis('appetite', outsideAppetite, []);
+
+  const appetiteBreachDetails = riskAppetite.map(app => {
+    const breachPercent = calculateAppetiteBreachPercent(app.currentLevel, app.toleranceMax);
+    const statusIcon = app.status === 'breached' ? 'BREACHED' :
+                       app.status === 'approaching' ? 'WARNING' : 'WITHIN';
+
+    return `**${app.category.charAt(0).toUpperCase() + app.category.slice(1)}** [${statusIcon}]
+   - Current: ${app.currentLevel}% | Tolerance: ${app.toleranceMin}%-${app.toleranceMax}%
+   ${breachPercent > 0 ? `- **Breach Severity: ${formatPercent(breachPercent)} above tolerance**` : ''}
+   - Statement: ${app.statement.substring(0, 80)}...`;
+  }).join('\n\n');
+
+  // Calculate financial impact of appetite breaches
+  const outsideAppetiteEMV = outsideAppetite.reduce((sum, r) => sum + calculateResidualEMV(r), 0);
+  const targetReduction = outsideAppetite.length > 0 ?
+    outsideAppetite.reduce((sum, r) => sum + (r.residualRiskScore - 12), 0) / outsideAppetite.length * 10 : 0;
+
+  const additionalData = `
+**Appetite Framework Status:**
+
+${appetiteBreachDetails}
+
+---
+
+**Quantitative Impact of Outside Appetite Risks:**
+- Risks Outside Appetite: ${outsideAppetite.length}
+- Combined Residual EMV: ${formatCurrency(outsideAppetiteEMV)}
+- Average Probability Reduction Required: ${formatPercent(targetReduction)}
+
+**Top 5 Outside Appetite Risks:**
+${outsideAppetite.slice(0, 5).map((r, i) => {
+  const residualEMV = calculateResidualEMV(r);
+  const { investmentRequired } = calculateProbabilityReductionRequired(r, 30);
+  return `${i + 1}. Risk #${r.riskId}: ${r.riskDescription.substring(0, 45)}...
+     - Residual Score: ${r.residualRiskScore} | EMV: ${formatCurrency(residualEMV)}
+     - Est. Investment for 30% reduction: ${formatCurrency(investmentRequired)}`;
+}).join('\n')}`;
+
+  return {
+    id: `msg-${Date.now()}`,
+    role: 'assistant',
+    content: formatExecutiveResponse('RISK APPETITE BREACH ANALYSIS', analysis, additionalData),
+    timestamp: new Date(),
+    metadata: {
+      intent: 'appetite_analysis',
+      confidence: 100,
+      dataUsed: ['enterpriseRisks', 'riskAppetite'],
+      suggestedActions: ['Treatment options', 'Tolerance review', 'Board notification']
+    }
+  };
+}
+
+function handleControlAnalysis(): ChatMessage {
+  const controlStats = getControlStats();
+  const lowControls = controlStats.lowEffectivenessControls.slice(0, 5);
+  const highControls = controlStats.highEffectivenessControls.slice(0, 5);
+
+  const analysis = generateFiveLayerAnalysis('controls', enterpriseRisks, []);
+
+  // Calculate investment requirements
+  const avgImprovement = 25; // Target 25 point improvement for weak controls
+  const totalInvestmentRequired = lowControls.length * avgImprovement * CONTROL_INVESTMENT_PER_POINT;
+
+  const additionalData = `
+**Control Portfolio Metrics:**
+- Total Controls: ${controlStats.total}
+- Average Effectiveness: ${controlStats.avgEffectiveness}%
+- Risk Coverage: ${controlStats.riskCoverage.coveragePercent}%
+
+**By Type:**
+- Preventive: ${controlStats.byType.preventive} (first line of defense)
+- Detective: ${controlStats.byType.detective} (monitoring)
+- Corrective: ${controlStats.byType.corrective} (remediation)
+
+**By Automation:**
+- Automated: ${controlStats.byAutomation.automated} (highest reliability)
+- Semi-Automated: ${controlStats.byAutomation.semiAutomated}
+- Manual: ${controlStats.byAutomation.manual} (candidates for automation)
+
+---
+
+**Weakest Controls Requiring Investment:**
+${lowControls.map((c, i) => {
+  const improvement = 85 - (c.effectivenessScore || 60);
+  const investment = improvement * CONTROL_INVESTMENT_PER_POINT;
+  return `${i + 1}. ${c.controlName}
+     - Current: ${c.effectivenessScore}% | Target: 85%
+     - Estimated Investment: ${formatCurrency(investment)}
+     - Covers ${c.mappedRiskIds.length} risks`;
+}).join('\n')}
+
+**Total Control Enhancement Investment Required: ${formatCurrency(totalInvestmentRequired)}**
+
+---
+
+**Strongest Controls (Best Practices):**
+${highControls.map((c, i) =>
+  `${i + 1}. ${c.controlName} - ${c.effectivenessScore}% (${c.automationLevel})`
+).join('\n')}`;
+
+  return {
+    id: `msg-${Date.now()}`,
+    role: 'assistant',
+    content: formatExecutiveResponse('CONTROL EFFECTIVENESS INTELLIGENCE', analysis, additionalData),
+    timestamp: new Date(),
+    metadata: {
+      intent: 'control_analysis',
+      confidence: 100,
+      dataUsed: ['enterpriseControls', 'enterpriseRisks'],
+      suggestedActions: ['Control investment plan', 'Automation roadmap', 'Testing schedule']
+    }
+  };
+}
+
+function handleMonteCarloAnalysis(): ChatMessage {
+  const mcOutput = runSimulatedMonteCarlo();
+  const topRisks = getTopPrioritizedRisks(10);
+
+  const analysis = generateFiveLayerAnalysis('montecarlo', topRisks.map(pr => pr.risk), []);
+
+  const additionalData = `
+**Monte Carlo Simulation Results (10,000 iterations)**
+
+**Loss Distribution Percentiles:**
+- P50 (Median): ${formatCurrency(mcOutput.p50)}
+- P75 (Upper Quartile): ${formatCurrency(mcOutput.p75)}
+- P95 (Stress Scenario): ${formatCurrency(mcOutput.p95)}
+- P99 (Extreme Scenario): ${formatCurrency(mcOutput.p99)}
+
+**Risk Metrics:**
+- Expected Annual Loss: ${formatCurrency(mcOutput.expectedLoss)}
+- Maximum Potential Loss: ${formatCurrency(mcOutput.maxLoss)}
+- Tail Risk (P95-P99): ${formatCurrency(mcOutput.tailRisk)}
+
+---
+
+**Sensitivity Analysis (Contribution to Variance):**
+${mcOutput.sensitivityFactors.map(sf =>
+  `- ${sf.factor}: ${formatPercent(sf.impact * 100)}`
+).join('\n')}
+
+---
+
+**Scenario Analysis:**
+
+*Scenario 1: Major Cyber Event*
+- Probability: 15%
+- Impact: ${formatCurrency(mcOutput.p95 * 0.6)}
+- Key Drivers: Ransomware, data breach, system outage
+
+*Scenario 2: Regulatory Penalty*
+- Probability: 10%
+- Impact: ${formatCurrency(mcOutput.p75 * 0.8)}
+- Key Drivers: Compliance failure, reporting breach
+
+*Scenario 3: Vendor Failure Cascade*
+- Probability: 8%
+- Impact: ${formatCurrency(mcOutput.p75 * 0.5)}
+- Key Drivers: Critical vendor insolvency, supply chain disruption`;
+
+  return {
+    id: `msg-${Date.now()}`,
+    role: 'assistant',
+    content: formatExecutiveResponse('MONTE CARLO RISK INTELLIGENCE', analysis, additionalData),
+    timestamp: new Date(),
+    metadata: {
+      intent: 'monte_carlo',
+      confidence: 100,
+      dataUsed: ['enterpriseRisks', 'enterpriseKRIs', 'riskEvents'],
+      suggestedActions: ['Stress test scenarios', 'Capital allocation review', 'Insurance adequacy']
+    }
+  };
+}
+
+function handleClusterAnalysis(): ChatMessage {
+  const clusters = detectRiskClusters();
+  const portfolioEMV = getPortfolioEMV();
+
+  const analysis = generateFiveLayerAnalysis('clusters', enterpriseRisks, []);
+
+  const clusterDetails = clusters.map((cluster, i) => {
+    const clusterRisks = enterpriseRisks.filter(r => cluster.riskIds.includes(r.riskId));
+    const avgScore = clusterRisks.reduce((sum, r) => sum + r.residualRiskScore, 0) / clusterRisks.length;
+
+    return `**${i + 1}. ${cluster.name}** [${cluster.correlationStrength.toUpperCase()} CORRELATION]
+   - Type: ${cluster.type.charAt(0).toUpperCase() + cluster.type.slice(1)}
+   - Risks in Cluster: ${cluster.riskIds.length}
+   - Aggregate EMV: ${formatCurrency(cluster.aggregateEMV)}
+   - Average Residual Score: ${avgScore.toFixed(1)}
+   - Risk IDs: ${cluster.riskIds.join(', ')}
+   - ${cluster.description}`;
+  }).join('\n\n');
+
+  const totalClusterEMV = clusters.reduce((sum, c) => sum + c.aggregateEMV, 0);
+
+  const additionalData = `
+**Risk Cluster Analysis**
+
+${clusterDetails}
+
+---
+
+**Cluster Portfolio Impact:**
+- Total Clustered EMV: ${formatCurrency(totalClusterEMV)}
+- Portfolio Concentration: ${formatPercent(totalClusterEMV / portfolioEMV.totalResidual * 100)}
+- High Correlation Clusters: ${clusters.filter(c => c.correlationStrength === 'high').length}
+
+**Cascade Risk Assessment:**
+- Single event triggering multiple risks: HIGH
+- Recommended approach: Holistic treatment strategies for correlated risks
+- Consider: Shared controls, insurance aggregation, portfolio limits`;
+
+  return {
+    id: `msg-${Date.now()}`,
+    role: 'assistant',
+    content: formatExecutiveResponse('RISK CLUSTER INTELLIGENCE', analysis, additionalData),
+    timestamp: new Date(),
+    metadata: {
+      intent: 'cluster_analysis',
+      confidence: 100,
+      dataUsed: ['enterpriseRisks', 'enterpriseControls'],
+      suggestedActions: ['Cluster treatment plan', 'Correlation modeling', 'Portfolio optimization']
+    }
+  };
+}
+
+function handleSpecificRisk(riskId: number): ChatMessage {
+  const risk = enterpriseRisks.find(r => r.riskId === riskId);
+  if (!risk) {
+    return {
+      id: `msg-${Date.now()}`,
+      role: 'assistant',
+      content: `Risk #${riskId} not found in the register. Available risk IDs range from 1 to ${enterpriseRisks.length}.`,
+      timestamp: new Date(),
+      metadata: { intent: 'error', confidence: 100 }
+    };
+  }
+
+  const linkedKRIs = getKRIsByRiskId(riskId);
+  const linkedControls = getControlsByRiskId(riskId);
+  const events = getEventsByRiskId(riskId);
+
+  const inherentEMV = calculateEMV(risk.likelihood, risk.impact);
+  const residualEMV = calculateResidualEMV(risk);
+  const { newProbability, investmentRequired } = calculateProbabilityReductionRequired(risk, 30);
+
+  const analysis = generateFiveLayerAnalysis('specific_risk', [risk], linkedKRIs);
+
+  const additionalData = `
+**Risk #${risk.riskId}: ${risk.riskDescription}**
+
+---
+
+**Risk Profile:**
+- Category: ${risk.riskCategory} | Region: ${risk.region}
+- Owner: ${risk.riskOwner} | Status: ${risk.riskStatus}
+- Root Cause: ${risk.rootCause}
+- Velocity: ${risk.velocity}
+
+**Quantitative Assessment:**
+- Likelihood: ${risk.likelihood}/5 (${formatPercent(PROBABILITY_MULTIPLIERS[risk.likelihood] * 100)})
+- Impact: ${risk.impact}/5 (${formatCurrency(IMPACT_MULTIPLIERS[risk.impact])})
+- **Inherent EMV: ${formatCurrency(inherentEMV)}**
+- **Residual EMV: ${formatCurrency(residualEMV)}**
+- Appetite Alignment: ${risk.riskAppetiteAlignment}
+
+**Control Effectiveness:**
+- Current Rating: ${risk.controlEffectiveness}
+- Existing Controls: ${risk.existingControls}
+- Mapped Controls: ${linkedControls.length}
+${linkedControls.slice(0, 3).map(c => `  - ${c.controlName} (${c.effectivenessScore}%)`).join('\n')}
+
+**KRI Monitoring (${linkedKRIs.length} linked):**
+${linkedKRIs.length > 0 ? linkedKRIs.slice(0, 5).map(k =>
+  `- ${k.indicator}: ${k.currentValue}/${k.threshold} [${k.status}] ${k.trend === 'Up' ? '↑' : k.trend === 'Down' ? '↓' : '→'}`
+).join('\n') : '- No KRIs linked to this risk'}
+
+**Historical Events (${events.length} recorded):**
+${events.length > 0 ? events.slice(0, 3).map(e =>
+  `- ${e.eventDate}: ${formatCurrency(e.financialImpact)} (${e.operationalImpact})`
+).join('\n') : '- No historical events'}
+
+---
+
+**Treatment Recommendation:**
+To bring this risk within appetite (30% probability reduction):
+- New Probability: ${formatPercent(newProbability * 100)}
+- New Residual EMV: ${formatCurrency(residualEMV * 0.7)}
+- **Estimated Investment Required: ${formatCurrency(investmentRequired)}**
+- ROI: ${formatPercent((residualEMV * 0.3 / investmentRequired) * 100)} return on risk reduction`;
+
+  return {
+    id: `msg-${Date.now()}`,
+    role: 'assistant',
+    content: formatExecutiveResponse(`RISK #${riskId} DEEP INTELLIGENCE`, analysis, additionalData),
+    timestamp: new Date(),
+    metadata: {
+      intent: 'specific_risk',
+      confidence: 100,
+      dataUsed: ['enterpriseRisks', 'enterpriseKRIs', 'enterpriseControls', 'riskEvents'],
+      suggestedActions: ['Bow-tie analysis', 'Treatment options', 'Monte Carlo for this risk']
+    }
+  };
+}
+
+function handleCategoryAnalysis(category: string): ChatMessage {
+  const categoryMap: Record<string, string> = {
+    'cyber': 'Cybersecurity',
+    'cybersecurity': 'Cybersecurity',
+    'financial': 'Financial',
+    'operational': 'Operational',
+    'compliance': 'Compliance',
+    'strategic': 'Strategic',
+    'reputational': 'Reputational',
+    'people': 'People',
+    'third party': 'Third Party',
+    'vendor': 'Third Party',
+    'ai': 'AI Ethics',
+    'ai ethics': 'AI Ethics'
+  };
+
+  const normalizedCategory = categoryMap[category.toLowerCase()] || category;
+  const categoryRisks = getRisksByCategory(normalizedCategory as any);
+
+  if (categoryRisks.length === 0) {
+    return {
+      id: `msg-${Date.now()}`,
+      role: 'assistant',
+      content: `No risks found for category "${normalizedCategory}". Available categories: ${Array.from(new Set(enterpriseRisks.map(r => r.riskCategory))).join(', ')}`,
+      timestamp: new Date(),
+      metadata: { intent: 'error', confidence: 100 }
+    };
+  }
+
+  const categoryEMV = categoryRisks.reduce((sum, r) => sum + calculateResidualEMV(r), 0);
+  const linkedKRIs = enterpriseKRIs.filter(k => categoryRisks.some(r => r.riskId === k.riskId));
+
+  const analysis = generateFiveLayerAnalysis(category, categoryRisks, linkedKRIs);
+
+  const additionalData = `
+**${normalizedCategory} Category Analysis**
+
+**Category Metrics:**
+- Total Risks: ${categoryRisks.length}
+- Escalated: ${categoryRisks.filter(r => r.riskStatus === 'Escalated').length}
+- Outside Appetite: ${categoryRisks.filter(r => r.riskAppetiteAlignment === 'Outside Appetite').length}
+- Average Residual Score: ${(categoryRisks.reduce((s, r) => s + r.residualRiskScore, 0) / categoryRisks.length).toFixed(1)}
+- **Total Category EMV: ${formatCurrency(categoryEMV)}**
+
+**Top 5 ${normalizedCategory} Risks:**
+${categoryRisks.sort((a, b) => b.residualRiskScore - a.residualRiskScore).slice(0, 5).map((r, i) => {
+  const emv = calculateResidualEMV(r);
+  return `${i + 1}. Risk #${r.riskId}: ${r.riskDescription.substring(0, 50)}...
+     - Score: ${r.residualRiskScore} | EMV: ${formatCurrency(emv)} | Status: ${r.riskStatus}`;
+}).join('\n')}
+
+**Linked KRIs:**
+- Total: ${linkedKRIs.length}
+- Breached: ${linkedKRIs.filter(k => k.status === 'Red').length}
+- Warning: ${linkedKRIs.filter(k => k.status === 'Amber').length}
+
+**Control Coverage:**
+- Risks with High Effectiveness: ${categoryRisks.filter(r => r.controlEffectiveness === 'High').length}
+- Risks with Medium Effectiveness: ${categoryRisks.filter(r => r.controlEffectiveness === 'Medium').length}
+- Risks with Low Effectiveness: ${categoryRisks.filter(r => r.controlEffectiveness === 'Low').length}`;
+
+  return {
+    id: `msg-${Date.now()}`,
+    role: 'assistant',
+    content: formatExecutiveResponse(`${normalizedCategory.toUpperCase()} CATEGORY INTELLIGENCE`, analysis, additionalData),
+    timestamp: new Date(),
+    metadata: {
+      intent: 'category_analysis',
+      confidence: 100,
+      dataUsed: ['enterpriseRisks', 'enterpriseKRIs'],
+      suggestedActions: categoryRisks.slice(0, 3).map(r => `Analyze Risk #${r.riskId}`)
+    }
+  };
+}
+
+function handleHelp(): ChatMessage {
+  return {
+    id: `msg-${Date.now()}`,
+    role: 'assistant',
+    content: `**LUMINA-R AI RISK INTELLIGENCE ENGINE**
+
+I operate on a five-layer reasoning system to provide board-ready risk intelligence:
+
+**Layer 1: Structural Interpretation** - Understanding what the data represents
+**Layer 2: Quantitative Analysis** - EMV calculations, statistics, financial impact
+**Layer 3: Strategic Context** - Business objective implications
+**Layer 4: Governance Implication** - Regulatory and oversight requirements
+**Layer 5: Action Prescription** - Immediate, 30-day, and 90-day recommendations
+
+---
+
+**Available Analysis Capabilities:**
+
+**Risk Prioritization**
+- "Top 5 risks" - Priority-ranked risks by composite score
+- "Risk #12" - Deep dive into specific risk with EMV and treatment costs
+- "Cyber risks" / "Financial risks" - Category-specific analysis
+
+**KRI Intelligence**
+- "KRI status" / "Breached KRIs" - Threshold monitoring
+- "KRI trends" - Adverse movement detection
+
+**Quantitative Analytics**
+- "Monte Carlo" - Probabilistic loss distribution (P50, P75, P95)
+- "Appetite breach" - Quantified tolerance exceedances with remediation costs
+- "Control gaps" - Investment requirements for effectiveness improvement
+
+**Advanced Analytics**
+- "Cluster analysis" - Correlated risk detection
+- "Executive summary" - Board-ready portfolio overview
+
+**Example Queries:**
+- "What investment is needed to bring Risk #45 within appetite?"
+- "Run Monte Carlo on our cyber risk portfolio"
+- "Show me risks trending adversely with weak controls"
+
+What would you like to analyze?`,
+    timestamp: new Date(),
+    metadata: {
+      intent: 'help',
+      confidence: 100,
+      suggestedActions: ['Executive summary', 'Top 5 risks', 'Monte Carlo analysis'],
+      diagnosticOptions: generateDiagnosticOptions('help')
+    }
+  };
+}
+
+function handleGreeting(): ChatMessage {
+  const riskStats = getRiskStats();
+  const kriStats = getKRIStats();
+  const portfolioEMV = getPortfolioEMV();
+  const breachedAppetites = getBreachedAppetites();
+
+  // Determine urgency level
+  const urgencyFactors = [];
+  if (kriStats.byStatus.red > 10) urgencyFactors.push(`${kriStats.byStatus.red} KRIs breached`);
+  if (riskStats.escalated > 5) urgencyFactors.push(`${riskStats.escalated} risks escalated`);
+  if (breachedAppetites.length > 0) urgencyFactors.push(`${breachedAppetites.length} appetite categories breached`);
+
+  const urgencyStatement = urgencyFactors.length > 0 ?
+    `\n\n**Attention Required:** ${urgencyFactors.join(', ')}` : '';
+
+  return {
+    id: `msg-${Date.now()}`,
+    role: 'assistant',
+    content: `**LUMINA-R Risk Intelligence Active**
+
+Welcome to your enterprise risk intelligence briefing.
+
+**Current Risk Posture:**
+- Portfolio Residual EMV: ${formatCurrency(portfolioEMV.totalResidual)}
+- Risks Tracked: ${riskStats.total} | Escalated: ${riskStats.escalated} | Outside Appetite: ${riskStats.outsideAppetite}
+- KRI Health Score: ${getKRIHealthScore()}% (${kriStats.byStatus.red} breached, ${kriStats.byStatus.amber} warning)
+- Control Reduction: ${formatPercent(portfolioEMV.reduction)} of inherent exposure${urgencyStatement}
+
+**Quick Analysis Options:**
+What would you like to explore?`,
+    timestamp: new Date(),
+    metadata: {
+      intent: 'greeting',
+      confidence: 100,
+      dataUsed: ['enterpriseRisks', 'enterpriseKRIs', 'riskAppetite'],
+      suggestedActions: ['Executive summary', 'Top risks', 'Urgent actions'],
+      diagnosticOptions: generateDiagnosticOptions('greeting')
+    }
+  };
+}
+
+function handleUrgentActions(): ChatMessage {
+  const escalatedRisks = getEscalatedRisks();
+  const breachedKRIs = getBreachedKRIs();
+  const outsideAppetite = getOutsideAppetiteRisks();
+  const controlStats = getControlStats();
+
+  const analysis = generateFiveLayerAnalysis('urgent', escalatedRisks.slice(0, 10), breachedKRIs.slice(0, 10));
+
+  const urgentEMV = escalatedRisks.reduce((sum, r) => sum + calculateResidualEMV(r), 0);
+
+  const additionalData = `
+**IMMEDIATE ACTION MATRIX**
+
+**Escalated Risks (${escalatedRisks.length})** - Residual EMV: ${formatCurrency(urgentEMV)}
+${escalatedRisks.slice(0, 5).map((r, i) => {
+  const emv = calculateResidualEMV(r);
+  return `${i + 1}. Risk #${r.riskId}: ${r.riskDescription.substring(0, 45)}...
+     - EMV: ${formatCurrency(emv)} | Owner: ${r.riskOwner}
+     - **ACTION: Require Risk Committee review within 48 hours**`;
+}).join('\n')}
+
+**Breached KRIs (${breachedKRIs.length})** - Requiring Root Cause Analysis
+${breachedKRIs.slice(0, 5).map((k, i) => {
+  const risk = enterpriseRisks.find(r => r.riskId === k.riskId);
+  return `${i + 1}. ${k.indicator}: ${k.currentValue} vs ${k.threshold} threshold
+     - Risk #${k.riskId} (${risk?.riskOwner || 'N/A'})
+     - **ACTION: Investigate within 24 hours**`;
+}).join('\n')}
+
+**Outside Appetite (${outsideAppetite.length})** - Tolerance Breach
+${outsideAppetite.slice(0, 3).map((r, i) => {
+  const { investmentRequired } = calculateProbabilityReductionRequired(r, 25);
+  return `${i + 1}. Risk #${r.riskId}: ${r.riskDescription.substring(0, 40)}...
+     - **ACTION: Treatment plan required - Est. ${formatCurrency(investmentRequired)}**`;
+}).join('\n')}
+
+**Weak Controls (${controlStats.lowEffectivenessControls.length})** - Below 70% Effectiveness
+${controlStats.lowEffectivenessControls.slice(0, 3).map((c, i) =>
+  `${i + 1}. ${c.controlName}: ${c.effectivenessScore}%
+     - **ACTION: Remediation plan within 30 days**`
+).join('\n')}
+
+---
+
+**IMMEDIATE ESCALATION CHECKLIST:**
+1. Notify CRO of ${escalatedRisks.length} escalated risks
+2. Schedule emergency review for ${breachedKRIs.length} breached KRIs
+3. Brief Risk Committee on ${outsideAppetite.length} appetite breaches
+4. Initiate control remediation for ${controlStats.lowEffectivenessControls.length} weak controls`;
+
+  return {
+    id: `msg-${Date.now()}`,
+    role: 'assistant',
+    content: formatExecutiveResponse('URGENT ACTION INTELLIGENCE', analysis, additionalData),
+    timestamp: new Date(),
+    metadata: {
+      intent: 'urgent_actions',
+      confidence: 100,
+      dataUsed: ['enterpriseRisks', 'enterpriseKRIs', 'enterpriseControls'],
+      suggestedActions: ['Generate report', 'Owner notifications', 'Treatment planning']
+    }
+  };
+}
+
+// ============================================================================
+// MAIN PROCESSING ENGINE
+// ============================================================================
+
+export function processMessage(userMessage: string): ChatMessage {
+  const message = userMessage.trim().toLowerCase();
+
+  // Specific risk lookup
+  const riskMatch = userMessage.match(/risk\s*#?(\d+)/i);
+  if (riskMatch) {
+    return handleSpecificRisk(parseInt(riskMatch[1]));
+  }
+
+  // Top N risks
+  const topMatch = message.match(/top\s*(\d+)?\s*risk/i);
+  if (topMatch || message.includes('highest risk') || message.includes('priority risk') || message.includes('critical risk')) {
+    const count = topMatch?.[1] ? parseInt(topMatch[1]) : 5;
+    return handleTopRisks(count);
+  }
+
+  // KRI Analysis
+  if (message.includes('kri') || message.includes('indicator') || message.includes('threshold') || message.includes('breached')) {
+    return handleKRIAnalysis();
+  }
+
+  // Appetite Analysis
+  if (message.includes('appetite') || message.includes('tolerance') || message.includes('outside')) {
+    return handleAppetiteAnalysis();
+  }
+
+  // Control Analysis
+  if (message.includes('control') || message.includes('effectiveness') || message.includes('mitigation')) {
+    return handleControlAnalysis();
+  }
+
+  // Monte Carlo
+  if (message.includes('monte carlo') || message.includes('simulation') || message.includes('probability') || message.includes('var') || message.includes('value at risk')) {
+    return handleMonteCarloAnalysis();
+  }
+
+  // Cluster Analysis
+  if (message.includes('cluster') || message.includes('correlation') || message.includes('interconnect') || message.includes('cascade')) {
+    return handleClusterAnalysis();
+  }
+
+  // Category Analysis
+  const categories = ['cyber', 'financial', 'operational', 'compliance', 'strategic', 'reputational', 'people', 'third party', 'vendor', 'ai'];
+  for (const cat of categories) {
+    if (message.includes(cat)) {
+      return handleCategoryAnalysis(cat);
+    }
+  }
+
+  // Executive Summary
+  if (message.includes('summary') || message.includes('executive') || message.includes('overview') || message.includes('dashboard') || message.includes('posture')) {
+    return handleExecutiveSummary();
+  }
+
+  // Urgent Actions
+  if (message.includes('urgent') || message.includes('immediate') || message.includes('priority') || message.includes('attention') || message.includes('critical') || message.includes('action')) {
+    return handleUrgentActions();
+  }
+
+  // Greeting
+  if (message.match(/^(hi|hello|hey|good morning|good afternoon|good evening|greetings)/i)) {
+    return handleGreeting();
+  }
+
+  // Help
+  if (message.includes('help') || message.includes('what can you') || message.includes('how do') || message.includes('guide')) {
+    return handleHelp();
+  }
+
+  // Fallback with diagnostic options
+  return {
+    id: `msg-${Date.now()}`,
+    role: 'assistant',
+    content: `I can help you analyze your risk portfolio with quantitative intelligence. Here are some options:
+
+**Select an Analysis Path:**`,
+    timestamp: new Date(),
+    metadata: {
+      intent: 'clarification',
+      confidence: 70,
+      diagnosticOptions: [
+        { label: 'Executive Summary', action: 'Show executive summary', description: 'Board-ready portfolio overview' },
+        { label: 'Top Priority Risks', action: 'Show top 5 priority risks', description: 'Ranked by composite risk score' },
+        { label: 'KRI Breach Analysis', action: 'Analyze breached KRIs', description: `${getKRIStats().byStatus.red} KRIs currently in breach` },
+        { label: 'Monte Carlo Simulation', action: 'Run Monte Carlo analysis', description: 'Probabilistic loss distribution' }
+      ],
+      suggestedActions: ['Executive summary', 'Top risks', 'KRI status', 'Help']
+    }
   };
 }
 
 export const getSuggestedQuestions = () => [
-  'What are the top 5 risks I should focus on?',
-  'Which KRIs are currently breached?',
-  'Show me risks outside appetite',
-  'What is our control effectiveness score?',
-  'Run Monte Carlo simulation for cyber risks',
-  'Create Bow-Tie analysis for Risk #13',
-  'What events occurred this quarter?',
-  'Give me an executive summary',
-  'Show urgent actions needed',
-  'Compare risk categories',
+  'Show executive summary with EMV analysis',
+  'What are the top 5 priority risks?',
+  'Which KRIs are breached and trending adversely?',
+  'Run Monte Carlo simulation on the portfolio',
+  'Show appetite breaches with remediation costs',
+  'Analyze control effectiveness gaps',
+  'Identify correlated risk clusters',
+  'What is the investment required for Risk #12 treatment?',
+  'Show urgent actions needed today',
+  'Compare cyber risks vs financial risks',
 ];

@@ -122,7 +122,7 @@ export default function Admin() {
                   <tr key={user.id}>
                     <td>
                       <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-accent-primary to-accent-secondary flex items-center justify-center">
+                        <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-red-500 to-red-700 flex items-center justify-center">
                           <span className="text-xs font-semibold text-white">
                             {user.name.split(' ').map(n => n[0]).join('')}
                           </span>

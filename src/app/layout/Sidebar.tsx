@@ -94,7 +94,7 @@ export function Sidebar() {
     <aside className="fixed left-0 top-0 bottom-0 w-64 bg-[var(--bg-secondary)] backdrop-blur-xl border-r border-[var(--border-primary)] flex flex-col z-30">
       {/* Logo */}
       <div className="h-16 flex items-center gap-3 px-5 border-b border-[var(--border-primary)]">
-        <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-accent-primary to-accent-secondary flex items-center justify-center">
+        <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-red-500 to-red-700 flex items-center justify-center">
           <span className="text-white font-bold text-sm">LR</span>
         </div>
         <div>
@@ -182,7 +182,7 @@ export function Sidebar() {
       <div className="p-4 border-t border-[var(--border-primary)]">
         <Link
           to="/pricing"
-          className="block w-full text-center py-3 px-4 rounded-lg bg-gradient-to-r from-accent-primary to-accent-secondary text-white text-sm font-medium hover:opacity-90 transition-opacity"
+          className="block w-full text-center py-3 px-4 rounded-lg bg-gradient-to-r from-red-500 to-red-700 text-white text-sm font-medium hover:opacity-90 transition-opacity"
         >
           View Pricing Plans
         </Link>

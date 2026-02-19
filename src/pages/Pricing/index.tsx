@@ -73,7 +73,7 @@ const plans: Plan[] = [
     abbrev: 'Biz',
     cta: 'Start 14-Day Trial',
     popular: true,
-    gradient: 'from-accent-primary to-accent-secondary',
+    gradient: 'from-red-500 to-red-700',
     features: [
       { text: 'Unlimited risks in register', included: true, highlight: true },
       { text: 'Unlimited KRIs', included: true, highlight: true },
@@ -154,7 +154,7 @@ export default function Pricing() {
             onClick={() => navigate('/')}
             className="flex items-center gap-3"
           >
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-accent-primary to-accent-secondary flex items-center justify-center">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-red-500 to-red-700 flex items-center justify-center">
               <span className="text-sm font-bold text-white">LR</span>
             </div>
             <div>
@@ -243,7 +243,7 @@ export default function Pricing() {
                   {/* Popular Badge */}
                   {plan.popular && (
                     <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                      <span className="px-3 py-1 rounded-full text-xs font-semibold bg-gradient-to-r from-accent-primary to-accent-secondary text-white">
+                      <span className="px-3 py-1 rounded-full text-xs font-semibold bg-gradient-to-r from-red-500 to-red-700 text-white">
                         Most Popular
                       </span>
                     </div>
@@ -254,7 +254,7 @@ export default function Pricing() {
                     <div className={cn(
                       'w-11 h-11 rounded-lg flex items-center justify-center mb-3 font-bold text-sm',
                       plan.popular
-                        ? 'bg-gradient-to-br from-accent-primary to-accent-secondary text-white'
+                        ? 'bg-gradient-to-br from-red-500 to-red-700 text-white'
                         : 'bg-navy-800/50 text-navy-400'
                     )}>
                       {plan.abbrev}
@@ -284,7 +284,7 @@ export default function Pricing() {
                     className={cn(
                       'w-full py-2.5 rounded-lg font-medium mb-5 transition-all text-sm',
                       plan.popular
-                        ? 'bg-gradient-to-r from-accent-primary to-accent-secondary text-white hover:opacity-90'
+                        ? 'bg-gradient-to-r from-red-500 to-red-700 text-white hover:opacity-90'
                         : 'btn-secondary'
                     )}
                   >
@@ -455,7 +455,7 @@ export default function Pricing() {
           <div className="flex items-center justify-center gap-4 flex-wrap">
             <button
               onClick={() => navigate('/dashboard')}
-              className="px-8 py-3 rounded-xl font-medium bg-gradient-to-r from-accent-primary to-accent-secondary text-white hover:opacity-90 transition-opacity"
+              className="px-8 py-3 rounded-xl font-medium bg-gradient-to-r from-red-500 to-red-700 text-white hover:opacity-90 transition-opacity"
             >
               Start Free Today
             </button>

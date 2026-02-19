@@ -19,9 +19,9 @@
   --color-navy-100: #f1f5f9;
   --color-navy-50: #f8fafc;
 
-  /* Accent colors */
-  --color-accent-primary: #6366f1;
-  --color-accent-secondary: #8b5cf6;
+  /* Accent colors - Burgundy/Red (matches landing page cube) */
+  --color-accent-primary: #dc2626;
+  --color-accent-secondary: #b91c1c;
 
   /* Risk severity colors */
   --color-risk-critical: #dc2626;

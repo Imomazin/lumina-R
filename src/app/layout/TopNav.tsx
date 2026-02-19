@@ -202,7 +202,7 @@ export function TopNav() {
               }}
               className="flex items-center gap-2 p-1.5 rounded-lg hover:bg-navy-800/50 transition-colors"
             >
-              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-accent-primary to-accent-secondary flex items-center justify-center">
+              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-red-500 to-red-700 flex items-center justify-center">
                 <span className="text-sm font-semibold text-white">JD</span>
               </div>
               <ChevronDown className="w-4 h-4 text-navy-400" />

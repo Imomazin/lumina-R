@@ -7,17 +7,14 @@ import OpenAI from 'openai';
 import {
   enterpriseRisks,
   getRiskStats,
-  getEscalatedRisks,
-  getOutsideAppetiteRisks
+  getEscalatedRisks
 } from '../data/enterpriseRisks';
 import {
   getKRIStats,
-  getBreachedKRIs,
   getKRIHealthScore
 } from '../data/enterpriseKRIs';
-import { enterpriseControls, getControlStats } from '../data/enterpriseControls';
-import { riskAppetite, getBreachedAppetites } from '../data/appetite';
-import { riskEvents } from '../data/riskEvents';
+import { getControlStats } from '../data/enterpriseControls';
+import { getBreachedAppetites } from '../data/appetite';
 
 // ============================================================================
 // API KEY MANAGEMENT
@@ -111,8 +108,6 @@ function buildDataSnapshot(): string {
   const controlStats = getControlStats();
   const breachedAppetites = getBreachedAppetites();
   const escalated = getEscalatedRisks();
-  const outsideAppetite = getOutsideAppetiteRisks();
-  const breachedKRIs = getBreachedKRIs();
 
   const topRisks = [...enterpriseRisks]
     .sort((a, b) => b.residualRiskScore - a.residualRiskScore)

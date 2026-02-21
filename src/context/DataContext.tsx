@@ -72,6 +72,7 @@ interface DataContextType {
 
   // Status
   hasUploadedData: boolean;
+  isDataActive: boolean;  // Whether demo/uploaded data should be displayed
 
   // Actions
   setRisks: (risks: UploadedRisk[]) => void;
@@ -79,6 +80,8 @@ interface DataContextType {
   setEvents: (events: UploadedEvent[]) => void;
   setControls: (controls: UploadedControl[]) => void;
   addDatasetSummary: (summary: DatasetSummary) => void;
+  activateData: () => void;   // Activate data display (when user engages)
+  resetAllData: () => void;   // Reset to zero state for new analysis
   clearAllData: () => void;
 }
 
@@ -90,16 +93,46 @@ export function DataProvider({ children }: { children: ReactNode }) {
   const [uploadedEvents, setUploadedEvents] = useState<UploadedEvent[]>([]);
   const [uploadedControls, setUploadedControls] = useState<UploadedControl[]>([]);
   const [datasetSummaries, setDatasetSummaries] = useState<DatasetSummary[]>([]);
+  const [isDataActive, setIsDataActive] = useState<boolean>(false);
 
   const hasUploadedData = uploadedRisks.length > 0 || uploadedKRIs.length > 0 || uploadedEvents.length > 0 || uploadedControls.length > 0;
 
-  const setRisks = useCallback((risks: UploadedRisk[]) => setUploadedRisks(risks), []);
-  const setKRIs = useCallback((kris: UploadedKRI[]) => setUploadedKRIs(kris), []);
-  const setEvents = useCallback((events: UploadedEvent[]) => setUploadedEvents(events), []);
-  const setControls = useCallback((controls: UploadedControl[]) => setUploadedControls(controls), []);
+  const setRisks = useCallback((risks: UploadedRisk[]) => {
+    setUploadedRisks(risks);
+    if (risks.length > 0) setIsDataActive(true);
+  }, []);
+
+  const setKRIs = useCallback((kris: UploadedKRI[]) => {
+    setUploadedKRIs(kris);
+    if (kris.length > 0) setIsDataActive(true);
+  }, []);
+
+  const setEvents = useCallback((events: UploadedEvent[]) => {
+    setUploadedEvents(events);
+    if (events.length > 0) setIsDataActive(true);
+  }, []);
+
+  const setControls = useCallback((controls: UploadedControl[]) => {
+    setUploadedControls(controls);
+    if (controls.length > 0) setIsDataActive(true);
+  }, []);
 
   const addDatasetSummary = useCallback((summary: DatasetSummary) => {
     setDatasetSummaries(prev => [...prev, summary]);
+    setIsDataActive(true);
+  }, []);
+
+  const activateData = useCallback(() => {
+    setIsDataActive(true);
+  }, []);
+
+  const resetAllData = useCallback(() => {
+    setUploadedRisks([]);
+    setUploadedKRIs([]);
+    setUploadedEvents([]);
+    setUploadedControls([]);
+    setDatasetSummaries([]);
+    setIsDataActive(false);
   }, []);
 
   const clearAllData = useCallback(() => {
@@ -118,11 +151,14 @@ export function DataProvider({ children }: { children: ReactNode }) {
       uploadedControls,
       datasetSummaries,
       hasUploadedData,
+      isDataActive,
       setRisks,
       setKRIs,
       setEvents,
       setControls,
       addDatasetSummary,
+      activateData,
+      resetAllData,
       clearAllData,
     }}>
       {children}

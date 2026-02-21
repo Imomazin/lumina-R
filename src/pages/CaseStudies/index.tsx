@@ -365,8 +365,8 @@ export default function CaseStudiesPage() {
           alt=""
           className="absolute inset-0 w-full h-full object-cover"
         />
-        {/* Dark overlay for readability - using explicit hex to avoid theme inversion */}
-        <div className="absolute inset-0 bg-gradient-to-t from-[#0a0d14] via-[#0a0d14]/80 to-[#0a0d14]/30" />
+        {/* Dark overlay for readability - softened for light theme compatibility */}
+        <div className="absolute inset-0 bg-gradient-to-t from-[#1e293b]/95 via-[#1e293b]/60 to-[#1e293b]/20" />
 
         {/* Content pinned to bottom */}
         <div

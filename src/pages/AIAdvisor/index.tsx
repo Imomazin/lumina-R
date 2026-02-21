@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { RotateCcw } from 'lucide-react';
 import { PageHeader, SectionCard } from '../../components';
 import { RiskAdvisorPanel } from '../../ai';
 import { processMessage, getSuggestedQuestions } from '../../ai/chatEngine';
@@ -8,6 +9,7 @@ import { enterpriseRisks } from '../../data/enterpriseRisks';
 import { enterpriseKRIs, getKRIStats } from '../../data/enterpriseKRIs';
 import { getControlStats } from '../../data/enterpriseControls';
 import { cn } from '../../utils';
+import { useData } from '../../context/DataContext';
 import RiskInterrogation from './RiskInterrogation';
 
 type TabType = 'chat' | 'interrogation';
@@ -21,6 +23,7 @@ interface Message {
 
 export default function AIAdvisor() {
   const navigate = useNavigate();
+  const { activateData, resetAllData, isDataActive } = useData();
   const [activeTab, setActiveTab] = useState<TabType>('chat');
   const [query, setQuery] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -73,10 +76,22 @@ export default function AIAdvisor() {
     setKeyInput('');
     setAiError(null);
     resetConversation();
+    activateData(); // Activate demo data when AI connects
     setMessages([{
       id: 'connected',
       role: 'assistant',
       content: `**AI Engine Connected**\n\nLumina-R Risk Intelligence Engine is now active with GPT-4o.\n\n**Portfolio loaded:** ${enterpriseRisks.length} risks, ${enterpriseKRIs.length} KRIs, ${controlStats.total} controls, ${kriStats.byStatus.red} breached KRIs.\n\nAll responses will use the five-layer reasoning system grounded in your live data. Ask me anything about your risk portfolio.`
+    }]);
+  };
+
+  // Reset all analysis data to start fresh
+  const handleResetAnalysis = () => {
+    resetAllData();
+    resetConversation();
+    setMessages([{
+      id: 'reset',
+      role: 'assistant',
+      content: `**Analysis Reset Complete**\n\nAll risk data has been cleared. The dashboard and all metrics are now at zero.\n\nTo begin a new analysis:\n- Upload your risk data via the Risk Workspace\n- Or connect your OpenAI API key to engage with demo data\n\nReady for your next analysis session.`
     }]);
   };
 
@@ -217,6 +232,16 @@ export default function AIAdvisor() {
                 <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
                 AI Connected
               </span>
+            )}
+            {isDataActive && (
+              <button
+                onClick={handleResetAnalysis}
+                className="btn-secondary flex items-center gap-2"
+                title="Reset all data to zero for new analysis"
+              >
+                <RotateCcw className="w-4 h-4" />
+                Reset Analysis
+              </button>
             )}
             <button
               onClick={() => navigate('/dashboard/risk-workspace')}

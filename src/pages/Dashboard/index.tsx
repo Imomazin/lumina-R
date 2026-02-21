@@ -6,6 +6,7 @@ import { RiskTrendChart, CategoryDistributionChart } from '../../components/char
 import { risks, kris, controls, riskAppetite } from '../../data';
 import type { Control } from '../../data';
 import { cn } from '../../utils';
+import { useData } from '../../context/DataContext';
 
 // Risk Exposure Gauge Component
 function RiskExposureGauge({ value, maxValue = 100 }: { value: number; maxValue?: number }) {
@@ -176,16 +177,23 @@ function ControlEffectivenessCard({ control }: { control: Control }) {
 
 export default function Dashboard() {
   const navigate = useNavigate();
+  const { isDataActive } = useData();
   const [sidebarExpanded, setSidebarExpanded] = useState(false);
   const [selectedTimeRange, setSelectedTimeRange] = useState('7d');
   const [showUploadBanner, setShowUploadBanner] = useState(true);
   const [showFilterPanel, setShowFilterPanel] = useState(false);
   const [filterCategory, setFilterCategory] = useState<string>('all');
 
+  // Use actual data only when active, otherwise show zeros
+  const activeRisks = isDataActive ? risks : [];
+  const activeKRIs = isDataActive ? kris : [];
+  const activeControls = isDataActive ? controls : [];
+  const activeAppetite = isDataActive ? riskAppetite : [];
+
   // Export dashboard data as CSV
   const handleExport = () => {
     const headers = ['Risk ID', 'Title', 'Category', 'Severity', 'Score', 'Status', 'Owner'];
-    const rows = risks.map(r => [r.id, r.title, r.category, r.severity, r.riskScore, r.status, r.owner]);
+    const rows = activeRisks.map(r => [r.id, r.title, r.category, r.severity, r.riskScore, r.status, r.owner]);
     const csv = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
     const blob = new Blob([csv], { type: 'text/csv' });
     const url = URL.createObjectURL(blob);
@@ -204,16 +212,16 @@ export default function Dashboard() {
       `Time Range: ${selectedTimeRange}`,
       '',
       'EXECUTIVE SUMMARY',
-      `Total Risks: ${risks.length}`,
-      `Risk Exposure Score: ${Math.round(risks.reduce((sum, r) => sum + r.riskScore, 0) / risks.length)}`,
-      `Breached KRIs: ${kris.filter(k => k.status === 'red').length}`,
-      `Control Effectiveness Avg: ${Math.round(controls.reduce((sum, c) => sum + c.effectivenessScore, 0) / controls.length)}%`,
+      `Total Risks: ${activeRisks.length}`,
+      `Risk Exposure Score: ${riskExposureScore}`,
+      `Breached KRIs: ${breachedKRIs}`,
+      `Control Effectiveness Avg: ${avgControlEffectiveness}%`,
       '',
       'RISK REGISTER',
-      ...risks.map(r => `${r.id} | ${r.title} | ${r.severity} | Score: ${r.riskScore} | ${r.status}`),
+      ...activeRisks.map(r => `${r.id} | ${r.title} | ${r.severity} | Score: ${r.riskScore} | ${r.status}`),
       '',
       'KRI STATUS',
-      ...kris.map(k => `${k.name} | ${k.status} | Current: ${k.currentValue}${k.unit}`),
+      ...activeKRIs.map(k => `${k.name} | ${k.status} | Current: ${k.currentValue}${k.unit}`),
     ].join('\n');
     const blob = new Blob([report], { type: 'text/plain' });
     const url = URL.createObjectURL(blob);
@@ -229,36 +237,38 @@ export default function Dashboard() {
     window.location.reload();
   };
 
-  // Calculate metrics
-  const highPriorityRisks = risks.filter(r => r.severity === 'critical' || r.severity === 'high').length;
-  const breachedKRIs = kris.filter(k => k.status === 'red').length;
-  const outsideAppetite = riskAppetite.filter(a => a.status === 'breached').length;
+  // Calculate metrics (show zeros when data not active)
+  const highPriorityRisks = activeRisks.filter(r => r.severity === 'critical' || r.severity === 'high').length;
+  const breachedKRIs = activeKRIs.filter(k => k.status === 'red').length;
+  const outsideAppetite = activeAppetite.filter(a => a.status === 'breached').length;
 
   // Calculate risk exposure score
-  const riskExposureScore = Math.round(
-    risks.reduce((sum, r) => sum + r.riskScore, 0) / risks.length
-  );
+  const riskExposureScore = activeRisks.length > 0
+    ? Math.round(activeRisks.reduce((sum, r) => sum + r.riskScore, 0) / activeRisks.length)
+    : 0;
 
   // Calculate residual risk index
-  const residualRiskIndex = Math.round(
-    risks.reduce((sum, r) => {
-      const mitigation = r.mitigationPlan ? 0.3 : 0;
-      return sum + (r.riskScore * (1 - mitigation));
-    }, 0) / risks.length
-  );
+  const residualRiskIndex = activeRisks.length > 0
+    ? Math.round(
+        activeRisks.reduce((sum, r) => {
+          const mitigation = r.mitigationPlan ? 0.3 : 0;
+          return sum + (r.riskScore * (1 - mitigation));
+        }, 0) / activeRisks.length
+      )
+    : 0;
 
   // Constraint breach count
   const constraintBreachCount = outsideAppetite;
 
-  // Get active risks for the list
-  const activeRisks = risks
+  // Get top risks for the list
+  const topRisks = activeRisks
     .filter(r => r.status === 'active' || r.status === 'escalated')
     .sort((a, b) => b.riskScore - a.riskScore)
     .slice(0, 5);
 
   // Generate heatmap data (5x5 grid: likelihood x impact)
   const heatmapData: number[][] = Array(5).fill(null).map(() => Array(5).fill(0));
-  risks.forEach(risk => {
+  activeRisks.forEach(risk => {
     const likelihood = Math.min(Math.max(risk.probability, 1), 5) - 1;
     const impact = Math.min(Math.max(risk.impact, 1), 5) - 1;
     heatmapData[likelihood][impact]++;
@@ -266,18 +276,18 @@ export default function Dashboard() {
 
   // Category distribution data
   const categoryData = [
-    { name: 'Cyber', value: risks.filter(r => r.category === 'cyber').length, color: '#6366f1' },
-    { name: 'Financial', value: risks.filter(r => r.category === 'financial').length, color: '#8b5cf6' },
-    { name: 'Operational', value: risks.filter(r => r.category === 'operational').length, color: '#06b6d4' },
-    { name: 'Compliance', value: risks.filter(r => r.category === 'compliance').length, color: '#10b981' },
-    { name: 'Strategic', value: risks.filter(r => r.category === 'strategic').length, color: '#f59e0b' },
-    { name: 'Reputational', value: risks.filter(r => r.category === 'reputational').length, color: '#ec4899' },
+    { name: 'Cyber', value: activeRisks.filter(r => r.category === 'cyber').length, color: '#6366f1' },
+    { name: 'Financial', value: activeRisks.filter(r => r.category === 'financial').length, color: '#8b5cf6' },
+    { name: 'Operational', value: activeRisks.filter(r => r.category === 'operational').length, color: '#06b6d4' },
+    { name: 'Compliance', value: activeRisks.filter(r => r.category === 'compliance').length, color: '#10b981' },
+    { name: 'Strategic', value: activeRisks.filter(r => r.category === 'strategic').length, color: '#f59e0b' },
+    { name: 'Reputational', value: activeRisks.filter(r => r.category === 'reputational').length, color: '#ec4899' },
   ];
 
   // Control effectiveness average
-  const avgControlEffectiveness = Math.round(
-    controls.reduce((sum, c) => sum + c.effectivenessScore, 0) / controls.length
-  );
+  const avgControlEffectiveness = activeControls.length > 0
+    ? Math.round(activeControls.reduce((sum, c) => sum + c.effectivenessScore, 0) / activeControls.length)
+    : 0;
 
   // Mock audit log entries
   const auditLog = [
@@ -553,7 +563,7 @@ export default function Dashboard() {
                   </tr>
                 </thead>
                 <tbody>
-                  {activeRisks.map((risk) => (
+                  {topRisks.map((risk) => (
                     <tr key={risk.id} className="border-b border-navy-800/50 hover:bg-navy-800/30 cursor-pointer">
                       <td className="py-3 px-3">
                         <div>
@@ -623,7 +633,7 @@ export default function Dashboard() {
           {/* KRI Tracker */}
           <SectionCard
             title="KRI Tracker"
-            subtitle={`${kris.filter(k => k.status === 'green').length}/${kris.length} within threshold`}
+            subtitle={`${activeKRIs.filter(k => k.status === 'green').length}/${activeKRIs.length} within threshold`}
             actions={
               <Link to="/dashboard/ai-advisor" className="text-sm text-accent-primary hover:text-accent-primary/80">
                 Configure →
@@ -631,9 +641,15 @@ export default function Dashboard() {
             }
           >
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {kris.slice(0, 6).map((kri) => (
-                <KRIStatusIndicator key={kri.id} kri={kri} />
-              ))}
+              {activeKRIs.length > 0 ? (
+                activeKRIs.slice(0, 6).map((kri) => (
+                  <KRIStatusIndicator key={kri.id} kri={kri} />
+                ))
+              ) : (
+                <div className="col-span-2 text-center py-8 text-navy-500 text-sm">
+                  No KRI data loaded. Upload data or engage AI Advisor to begin.
+                </div>
+              )}
             </div>
           </SectionCard>
 
@@ -648,9 +664,15 @@ export default function Dashboard() {
             }
           >
             <div className="space-y-3">
-              {controls.slice(0, 5).map((control) => (
-                <ControlEffectivenessCard key={control.id} control={control} />
-              ))}
+              {activeControls.length > 0 ? (
+                activeControls.slice(0, 5).map((control) => (
+                  <ControlEffectivenessCard key={control.id} control={control} />
+                ))
+              ) : (
+                <div className="text-center py-8 text-navy-500 text-sm">
+                  No control data loaded.
+                </div>
+              )}
             </div>
           </SectionCard>
         </div>

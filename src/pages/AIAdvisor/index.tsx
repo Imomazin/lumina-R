@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { RotateCcw } from 'lucide-react';
+import { RotateCcw, Upload, PlusCircle } from 'lucide-react';
 import { PageHeader, SectionCard } from '../../components';
 import { RiskAdvisorPanel } from '../../ai';
 import { processMessage, getSuggestedQuestions } from '../../ai/chatEngine';
@@ -35,33 +35,38 @@ export default function AIAdvisor() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const chatContainerRef = useRef<HTMLDivElement>(null);
 
-  // Quick insights data
+  // Quick insights data - show zeros when data is not active
   const kriStats = getKRIStats();
   const controlStats = getControlStats();
-  const criticalRisks = enterpriseRisks.filter(r => r.inherentRiskScore >= 16).length;
-  const breachedKRIs = kriStats.byStatus.red;
-  const outsideAppetite = enterpriseRisks.filter(r => r.riskAppetiteAlignment === 'Outside Appetite').length;
-  const escalatedRisks = enterpriseRisks.filter(r => r.riskStatus === 'Escalated').length;
+  const criticalRisks = isDataActive ? enterpriseRisks.filter(r => r.inherentRiskScore >= 16).length : 0;
+  const breachedKRIs = isDataActive ? kriStats.byStatus.red : 0;
+  const outsideAppetite = isDataActive ? enterpriseRisks.filter(r => r.riskAppetiteAlignment === 'Outside Appetite').length : 0;
+  const escalatedRisks = isDataActive ? enterpriseRisks.filter(r => r.riskStatus === 'Escalated').length : 0;
+
+  // Data counts for display
+  const riskCount = isDataActive ? enterpriseRisks.length : 0;
+  const kriCount = isDataActive ? enterpriseKRIs.length : 0;
+  const controlCount = isDataActive ? controlStats.total : 0;
 
   // Initialize
   useEffect(() => {
     setAiConnected(isAIConfigured());
     if (messages.length === 0) {
-      if (isAIConfigured()) {
+      if (isAIConfigured() && isDataActive) {
         setMessages([{
           id: 'welcome',
           role: 'assistant',
-          content: `**LUMINA-R Risk Intelligence Engine Active**\n\nI am your Chief Risk Intelligence Engine, operating on a five-layer reasoning system grounded in your live risk data.\n\n**Current Portfolio:** ${enterpriseRisks.length} risks | ${enterpriseKRIs.length} KRIs | ${controlStats.total} controls\n**Attention:** ${breachedKRIs} KRIs breached | ${escalatedRisks} risks escalated | ${outsideAppetite} outside appetite\n\nI can perform executive summaries, EMV calculations, Monte Carlo analysis, appetite breach quantification, control gap analysis, and risk cluster detection.\n\nWhat would you like to analyse?`
+          content: `**LUMINA-R Risk Intelligence Engine Active**\n\nI am your Chief Risk Intelligence Engine, operating on a five-layer reasoning system grounded in your live risk data.\n\n**Current Portfolio:** ${riskCount} risks | ${kriCount} KRIs | ${controlCount} controls\n**Attention:** ${breachedKRIs} KRIs breached | ${escalatedRisks} risks escalated | ${outsideAppetite} outside appetite\n\nI can perform executive summaries, EMV calculations, Monte Carlo analysis, appetite breach quantification, control gap analysis, and risk cluster detection.\n\nWhat would you like to analyse?`
         }]);
       } else {
         setMessages([{
           id: 'welcome',
           role: 'assistant',
-          content: `**LUMINA-R Risk Intelligence Engine**\n\nTo enable intelligent AI-powered analysis, connect your OpenAI API key using the button in the sidebar.\n\nOnce connected, I will operate as your Chief Risk Intelligence Engine with:\n- Five-layer reasoning (Structural, Quantitative, Strategic, Governance, Action)\n- EMV calculations grounded in your ${enterpriseRisks.length} risks\n- Monte Carlo simulation, cluster detection, and appetite breach analysis\n- Board-ready executive outputs\n\n**Without API key:** Basic local analysis is available via the quick commands below.`
+          content: `**LUMINA-R Risk Intelligence Engine**\n\nTo begin analysis:\n1. **Upload your risk data** via the Risk Workspace, or\n2. **Connect your OpenAI API key** to engage with demo data\n\nOnce data is loaded, I will operate as your Chief Risk Intelligence Engine with:\n- Five-layer reasoning (Structural, Quantitative, Strategic, Governance, Action)\n- EMV calculations grounded in your risk portfolio\n- Monte Carlo simulation, cluster detection, and appetite breach analysis\n- Board-ready executive outputs\n\n**Current Status:** No data loaded. Upload data or connect AI to begin.`
         }]);
       }
     }
-  }, []);
+  }, [isDataActive]);
 
   // Auto-scroll
   useEffect(() => {
@@ -80,7 +85,7 @@ export default function AIAdvisor() {
     setMessages([{
       id: 'connected',
       role: 'assistant',
-      content: `**AI Engine Connected**\n\nLumina-R Risk Intelligence Engine is now active with GPT-4o.\n\n**Portfolio loaded:** ${enterpriseRisks.length} risks, ${enterpriseKRIs.length} KRIs, ${controlStats.total} controls, ${kriStats.byStatus.red} breached KRIs.\n\nAll responses will use the five-layer reasoning system grounded in your live data. Ask me anything about your risk portfolio.`
+      content: `**AI Engine Connected**\n\nLumina-R Risk Intelligence Engine is now active with GPT-4o.\n\n**Portfolio loaded:** ${enterpriseRisks.length} risks, ${enterpriseKRIs.length} KRIs, ${controlStats.total} controls, ${getKRIStats().byStatus.red} breached KRIs.\n\nAll responses will use the five-layer reasoning system grounded in your live data. Ask me anything about your risk portfolio.`
     }]);
   };
 
@@ -245,12 +250,14 @@ export default function AIAdvisor() {
             )}
             <button
               onClick={() => navigate('/dashboard/risk-workspace')}
-              className="btn-secondary"
+              className="btn-secondary flex items-center gap-2"
             >
+              <Upload className="w-4 h-4" />
               Import Data
             </button>
-            <button className="btn-primary" onClick={() => setActiveTab('interrogation')}>
-              + New Assessment
+            <button className="btn-primary flex items-center gap-2" onClick={() => setActiveTab('interrogation')}>
+              <PlusCircle className="w-4 h-4" />
+              New Assessment
             </button>
           </div>
         }
@@ -332,9 +339,11 @@ export default function AIAdvisor() {
                       {aiConnected ? 'GPT-4o Risk Intelligence' : 'Risk Advisor (Local)'}
                     </h3>
                     <p className="text-xs text-navy-400">
-                      {aiConnected
-                        ? `Live AI · ${enterpriseRisks.length} risks · ${enterpriseKRIs.length} KRIs · ${controlStats.total} controls loaded`
-                        : 'Connect OpenAI key for intelligent analysis'
+                      {aiConnected && isDataActive
+                        ? `Live AI · ${riskCount} risks · ${kriCount} KRIs · ${controlCount} controls loaded`
+                        : aiConnected
+                          ? 'AI connected · Upload data to begin analysis'
+                          : 'Connect OpenAI key or upload data to begin'
                       }
                     </p>
                   </div>

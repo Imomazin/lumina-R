@@ -365,8 +365,8 @@ export default function CaseStudiesPage() {
           alt=""
           className="absolute inset-0 w-full h-full object-cover"
         />
-        {/* Dark overlay for readability */}
-        <div className="absolute inset-0 bg-gradient-to-t from-navy-950 via-navy-950/80 to-navy-950/30" />
+        {/* Dark overlay for readability - using explicit hex to avoid theme inversion */}
+        <div className="absolute inset-0 bg-gradient-to-t from-[#0a0d14] via-[#0a0d14]/80 to-[#0a0d14]/30" />
 
         {/* Content pinned to bottom */}
         <div
@@ -376,21 +376,21 @@ export default function CaseStudiesPage() {
             opacity: Math.max(0, 1 - scrollY / 500)
           }}
         >
-          <p className="text-sm font-medium tracking-widest uppercase text-navy-300 mb-4">
+          <p className="text-sm font-medium tracking-widest uppercase text-[#94a3b8] mb-4">
             Case Studies
           </p>
 
-          <h1 className="text-5xl md:text-6xl font-bold text-white mb-6 leading-tight max-w-3xl">
+          <h1 className="text-5xl md:text-6xl font-bold text-[#ffffff] mb-6 leading-tight max-w-3xl">
             How enterprises transform risk into&nbsp;
             <span className="text-red-400">competitive advantage</span>
           </h1>
 
-          <p className="text-lg text-navy-300 max-w-2xl mb-10">
+          <p className="text-lg text-[#94a3b8] max-w-2xl mb-10">
             Real stories from Fortune 500 banks, global insurers, and asset managers
             who reimagined their risk operations with Lumina-R.
           </p>
 
-          {/* Compact stat bar — no icons */}
+          {/* Compact stat bar — no icons, using explicit colors for theme stability */}
           <div className="flex flex-wrap gap-8">
             {[
               { value: '$4.2T', label: 'Assets Protected' },
@@ -399,8 +399,8 @@ export default function CaseStudiesPage() {
               { value: '99.9%', label: 'Uptime' },
             ].map((s, i) => (
               <div key={i}>
-                <p className="text-2xl font-bold text-white">{s.value}</p>
-                <p className="text-xs text-navy-400 uppercase tracking-wider">{s.label}</p>
+                <p className="text-2xl font-bold text-[#ffffff]">{s.value}</p>
+                <p className="text-xs text-[#94a3b8] uppercase tracking-wider">{s.label}</p>
               </div>
             ))}
           </div>

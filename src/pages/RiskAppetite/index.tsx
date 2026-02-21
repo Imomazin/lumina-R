@@ -4,8 +4,11 @@ import { PageHeader, SectionCard } from '../../components';
 import { riskAppetite } from '../../data';
 import { cn } from '../../utils';
 import type { RiskAppetite } from '../../types';
+import { useData } from '../../context/DataContext';
 
 export default function RiskAppetitePage() {
+  const { isDataActive } = useData();
+  const activeAppetite = isDataActive ? riskAppetite : [];
   const [selectedAppetite, setSelectedAppetite] = useState<RiskAppetite | null>(null);
   const [showConfigModal, setShowConfigModal] = useState(false);
   const [editingAppetite, setEditingAppetite] = useState(false);
@@ -13,7 +16,7 @@ export default function RiskAppetitePage() {
   // Handle export
   const handleExport = () => {
     const headers = ['Category', 'Status', 'Current Level', 'Min Tolerance', 'Max Tolerance', 'Statement'];
-    const rows = riskAppetite.map(a => [a.category, a.status, `${a.currentLevel}%`, `${a.toleranceMin}%`, `${a.toleranceMax}%`, `"${a.statement}"`]);
+    const rows = activeAppetite.map(a => [a.category, a.status, `${a.currentLevel}%`, `${a.toleranceMin}%`, `${a.toleranceMax}%`, `"${a.statement}"`]);
     const csv = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
     const blob = new Blob([csv], { type: 'text/csv' });
     const url = URL.createObjectURL(blob);
@@ -114,7 +117,7 @@ export default function RiskAppetitePage() {
             <span className="text-lg font-bold text-emerald-400">✓</span>
             <div>
               <p className="text-2xl font-bold text-emerald-400">
-                {riskAppetite.filter(a => a.status === 'within').length}
+                {activeAppetite.filter(a => a.status === 'within').length}
               </p>
               <p className="text-sm text-navy-400">Within Tolerance</p>
             </div>
@@ -125,7 +128,7 @@ export default function RiskAppetitePage() {
             <span className="text-lg font-bold text-amber-400">!</span>
             <div>
               <p className="text-2xl font-bold text-amber-400">
-                {riskAppetite.filter(a => a.status === 'approaching').length}
+                {activeAppetite.filter(a => a.status === 'approaching').length}
               </p>
               <p className="text-sm text-navy-400">Approaching Limit</p>
             </div>
@@ -136,7 +139,7 @@ export default function RiskAppetitePage() {
             <span className="text-lg font-bold text-red-400">!</span>
             <div>
               <p className="text-2xl font-bold text-red-400">
-                {riskAppetite.filter(a => a.status === 'breached').length}
+                {activeAppetite.filter(a => a.status === 'breached').length}
               </p>
               <p className="text-sm text-navy-400">Exceeded</p>
             </div>
@@ -146,7 +149,7 @@ export default function RiskAppetitePage() {
 
       {/* Appetite Cards */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {riskAppetite.map((appetite) => (
+        {activeAppetite.map((appetite) => (
           <div
             key={appetite.category}
             className="glass-card-hover cursor-pointer"

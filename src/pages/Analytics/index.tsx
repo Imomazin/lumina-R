@@ -19,6 +19,7 @@ import {
 } from 'recharts';
 import { PageHeader, SectionCard, MetricCard } from '../../components';
 import { risks, kris } from '../../data';
+import { useData } from '../../context/DataContext';
 
 // Mock data for analytics
 const monthlyTrendData = [
@@ -31,14 +32,7 @@ const monthlyTrendData = [
   { month: 'Jan', risks: 47, incidents: 8, krisBreached: 1 },
 ];
 
-const categoryData = [
-  { name: 'Cyber', value: risks.filter(r => r.category === 'cyber').length, color: '#6366f1' },
-  { name: 'Financial', value: risks.filter(r => r.category === 'financial').length, color: '#8b5cf6' },
-  { name: 'Operational', value: risks.filter(r => r.category === 'operational').length, color: '#06b6d4' },
-  { name: 'Compliance', value: risks.filter(r => r.category === 'compliance').length, color: '#10b981' },
-  { name: 'Strategic', value: risks.filter(r => r.category === 'strategic').length, color: '#f59e0b' },
-  { name: 'Reputational', value: risks.filter(r => r.category === 'reputational').length, color: '#ec4899' },
-];
+// categoryData is computed inside the component to respect isDataActive
 
 const severityTrend = [
   { month: 'Jul', critical: 2, high: 8, medium: 18, low: 14 },
@@ -59,6 +53,9 @@ const departmentRiskData = [
 ];
 
 export default function Analytics() {
+  const { isDataActive } = useData();
+  const activeRisks = isDataActive ? risks : [];
+  const activeKRIs = isDataActive ? kris : [];
   const [timeRange, setTimeRange] = useState('6m');
   const [showTimeDropdown, setShowTimeDropdown] = useState(false);
   const [showFilter, setShowFilter] = useState(false);
@@ -66,13 +63,13 @@ export default function Analytics() {
   const handleExportReport = () => {
     const headers = ['Metric', 'Value'];
     const data = [
-      ['Total Risk Exposure', risks.reduce((sum, r) => sum + r.riskScore, 0).toString()],
-      ['Average Risk Score', (risks.reduce((sum, r) => sum + r.riskScore, 0) / risks.length).toFixed(1)],
-      ['KRI Compliance', `${((kris.filter(k => k.status === 'green').length / kris.length) * 100).toFixed(0)}%`],
-      ['Total Risks', risks.length.toString()],
-      ['Critical Risks', risks.filter(r => r.severity === 'critical').length.toString()],
-      ['KRIs Tracked', kris.length.toString()],
-      ['KRIs Green', kris.filter(k => k.status === 'green').length.toString()],
+      ['Total Risk Exposure', activeRisks.reduce((sum, r) => sum + r.riskScore, 0).toString()],
+      ['Average Risk Score', activeRisks.length > 0 ? (activeRisks.reduce((sum, r) => sum + r.riskScore, 0) / activeRisks.length).toFixed(1) : '0'],
+      ['KRI Compliance', activeKRIs.length > 0 ? `${((activeKRIs.filter(k => k.status === 'green').length / activeKRIs.length) * 100).toFixed(0)}%` : '0%'],
+      ['Total Risks', activeRisks.length.toString()],
+      ['Critical Risks', activeRisks.filter(r => r.severity === 'critical').length.toString()],
+      ['KRIs Tracked', activeKRIs.length.toString()],
+      ['KRIs Green', activeKRIs.filter(k => k.status === 'green').length.toString()],
     ];
     const csv = [headers.join(','), ...data.map(r => r.join(','))].join('\n');
     const blob = new Blob([csv], { type: 'text/csv' });
@@ -91,8 +88,17 @@ export default function Analytics() {
     { value: '1y', label: 'Last Year' },
   ];
 
-  const avgRiskScore = (risks.reduce((sum, r) => sum + r.riskScore, 0) / risks.length).toFixed(1);
-  const kriCompliance = ((kris.filter(k => k.status === 'green').length / kris.length) * 100).toFixed(0);
+  const avgRiskScore = activeRisks.length > 0 ? (activeRisks.reduce((sum, r) => sum + r.riskScore, 0) / activeRisks.length).toFixed(1) : '0';
+  const kriCompliance = activeKRIs.length > 0 ? ((activeKRIs.filter(k => k.status === 'green').length / activeKRIs.length) * 100).toFixed(0) : '0';
+
+  const categoryData = [
+    { name: 'Cyber', value: activeRisks.filter(r => r.category === 'cyber').length, color: '#6366f1' },
+    { name: 'Financial', value: activeRisks.filter(r => r.category === 'financial').length, color: '#8b5cf6' },
+    { name: 'Operational', value: activeRisks.filter(r => r.category === 'operational').length, color: '#06b6d4' },
+    { name: 'Compliance', value: activeRisks.filter(r => r.category === 'compliance').length, color: '#10b981' },
+    { name: 'Strategic', value: activeRisks.filter(r => r.category === 'strategic').length, color: '#f59e0b' },
+    { name: 'Reputational', value: activeRisks.filter(r => r.category === 'reputational').length, color: '#ec4899' },
+  ];
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -133,7 +139,7 @@ export default function Analytics() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <MetricCard
           title="Total Risk Exposure"
-          value={risks.reduce((sum, r) => sum + r.riskScore, 0)}
+          value={activeRisks.reduce((sum, r) => sum + r.riskScore, 0)}
           change={-5.2}
           trend="down"
           variant="success"
@@ -327,27 +333,27 @@ export default function Analytics() {
       <SectionCard title="Portfolio Summary">
         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
           <div className="p-4 rounded-xl bg-navy-800/30 text-center">
-            <p className="text-2xl font-bold text-navy-100">{risks.length}</p>
+            <p className="text-2xl font-bold text-navy-100">{activeRisks.length}</p>
             <p className="text-xs text-navy-400">Total Risks</p>
           </div>
           <div className="p-4 rounded-xl bg-navy-800/30 text-center">
-            <p className="text-2xl font-bold text-red-400">{risks.filter(r => r.severity === 'critical').length}</p>
+            <p className="text-2xl font-bold text-red-400">{activeRisks.filter(r => r.severity === 'critical').length}</p>
             <p className="text-xs text-navy-400">Critical</p>
           </div>
           <div className="p-4 rounded-xl bg-navy-800/30 text-center">
-            <p className="text-2xl font-bold text-navy-100">{kris.length}</p>
+            <p className="text-2xl font-bold text-navy-100">{activeKRIs.length}</p>
             <p className="text-xs text-navy-400">KRIs Tracked</p>
           </div>
           <div className="p-4 rounded-xl bg-navy-800/30 text-center">
-            <p className="text-2xl font-bold text-emerald-400">{kris.filter(k => k.status === 'green').length}</p>
+            <p className="text-2xl font-bold text-emerald-400">{activeKRIs.filter(k => k.status === 'green').length}</p>
             <p className="text-xs text-navy-400">KRIs Green</p>
           </div>
           <div className="p-4 rounded-xl bg-navy-800/30 text-center">
-            <p className="text-2xl font-bold text-navy-100">{new Set(risks.map(r => r.owner)).size}</p>
+            <p className="text-2xl font-bold text-navy-100">{new Set(activeRisks.map(r => r.owner)).size}</p>
             <p className="text-xs text-navy-400">Risk Owners</p>
           </div>
           <div className="p-4 rounded-xl bg-navy-800/30 text-center">
-            <p className="text-2xl font-bold text-navy-100">{risks.filter(r => r.mitigationPlan).length}</p>
+            <p className="text-2xl font-bold text-navy-100">{activeRisks.filter(r => r.mitigationPlan).length}</p>
             <p className="text-xs text-navy-400">With Mitigation</p>
           </div>
         </div>

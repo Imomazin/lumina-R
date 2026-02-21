@@ -4,6 +4,7 @@
 import { useState, useMemo } from 'react';
 import { PageHeader } from '../../components';
 import { cn } from '../../utils';
+import { useData } from '../../context/DataContext';
 
 // Comprehensive Risk Data Type
 interface ComprehensiveRisk {
@@ -423,20 +424,25 @@ function getTrendColour(trend: string): string {
 }
 
 export default function RiskRegister() {
+  const { isDataActive } = useData();
   const [thresholds, setThresholds] = useState<ThresholdConfig>(defaultThresholds);
   const [showThresholdPanel, setShowThresholdPanel] = useState(false);
   const [selectedRiskId, setSelectedRiskId] = useState<string | null>(null);
 
+  // Gate data behind isDataActive
+  const activeRisks = isDataActive ? comprehensiveRisks : [];
+
   // Calculate summary statistics
   const stats = useMemo(() => {
-    const totalEMV = comprehensiveRisks.reduce((sum, r) => sum + r.expectedMonetaryValue, 0);
-    const totalCapital = comprehensiveRisks.reduce((sum, r) => sum + r.capitalAllocation, 0);
-    const avgResidual = comprehensiveRisks.reduce((sum, r) => sum + r.residualScore, 0) / comprehensiveRisks.length;
-    const criticalCount = comprehensiveRisks.filter(r => r.priority === 'critical').length;
-    const highCount = comprehensiveRisks.filter(r => r.priority === 'high').length;
+    if (activeRisks.length === 0) return { totalEMV: 0, totalCapital: 0, avgResidual: 0, criticalCount: 0, highCount: 0 };
+    const totalEMV = activeRisks.reduce((sum, r) => sum + r.expectedMonetaryValue, 0);
+    const totalCapital = activeRisks.reduce((sum, r) => sum + r.capitalAllocation, 0);
+    const avgResidual = activeRisks.reduce((sum, r) => sum + r.residualScore, 0) / activeRisks.length;
+    const criticalCount = activeRisks.filter(r => r.priority === 'critical').length;
+    const highCount = activeRisks.filter(r => r.priority === 'high').length;
 
     return { totalEMV, totalCapital, avgResidual, criticalCount, highCount };
-  }, []);
+  }, [isDataActive]);
 
   return (
     <div className="space-y-4 animate-fade-in">
@@ -461,7 +467,7 @@ export default function RiskRegister() {
       <div className="glass-card p-3 flex items-center justify-between overflow-x-auto gap-4">
         <div className="flex items-center divide-x divide-navy-700">
           <div className="flex flex-col items-center px-4">
-            <span className="text-lg font-bold text-navy-100">{comprehensiveRisks.length}</span>
+            <span className="text-lg font-bold text-navy-100">{activeRisks.length}</span>
             <span className="text-2xs text-navy-500 uppercase">Total Risks</span>
           </div>
           <div className="flex flex-col items-center px-4">
@@ -628,7 +634,7 @@ export default function RiskRegister() {
               </tr>
             </thead>
             <tbody>
-              {comprehensiveRisks.map((risk, idx) => (
+              {activeRisks.map((risk, idx) => (
                 <tr
                   key={risk.id}
                   onClick={() => setSelectedRiskId(risk.id === selectedRiskId ? null : risk.id)}
@@ -718,7 +724,7 @@ export default function RiskRegister() {
       {selectedRiskId && (
         <div className="glass-card p-5">
           {(() => {
-            const risk = comprehensiveRisks.find(r => r.id === selectedRiskId);
+            const risk = activeRisks.find(r => r.id === selectedRiskId);
             if (!risk) return null;
             return (
               <div className="space-y-4">

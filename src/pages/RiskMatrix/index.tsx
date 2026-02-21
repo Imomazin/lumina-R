@@ -6,8 +6,11 @@ import { StatusBadge } from '../../components/badges';
 import { risks } from '../../data';
 import { cn } from '../../utils';
 import type { Risk } from '../../types';
+import { useData } from '../../context/DataContext';
 
 export default function RiskMatrix() {
+  const { isDataActive } = useData();
+  const activeRisks = isDataActive ? risks : [];
   const [selectedCell, setSelectedCell] = useState<{
     probability: number;
     impact: number;
@@ -19,7 +22,7 @@ export default function RiskMatrix() {
   // Handle export
   const handleExport = () => {
     const headers = ['ID', 'Title', 'Probability', 'Impact', 'Score', 'Severity', 'Category'];
-    const rows = risks.map(r => [r.id, `"${r.title}"`, r.probability, r.impact, r.riskScore, r.severity, r.category]);
+    const rows = activeRisks.map(r => [r.id, `"${r.title}"`, r.probability, r.impact, r.riskScore, r.severity, r.category]);
     const csv = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
     const blob = new Blob([csv], { type: 'text/csv' });
     const url = URL.createObjectURL(blob);
@@ -38,10 +41,10 @@ export default function RiskMatrix() {
 
   // Calculate stats for each severity level
   const severityStats = {
-    critical: risks.filter(r => r.riskScore >= 20).length,
-    high: risks.filter(r => r.riskScore >= 15 && r.riskScore < 20).length,
-    medium: risks.filter(r => r.riskScore >= 10 && r.riskScore < 15).length,
-    low: risks.filter(r => r.riskScore < 10).length,
+    critical: activeRisks.filter(r => r.riskScore >= 20).length,
+    high: activeRisks.filter(r => r.riskScore >= 15 && r.riskScore < 20).length,
+    medium: activeRisks.filter(r => r.riskScore >= 10 && r.riskScore < 15).length,
+    low: activeRisks.filter(r => r.riskScore < 10).length,
   };
 
   return (
@@ -115,7 +118,7 @@ export default function RiskMatrix() {
             subtitle="Click on a cell to view associated risks"
           >
             <RiskHeatMap
-              risks={risks}
+              risks={activeRisks}
               onCellClick={handleCellClick}
               className="py-4"
             />

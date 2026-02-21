@@ -6,15 +6,19 @@ import { KRIStatusBadge } from '../../components/badges';
 import { kris, getKRIsByCategory, getKRIStatusCounts } from '../../data';
 import { cn } from '../../utils';
 import type { KRI, RiskCategory } from '../../types';
+import { useData } from '../../context/DataContext';
 
 export default function RiskIndicators() {
+  const { isDataActive } = useData();
   const [selectedCategory, setSelectedCategory] = useState<RiskCategory | 'all'>('all');
   const [selectedKRI, setSelectedKRI] = useState<KRI | null>(null);
   const [showConfigModal, setShowConfigModal] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
 
-  const statusCounts = getKRIStatusCounts();
-  const filteredKRIs = selectedCategory === 'all' ? kris : getKRIsByCategory(selectedCategory);
+  const statusCounts = isDataActive ? getKRIStatusCounts() : { green: 0, amber: 0, red: 0 };
+  const filteredKRIs = isDataActive
+    ? (selectedCategory === 'all' ? kris : getKRIsByCategory(selectedCategory))
+    : [];
 
   const categories: { value: RiskCategory | 'all'; label: string }[] = [
     { value: 'all', label: 'All Categories' },

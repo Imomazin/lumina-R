@@ -610,7 +610,7 @@ export default function Dashboard() {
               title="Risk Trend Analysis"
               subtitle="6-month risk evolution by severity"
               actions={
-                <Link to="/dashboard/monte-carlo" className="text-sm text-accent-primary hover:text-accent-primary/80">
+                <Link to="/dashboard/tools/monte-carlo" className="text-sm text-accent-primary hover:text-accent-primary/80">
                   Run Simulation →
                 </Link>
               }
@@ -658,7 +658,7 @@ export default function Dashboard() {
             title="Control Effectiveness"
             subtitle={`Average effectiveness: ${avgControlEffectiveness}%`}
             actions={
-              <Link to="/dashboard/bow-tie" className="text-sm text-accent-primary hover:text-accent-primary/80">
+              <Link to="/dashboard/tools/bowtie" className="text-sm text-accent-primary hover:text-accent-primary/80">
                 Bow-Tie View →
               </Link>
             }
@@ -768,10 +768,10 @@ export default function Dashboard() {
                   <button className="w-full btn-secondary text-sm py-2" onClick={handleRefreshData}>
                     Refresh Data
                   </button>
-                  <Link to="/dashboard/monte-carlo" className="w-full btn-secondary text-sm py-2 flex items-center justify-center">
+                  <Link to="/dashboard/tools/monte-carlo" className="w-full btn-secondary text-sm py-2 flex items-center justify-center">
                     Run Simulation
                   </Link>
-                  <Link to="/dashboard/bow-tie" className="w-full btn-secondary text-sm py-2 flex items-center justify-center">
+                  <Link to="/dashboard/tools/bowtie" className="w-full btn-secondary text-sm py-2 flex items-center justify-center">
                     Bow-Tie Analysis
                   </Link>
                 </div>

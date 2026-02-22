@@ -10,6 +10,7 @@ import {
 import { PageHeader } from '../../components';
 import { strategicRisks, companyThresholdConfig } from '../../data';
 import { implementationBlueprints } from '../../data/implementationBlueprints';
+import { useData } from '../../context/DataContext';
 import {
   formatCurrency,
   getColourClass,
@@ -62,43 +63,47 @@ function TrafficLight({ status }: { status: 'green' | 'amber' | 'red' }) {
 }
 
 export default function StrategicImplementation() {
+  const { isDataActive } = useData();
   const [selectedRiskId, setSelectedRiskId] = useState<string | null>(null);
   const [activeSection, setActiveSection] = useState<'blueprint' | 'stress' | 'governance' | 'contagion' | 'performance' | 'intelligence'>('blueprint');
 
+  const activeStrategicRisks = isDataActive ? strategicRisks : [];
+  const activeBlueprints = isDataActive ? implementationBlueprints : [];
+
   // Filter to red/black/amber risks for implementation
   const implementableRisks = useMemo(() => {
-    return strategicRisks
+    return activeStrategicRisks
       .filter((r) => r.colour === 'red' || r.colour === 'black' || r.colour === 'amber')
       .sort((a, b) => b.overallRiskScore - a.overallRiskScore);
-  }, []);
+  }, [isDataActive]);
 
   // Build all implementations
   const implementations = useMemo(() => {
     const map = new Map<string, StrategicImpl>();
-    for (const risk of strategicRisks) {
-      const blueprint = implementationBlueprints.find((b) => b.riskId === risk.id);
+    for (const risk of activeStrategicRisks) {
+      const blueprint = activeBlueprints.find((b) => b.riskId === risk.id);
       if (blueprint) {
         map.set(
           risk.id,
-          buildStrategicImplementation(risk, blueprint, strategicRisks, companyThresholdConfig)
+          buildStrategicImplementation(risk, blueprint, activeStrategicRisks, companyThresholdConfig)
         );
       }
     }
     return map;
-  }, []);
+  }, [isDataActive]);
 
   // REPI profiles for all risks
   const repiProfiles = useMemo(() => {
-    return strategicRisks.map((r) => ({
+    return activeStrategicRisks.map((r) => ({
       risk: r,
       profile: calculateREPI(r, companyThresholdConfig),
     }));
-  }, []);
+  }, [isDataActive]);
 
-  const selectedRisk = strategicRisks.find((r) => r.id === selectedRiskId) || null;
+  const selectedRisk = activeStrategicRisks.find((r) => r.id === selectedRiskId) || null;
   const selectedImpl = selectedRiskId ? implementations.get(selectedRiskId) : null;
   const selectedStress = selectedRisk
-    ? runStressScenarios(selectedRisk, strategicRisks, companyThresholdConfig)
+    ? runStressScenarios(selectedRisk, activeStrategicRisks, companyThresholdConfig)
     : [];
 
   // Portfolio totals
@@ -475,7 +480,7 @@ export default function StrategicImplementation() {
                     {selectedImpl.contagion.connectedRisks.length > 0 ? (
                       <div className="space-y-2">
                         {selectedImpl.contagion.connectedRisks.map((cr, i) => {
-                          const linkedRisk = strategicRisks.find((r) => r.id === cr.riskId);
+                          const linkedRisk = activeStrategicRisks.find((r) => r.id === cr.riskId);
                           return (
                             <div key={i} className="flex items-center gap-3">
                               <div className="w-16 text-center">
@@ -906,7 +911,7 @@ export default function StrategicImplementation() {
                     Portfolio Governance Summary
                   </h3>
                   <div className="space-y-2">
-                    {strategicRisks.map((risk) => {
+                    {activeStrategicRisks.map((risk) => {
                       const impl = implementations.get(risk.id);
                       if (!impl) return null;
                       return (
@@ -932,7 +937,7 @@ export default function StrategicImplementation() {
                     Portfolio Contagion Overview
                   </h3>
                   <div className="space-y-2">
-                    {strategicRisks.map((risk) => {
+                    {activeStrategicRisks.map((risk) => {
                       const impl = implementations.get(risk.id);
                       if (!impl) return null;
                       const caf = impl.contagion.contagionAmplificationFactor;

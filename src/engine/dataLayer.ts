@@ -89,21 +89,21 @@ export const DATA_CONFIG = {
 // ============================================================================
 
 export function getDataQualityMetrics() {
-  const { enterpriseRisks } = require('../data/enterpriseRisks');
-  const { enterpriseKRIs } = require('../data/enterpriseKRIs');
-  const { enterpriseControls } = require('../data/enterpriseControls');
-  const { riskEvents } = require('../data/riskEvents');
+  const { enterpriseRisks } = require('../data/enterpriseRisks') as { enterpriseRisks: Array<{ riskId: number }> };
+  const { enterpriseKRIs } = require('../data/enterpriseKRIs') as { enterpriseKRIs: Array<{ riskId: number }> };
+  const { enterpriseControls } = require('../data/enterpriseControls') as { enterpriseControls: Array<{ mappedRiskIds: number[] }> };
+  const { riskEvents } = require('../data/riskEvents') as { riskEvents: Array<{ relatedRiskId: number }> };
 
-  const risksWithControls = enterpriseRisks.filter((r: { riskId: number }) =>
-    enterpriseControls.some((c: { mappedRiskIds: number[] }) => c.mappedRiskIds.includes(r.riskId))
+  const risksWithControls = enterpriseRisks.filter((r) =>
+    enterpriseControls.some((c) => c.mappedRiskIds.includes(r.riskId))
   ).length;
 
-  const risksWithKRIs = enterpriseRisks.filter((r: { riskId: number }) =>
-    enterpriseKRIs.some((k: { riskId: number }) => k.riskId === r.riskId)
+  const risksWithKRIs = enterpriseRisks.filter((r) =>
+    enterpriseKRIs.some((k) => k.riskId === r.riskId)
   ).length;
 
-  const risksWithEvents = enterpriseRisks.filter((r: { riskId: number }) =>
-    riskEvents.some((e: { relatedRiskId: number }) => e.relatedRiskId === r.riskId)
+  const risksWithEvents = enterpriseRisks.filter((r) =>
+    riskEvents.some((e) => e.relatedRiskId === r.riskId)
   ).length;
 
   return {

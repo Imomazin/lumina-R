@@ -4,6 +4,7 @@
 import { useState, useMemo } from 'react';
 import { PageHeader } from '../../components';
 import { strategicRisks, companyThresholdConfig } from '../../data';
+import { useData } from '../../context/DataContext';
 import {
   formatCurrency,
   getColourClass,
@@ -83,21 +84,24 @@ function EscalationBadge({ level }: { level: string }) {
 
 // Main Strategic Register Page
 export default function StrategicRegister() {
+  const { isDataActive } = useData();
   const [selectedRisk, setSelectedRisk] = useState<StrategicRisk | null>(null);
   const [filterColour, setFilterColour] = useState<StrategicRiskColour | 'all'>('all');
   const [sortBy, setSortBy] = useState<'score' | 'emv' | 'ebitda'>('score');
   const [showThresholdConfig, setShowThresholdConfig] = useState(false);
   const [thresholdConfig] = useState<ThresholdConfig>(companyThresholdConfig);
 
+  const activeStrategicRisks = isDataActive ? strategicRisks : [];
+
   // Calculate portfolio metrics
   const portfolioMetrics = useMemo(
-    () => calculatePortfolioMetrics(strategicRisks, thresholdConfig),
-    [thresholdConfig]
+    () => calculatePortfolioMetrics(activeStrategicRisks, thresholdConfig),
+    [thresholdConfig, isDataActive]
   );
 
   // Filter and sort risks
   const filteredRisks = useMemo(() => {
-    let result = [...strategicRisks];
+    let result = [...activeStrategicRisks];
 
     if (filterColour !== 'all') {
       result = result.filter((r) => r.colour === filterColour);
@@ -116,7 +120,7 @@ export default function StrategicRegister() {
     }
 
     return result;
-  }, [filterColour, sortBy]);
+  }, [filterColour, sortBy, isDataActive]);
 
   // Handle export
   const handleExport = () => {
@@ -124,7 +128,7 @@ export default function StrategicRegister() {
       'ID', 'Title', 'Colour', 'Score', 'EMV', 'Capital Allocation',
       'EBITDA Exposure %', 'Probability', 'Financial Impact', 'Owner',
     ];
-    const rows = strategicRisks.map((r) => [
+    const rows = activeStrategicRisks.map((r) => [
       r.id,
       `"${r.title}"`,
       r.colour.toUpperCase(),

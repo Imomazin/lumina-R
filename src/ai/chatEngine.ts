@@ -73,7 +73,7 @@ function getPortfolioEMV() {
     totalInherent += calculateEMV(r.likelihood, r.impact);
     totalResidual += calculateResidualEMV(r);
   });
-  return { totalInherent, totalResidual, reduction: ((totalInherent - totalResidual) / totalInherent) * 100 };
+  return { totalInherent, totalResidual, reduction: totalInherent > 0 ? ((totalInherent - totalResidual) / totalInherent) * 100 : 0 };
 }
 
 function getTopRisksByEMV(count: number) {
@@ -155,7 +155,7 @@ ${events.length > 0
 To bring this risk within appetite with a 30% probability reduction:
 - **Estimated Investment Required: ${formatCurrency(investmentNeeded)}**
 - Expected new residual EMV: ${formatCurrency(emv * 0.7)}
-- ROI on risk reduction: ${((emv * 0.3) / investmentNeeded * 100).toFixed(0)}%
+- ROI on risk reduction: ${investmentNeeded > 0 ? ((emv * 0.3) / investmentNeeded * 100).toFixed(0) : 0}%
 
 ### Governance Actions
 ${risk.riskStatus === 'Escalated' ? '⚠️ **ESCALATED** - Requires Risk Committee review within 48 hours' : ''}
@@ -501,18 +501,18 @@ The organisation maintains a residual risk exposure of ${formatCurrency(portfoli
 **Control Remediation (${controlStats.lowEffectivenessControls.length} weak controls)**
 - Investment: ${formatCurrency(weakControlInvestment)}
 - Expected reduction: ${formatCurrency(portfolioEMV.totalResidual * 0.15)}
-- ROI: ${((portfolioEMV.totalResidual * 0.15) / weakControlInvestment * 100).toFixed(0)}%
+- ROI: ${weakControlInvestment > 0 ? ((portfolioEMV.totalResidual * 0.15) / weakControlInvestment * 100).toFixed(0) : 0}%
 
 **Appetite Alignment (${outsideAppetite.length} risks)**
 - Investment: ${formatCurrency(appetiteInvestment)}
 - Expected reduction: ${formatCurrency(portfolioEMV.totalResidual * 0.10)}
-- ROI: ${((portfolioEMV.totalResidual * 0.10) / appetiteInvestment * 100).toFixed(0)}%
+- ROI: ${appetiteInvestment > 0 ? ((portfolioEMV.totalResidual * 0.10) / appetiteInvestment * 100).toFixed(0) : 0}%
 
 ### Total Investment Recommendation
 - **Total Investment: ${formatCurrency(totalInvestment)}**
 - **Expected Risk Reduction: ${formatCurrency(riskReduction)}**
-- **Overall ROI: ${((riskReduction / totalInvestment) * 100).toFixed(0)}%**
-- Payback period: ${(totalInvestment / riskReduction).toFixed(1)} years
+- **Overall ROI: ${totalInvestment > 0 ? ((riskReduction / totalInvestment) * 100).toFixed(0) : 0}%**
+- Payback period: ${riskReduction > 0 ? (totalInvestment / riskReduction).toFixed(1) : 'N/A'} years
 
 ### Priority Investment Order
 1. Critical control gaps: ${formatCurrency(weakControlInvestment * 0.3)}

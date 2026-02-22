@@ -2,14 +2,17 @@ import { useState } from 'react';
 // Icons removed for cleaner UI
 import { PageHeader, SectionCard } from '../../components';
 import { integrations } from '../../data';
+import { useData } from '../../context/DataContext';
 import { cn } from '../../utils';
 
 export default function ApiGateway() {
+  const { isDataActive } = useData();
   const [selectedIntegration, setSelectedIntegration] = useState<typeof integrations[0] | null>(null);
   const [showAddModal, setShowAddModal] = useState(false);
 
-  const connectedCount = integrations.filter(i => i.status === 'connected').length;
-  const pendingCount = integrations.filter(i => i.status === 'pending').length;
+  const activeIntegrations = isDataActive ? integrations : [];
+  const connectedCount = activeIntegrations.filter(i => i.status === 'connected').length;
+  const pendingCount = activeIntegrations.filter(i => i.status === 'pending').length;
 
   const getStatusIcon = (status: string) => {
     switch (status) {
@@ -48,7 +51,7 @@ export default function ApiGateway() {
       {/* Status Summary */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <div className="glass-card p-5 border-l-4 border-l-accent-primary">
-          <p className="text-3xl font-bold text-navy-100">{integrations.length}</p>
+          <p className="text-3xl font-bold text-navy-100">{activeIntegrations.length}</p>
           <p className="text-sm text-navy-400">Total Integrations</p>
         </div>
         <div className="glass-card p-5 border-l-4 border-l-emerald-500">
@@ -61,7 +64,7 @@ export default function ApiGateway() {
         </div>
         <div className="glass-card p-5 border-l-4 border-l-red-500">
           <p className="text-3xl font-bold text-red-400">
-            {integrations.filter(i => i.status === 'disconnected').length}
+            {activeIntegrations.filter(i => i.status === 'disconnected').length}
           </p>
           <p className="text-sm text-navy-400">Disconnected</p>
         </div>
@@ -70,7 +73,7 @@ export default function ApiGateway() {
       {/* Integrations Grid */}
       <SectionCard title="Platform Integrations">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {integrations.map((integration) => (
+          {activeIntegrations.map((integration) => (
             <div
               key={integration.id}
               onClick={() => setSelectedIntegration(integration)}

@@ -9,6 +9,7 @@ import {
 } from 'recharts';
 import { PageHeader } from '../../components';
 import { strategicInitiatives } from '../../data/strategicInitiatives';
+import { useData } from '../../context/DataContext';
 import {
   analyseInitiative,
   generateBoardIntelligence,
@@ -53,6 +54,7 @@ function PSUBadge({ band, probability }: { band: PSURiskBand; probability: numbe
 }
 
 export default function StrategyRisk() {
+  const { isDataActive } = useData();
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [activeSection, setActiveSection] = useState<'overview' | 'readiness' | 'fragility' | 'capital' | 'drift' | 'psu' | 'intervention' | 'board'>('overview');
   const [intervention, setIntervention] = useState<InterventionScenario>({
@@ -63,10 +65,12 @@ export default function StrategyRisk() {
     capabilityInvestment: 0,
   });
 
+  const activeInitiatives = isDataActive ? strategicInitiatives : [];
+
   // Analyse all initiatives
   const analyses = useMemo(
-    () => strategicInitiatives.map((i) => analyseInitiative(i)),
-    []
+    () => activeInitiatives.map((i) => analyseInitiative(i)),
+    [isDataActive]
   );
 
   const boardIntel = useMemo(

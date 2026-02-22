@@ -247,8 +247,8 @@ export function buildRiskGraph(): RiskGraph {
     nodes,
     edges,
     totalEdges: edges.length,
-    averageConnections: Math.round((totalConnections / nodes.length) * 10) / 10,
-    mostConnectedRisk: nodes.sort((a, b) => b.connectionCount - a.connectionCount)[0]
+    averageConnections: nodes.length > 0 ? Math.round((totalConnections / nodes.length) * 10) / 10 : 0,
+    mostConnectedRisk: nodes.length > 0 ? nodes.sort((a, b) => b.connectionCount - a.connectionCount)[0] : nodes[0]
   };
 }
 

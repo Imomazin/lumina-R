@@ -5,15 +5,19 @@ import { useNavigate } from 'react-router-dom';
 import { PageHeader, RiskCard } from '../../components';
 import { RiskTable } from '../../components/tables';
 import { risks } from '../../data';
+import { useData } from '../../context/DataContext';
 import { cn } from '../../utils';
 import type { Risk } from '../../types';
 
 export default function EnterpriseRegister() {
   const navigate = useNavigate();
+  const { isDataActive } = useData();
   const [viewMode, setViewMode] = useState<'table' | 'grid'>('table');
   const [selectedRisk, setSelectedRisk] = useState<Risk | null>(null);
   const [showAddModal, setShowAddModal] = useState(false);
   const [editingRisk, setEditingRisk] = useState(false);
+
+  const activeRisks = isDataActive ? risks : [];
 
   // Handle import - navigate to workspace
   const handleImport = () => {
@@ -23,7 +27,7 @@ export default function EnterpriseRegister() {
   // Handle export
   const handleExport = () => {
     const headers = ['ID', 'Title', 'Category', 'Severity', 'Score', 'Probability', 'Impact', 'Status', 'Owner', 'Department'];
-    const rows = risks.map(r => [r.id, `"${r.title}"`, r.category, r.severity, r.riskScore, r.probability, r.impact, r.status, r.owner, r.department]);
+    const rows = activeRisks.map(r => [r.id, `"${r.title}"`, r.category, r.severity, r.riskScore, r.probability, r.impact, r.status, r.owner, r.department]);
     const csv = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
     const blob = new Blob([csv], { type: 'text/csv' });
     const url = URL.createObjectURL(blob);
@@ -36,11 +40,11 @@ export default function EnterpriseRegister() {
 
   // Calculate stats
   const stats = {
-    total: risks.length,
-    critical: risks.filter(r => r.severity === 'critical').length,
-    high: risks.filter(r => r.severity === 'high').length,
-    medium: risks.filter(r => r.severity === 'medium').length,
-    low: risks.filter(r => r.severity === 'low').length,
+    total: activeRisks.length,
+    critical: activeRisks.filter(r => r.severity === 'critical').length,
+    high: activeRisks.filter(r => r.severity === 'high').length,
+    medium: activeRisks.filter(r => r.severity === 'medium').length,
+    low: activeRisks.filter(r => r.severity === 'low').length,
   };
 
   return (
@@ -117,12 +121,12 @@ export default function EnterpriseRegister() {
       {/* Risk List */}
       {viewMode === 'table' ? (
         <RiskTable
-          risks={risks}
+          risks={activeRisks}
           onRowClick={(risk) => setSelectedRisk(risk)}
         />
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {risks.map((risk) => (
+          {activeRisks.map((risk) => (
             <RiskCard
               key={risk.id}
               risk={risk}

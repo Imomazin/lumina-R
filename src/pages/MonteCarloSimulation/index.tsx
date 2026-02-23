@@ -48,7 +48,10 @@ const sampleRiskImpacts: { name: string; estimate: TriangularEstimate }[] = [
   },
 ];
 
+type ViewTab = 'simulation' | 'sensitivity';
+
 export default function MonteCarloSimulation() {
+  const [activeView, setActiveView] = useState<ViewTab>('simulation');
   const [iterations, setIterations] = useState(10000);
   const [confidenceLevel, setConfidenceLevel] = useState(95);
   const [distributionType, setDistributionType] = useState<MonteCarloConfig['distributionType']>('triangular');
@@ -126,6 +129,33 @@ export default function MonteCarloSimulation() {
     return `$${value.toFixed(0)}`;
   };
 
+  // Sensitivity Analysis: compute tornado data per selected risk
+  const sensitivityData = useMemo(() => {
+    if (!simulationResults) return [];
+    const baseTotal = simulationResults.statistics.mean;
+
+    return selectedRisks.map((riskIdx) => {
+      const risk = sampleRiskImpacts[riskIdx];
+      const est = risk.estimate;
+      const baseEV = (est.bestCase + est.mostLikely + est.worstCase) / 3;
+
+      // Low scenario: hold this risk at best case, others at expected
+      const lowTotal = baseTotal - baseEV + est.bestCase;
+      // High scenario: hold this risk at worst case, others at expected
+      const highTotal = baseTotal - baseEV + est.worstCase;
+
+      return {
+        name: risk.name,
+        low: lowTotal,
+        high: highTotal,
+        base: baseTotal,
+        swing: highTotal - lowTotal,
+        lowDelta: lowTotal - baseTotal,
+        highDelta: highTotal - baseTotal,
+      };
+    }).sort((a, b) => b.swing - a.swing);
+  }, [simulationResults, selectedRisks]);
+
   return (
     <div className="space-y-6 animate-fade-in">
       <PageHeader
@@ -172,6 +202,25 @@ export default function MonteCarloSimulation() {
         }
       />
 
+      {/* View Tabs */}
+      <div className="flex items-center gap-2">
+        {(['simulation', 'sensitivity'] as ViewTab[]).map((tab) => (
+          <button
+            key={tab}
+            onClick={() => setActiveView(tab)}
+            className={cn(
+              'px-4 py-2 rounded-lg text-sm font-medium transition-colors',
+              activeView === tab
+                ? 'bg-accent-primary/20 text-accent-primary border border-accent-primary/30'
+                : 'text-navy-400 hover:text-navy-200 hover:bg-navy-800/50 border border-transparent'
+            )}
+          >
+            {tab === 'simulation' ? 'Monte Carlo Simulation' : 'Sensitivity Analysis (Tornado)'}
+          </button>
+        ))}
+      </div>
+
+      {activeView === 'simulation' ? (
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Configuration Panel */}
         <div className="space-y-6">
@@ -489,6 +538,189 @@ export default function MonteCarloSimulation() {
           )}
         </div>
       </div>
+      ) : (
+      /* ========== SENSITIVITY ANALYSIS (TORNADO) VIEW ========== */
+      <div className="space-y-6">
+        {!hasRun ? (
+          <SectionCard>
+            <div className="flex flex-col items-center justify-center py-16 text-center">
+              <div className="w-16 h-16 rounded-full bg-navy-800/50 flex items-center justify-center mb-4">
+                <span className="text-2xl text-navy-500">⚙</span>
+              </div>
+              <h3 className="text-lg font-semibold text-navy-200 mb-2">Run Simulation First</h3>
+              <p className="text-sm text-navy-500 max-w-md">
+                Switch to the Monte Carlo Simulation tab, configure your parameters, and run a simulation.
+                The sensitivity analysis will then show which risk variables have the most influence on total impact.
+              </p>
+              <button
+                onClick={() => setActiveView('simulation')}
+                className="mt-4 btn-primary"
+              >
+                Go to Simulation
+              </button>
+            </div>
+          </SectionCard>
+        ) : (
+          <>
+            {/* Tornado Chart Header */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div className="glass-card p-4">
+                <p className="text-xs text-navy-500 mb-1">Base Case (Mean)</p>
+                <p className="text-xl font-bold text-navy-100">{formatCurrency(simulationResults?.statistics.mean || 0)}</p>
+              </div>
+              <div className="glass-card p-4">
+                <p className="text-xs text-navy-500 mb-1">Most Sensitive Risk</p>
+                <p className="text-xl font-bold text-accent-primary">{sensitivityData[0]?.name || 'N/A'}</p>
+              </div>
+              <div className="glass-card p-4">
+                <p className="text-xs text-navy-500 mb-1">Max Swing</p>
+                <p className="text-xl font-bold text-amber-400">{formatCurrency(sensitivityData[0]?.swing || 0)}</p>
+              </div>
+              <div className="glass-card p-4">
+                <p className="text-xs text-navy-500 mb-1">Variables Analysed</p>
+                <p className="text-xl font-bold text-navy-100">{sensitivityData.length}</p>
+              </div>
+            </div>
+
+            {/* Tornado Chart - Div based */}
+            <SectionCard title="Tornado Diagram" subtitle="Variable impact on total portfolio exposure (sorted by influence)">
+              <div className="space-y-4">
+                {sensitivityData.map((item, idx) => {
+                  const maxAbsDelta = Math.max(
+                    ...sensitivityData.map((d) => Math.max(Math.abs(d.lowDelta), Math.abs(d.highDelta)))
+                  );
+                  const barScale = maxAbsDelta > 0 ? 40 / maxAbsDelta : 1;
+                  const lowWidth = Math.abs(item.lowDelta) * barScale;
+                  const highWidth = Math.abs(item.highDelta) * barScale;
+
+                  return (
+                    <div key={idx} className="flex items-center gap-3">
+                      <div className="w-48 text-right shrink-0">
+                        <span className="text-sm font-medium text-navy-200">{item.name}</span>
+                      </div>
+                      <div className="flex-1 flex items-center">
+                        {/* Low (left) bar */}
+                        <div className="flex-1 flex justify-end">
+                          <div
+                            className="h-8 rounded-l bg-emerald-500/60 border border-emerald-500/80 flex items-center justify-end px-2"
+                            style={{ width: `${lowWidth}%`, minWidth: lowWidth > 0 ? '2rem' : '0' }}
+                          >
+                            <span className="text-xs font-mono text-emerald-200 whitespace-nowrap">
+                              {formatCurrency(item.low)}
+                            </span>
+                          </div>
+                        </div>
+                        {/* Center base line */}
+                        <div className="w-px h-10 bg-navy-400 shrink-0" />
+                        {/* High (right) bar */}
+                        <div className="flex-1">
+                          <div
+                            className="h-8 rounded-r bg-red-500/60 border border-red-500/80 flex items-center px-2"
+                            style={{ width: `${highWidth}%`, minWidth: highWidth > 0 ? '2rem' : '0' }}
+                          >
+                            <span className="text-xs font-mono text-red-200 whitespace-nowrap">
+                              {formatCurrency(item.high)}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="w-20 text-right shrink-0">
+                        <span className="text-xs text-navy-500">Swing: {formatCurrency(item.swing)}</span>
+                      </div>
+                    </div>
+                  );
+                })}
+                {/* Base line label */}
+                <div className="flex items-center gap-3 mt-2">
+                  <div className="w-48" />
+                  <div className="flex-1 flex items-center">
+                    <div className="flex-1 text-right pr-2">
+                      <span className="text-xs text-emerald-400">← Best Case</span>
+                    </div>
+                    <div className="text-center px-2">
+                      <span className="text-xs font-medium text-navy-300">Base: {formatCurrency(simulationResults?.statistics.mean || 0)}</span>
+                    </div>
+                    <div className="flex-1 pl-2">
+                      <span className="text-xs text-red-400">Worst Case →</span>
+                    </div>
+                  </div>
+                  <div className="w-20" />
+                </div>
+              </div>
+            </SectionCard>
+
+            {/* Sensitivity Data Table */}
+            <SectionCard title="Sensitivity Analysis Table" subtitle="Detailed variable-by-variable impact analysis">
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead>
+                    <tr className="border-b border-navy-700">
+                      <th className="text-left py-2 px-3 text-xs text-navy-500">Rank</th>
+                      <th className="text-left py-2 px-3 text-xs text-navy-500">Risk Variable</th>
+                      <th className="text-right py-2 px-3 text-xs text-navy-500">Best Case Total</th>
+                      <th className="text-right py-2 px-3 text-xs text-navy-500">Base Case Total</th>
+                      <th className="text-right py-2 px-3 text-xs text-navy-500">Worst Case Total</th>
+                      <th className="text-right py-2 px-3 text-xs text-navy-500">Total Swing</th>
+                      <th className="text-right py-2 px-3 text-xs text-navy-500">% of Base</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {sensitivityData.map((item, idx) => (
+                      <tr key={idx} className="border-b border-navy-800/50 hover:bg-navy-800/20">
+                        <td className="py-2 px-3">
+                          <span className={cn(
+                            'w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold',
+                            idx === 0 ? 'bg-red-500/20 text-red-400' :
+                            idx === 1 ? 'bg-amber-500/20 text-amber-400' :
+                            'bg-navy-700/50 text-navy-400'
+                          )}>
+                            {idx + 1}
+                          </span>
+                        </td>
+                        <td className="py-2 px-3 text-sm font-medium text-navy-200">{item.name}</td>
+                        <td className="py-2 px-3 text-right text-sm text-emerald-400 font-mono">{formatCurrency(item.low)}</td>
+                        <td className="py-2 px-3 text-right text-sm text-navy-300 font-mono">{formatCurrency(item.base)}</td>
+                        <td className="py-2 px-3 text-right text-sm text-red-400 font-mono">{formatCurrency(item.high)}</td>
+                        <td className="py-2 px-3 text-right text-sm font-bold text-navy-100 font-mono">{formatCurrency(item.swing)}</td>
+                        <td className="py-2 px-3 text-right text-sm text-navy-400 font-mono">
+                          {item.base > 0 ? ((item.swing / item.base) * 100).toFixed(1) : 0}%
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </SectionCard>
+
+            {/* Interpretation */}
+            <SectionCard title="Key Sensitivity Findings">
+              <div className="space-y-3">
+                {sensitivityData.slice(0, 3).map((item, idx) => (
+                  <div key={idx} className="p-3 rounded-lg bg-navy-800/30 border border-navy-700/50">
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className={cn(
+                        'px-2 py-0.5 rounded text-xs font-medium',
+                        idx === 0 ? 'bg-red-500/20 text-red-400' :
+                        idx === 1 ? 'bg-amber-500/20 text-amber-400' :
+                        'bg-blue-500/20 text-blue-400'
+                      )}>
+                        #{idx + 1} Sensitivity Driver
+                      </span>
+                    </div>
+                    <p className="text-sm text-navy-300">
+                      <span className="font-semibold text-navy-100">{item.name}</span> has a total swing of{' '}
+                      <span className="font-bold text-accent-primary">{formatCurrency(item.swing)}</span>
+                      {' '}({item.base > 0 ? ((item.swing / item.base) * 100).toFixed(1) : 0}% of base case).
+                      {' '}Best case reduces total exposure to {formatCurrency(item.low)}, while worst case increases it to {formatCurrency(item.high)}.
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </SectionCard>
+          </>
+        )}
+      </div>
+      )}
     </div>
   );
 }

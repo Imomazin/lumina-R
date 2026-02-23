@@ -42,7 +42,8 @@ interface ComprehensiveRisk {
   capitalAllocation: number;
   ebitdaExposure: number;
   priority: 'critical' | 'high' | 'medium' | 'low';
-  treatment: 'avoid' | 'transfer' | 'mitigate' | 'accept';
+  riskType: 'threat' | 'opportunity';
+  treatment: 'avoid' | 'transfer' | 'mitigate' | 'accept' | 'exploit' | 'enhance' | 'share';
   responseStrategy: string;
   contingencyPlan: string;
   insuranceCoverage: number;
@@ -83,6 +84,7 @@ const comprehensiveRisks: ComprehensiveRisk[] = [
     capitalAllocation: 6300000,
     ebitdaExposure: 12.6,
     priority: 'critical',
+    riskType: 'threat',
     treatment: 'mitigate',
     responseStrategy: 'Enhanced EDR deployment, Zero Trust implementation, quarterly pen testing',
     contingencyPlan: 'Incident response team activation, offline backups, crisis communications',
@@ -119,6 +121,7 @@ const comprehensiveRisks: ComprehensiveRisk[] = [
     capitalAllocation: 3150000,
     ebitdaExposure: 6.3,
     priority: 'high',
+    riskType: 'threat',
     treatment: 'mitigate',
     responseStrategy: 'Data mapping exercise, privacy by design implementation, staff training',
     contingencyPlan: 'Legal counsel engagement, regulator liaison, remediation fund',
@@ -155,6 +158,7 @@ const comprehensiveRisks: ComprehensiveRisk[] = [
     capitalAllocation: 4320000,
     ebitdaExposure: 8.6,
     priority: 'high',
+    riskType: 'threat',
     treatment: 'mitigate',
     responseStrategy: 'Supplier diversification, nearshoring initiatives, inventory optimization',
     contingencyPlan: 'Alternative supplier activation, customer communication plan',
@@ -191,6 +195,7 @@ const comprehensiveRisks: ComprehensiveRisk[] = [
     capitalAllocation: 900000,
     ebitdaExposure: 1.8,
     priority: 'medium',
+    riskType: 'threat',
     treatment: 'transfer',
     responseStrategy: 'Structured hedging program, currency diversification, pricing adjustments',
     contingencyPlan: 'Dynamic hedging triggers, margin protection protocols',
@@ -227,7 +232,8 @@ const comprehensiveRisks: ComprehensiveRisk[] = [
     capitalAllocation: 10800000,
     ebitdaExposure: 21.6,
     priority: 'critical',
-    treatment: 'mitigate',
+    riskType: 'threat',
+    treatment: 'avoid',
     responseStrategy: 'Accelerated digital roadmap, M&A for capability acquisition, talent investment',
     contingencyPlan: 'Strategic pivot options, partnership acceleration',
     insuranceCoverage: 0,
@@ -263,7 +269,8 @@ const comprehensiveRisks: ComprehensiveRisk[] = [
     capitalAllocation: 1800000,
     ebitdaExposure: 3.6,
     priority: 'medium',
-    treatment: 'mitigate',
+    riskType: 'threat',
+    treatment: 'accept',
     responseStrategy: 'Enhanced monitoring, influencer relationships, rapid response protocols',
     contingencyPlan: 'Dark site activation, CEO messaging, stakeholder outreach',
     insuranceCoverage: 2000000,
@@ -299,6 +306,7 @@ const comprehensiveRisks: ComprehensiveRisk[] = [
     capitalAllocation: 480000,
     ebitdaExposure: 1.0,
     priority: 'low',
+    riskType: 'threat',
     treatment: 'mitigate',
     responseStrategy: 'Accelerated succession planning, cross-training, competitive compensation',
     contingencyPlan: 'Emergency contractor engagement, interim leadership',
@@ -335,11 +343,87 @@ const comprehensiveRisks: ComprehensiveRisk[] = [
     capitalAllocation: 3240000,
     ebitdaExposure: 6.5,
     priority: 'high',
+    riskType: 'threat',
     treatment: 'mitigate',
     responseStrategy: 'Modernization roadmap, cloud migration, API layer implementation',
     contingencyPlan: 'Failover systems, manual workarounds, vendor escalation',
     insuranceCoverage: 2000000,
     colour: 'amber',
+  },
+  // ===== POSITIVE RISKS (OPPORTUNITIES) =====
+  {
+    id: 'R-009',
+    category: 'Strategic',
+    title: 'AI-Driven Process Automation Gains',
+    description: 'Opportunity to achieve significant cost savings and efficiency through enterprise-wide AI automation',
+    cause: 'Rapid AI technology maturation, competitive pressure to adopt, available internal data assets',
+    effect: 'Operating cost reduction of 15-25%, faster time to market, improved accuracy, competitive advantage',
+    owner: 'David Park',
+    department: 'Strategy',
+    status: 'in_progress',
+    dateIdentified: '2024-03-01',
+    reviewDate: '2024-06-01',
+    riskSource: 'Strategic Planning',
+    inherentProbability: 4,
+    inherentImpact: 5,
+    inherentScore: 20,
+    controlsInPlace: ['AI Centre of Excellence', 'Pilot Program', 'Change Management Framework'],
+    controlEffectiveness: 60,
+    residualProbability: 3,
+    residualImpact: 4,
+    residualScore: 12,
+    velocity: 'months',
+    trend: 'increasing',
+    financialImpactLow: 2000000,
+    financialImpactMostLikely: 8000000,
+    financialImpactHigh: 18000000,
+    expectedMonetaryValue: 5600000,
+    capitalAllocation: 3500000,
+    ebitdaExposure: 11.2,
+    priority: 'high',
+    riskType: 'opportunity',
+    treatment: 'exploit',
+    responseStrategy: 'Accelerate AI rollout, hire specialist talent, secure board investment, scale pilot successes',
+    contingencyPlan: 'Phased implementation, vendor partnerships, fallback to manual processes',
+    insuranceCoverage: 0,
+    colour: 'green',
+  },
+  {
+    id: 'R-010',
+    category: 'Financial',
+    title: 'Emerging Market Expansion Revenue',
+    description: 'Opportunity to capture significant new revenue through expansion into high-growth emerging markets',
+    cause: 'Growing middle class in target markets, regulatory liberalization, partner network readiness',
+    effect: 'Revenue growth of 10-20%, geographic diversification, brand strengthening, talent pool expansion',
+    owner: 'Emily Watson',
+    department: 'Finance',
+    status: 'open',
+    dateIdentified: '2024-02-20',
+    reviewDate: '2024-05-15',
+    riskSource: 'Market Analysis',
+    inherentProbability: 3,
+    inherentImpact: 4,
+    inherentScore: 12,
+    controlsInPlace: ['Market Research', 'Local Partnerships', 'Regulatory Advisory'],
+    controlEffectiveness: 55,
+    residualProbability: 2,
+    residualImpact: 3,
+    residualScore: 6,
+    velocity: 'months',
+    trend: 'stable',
+    financialImpactLow: 3000000,
+    financialImpactMostLikely: 10000000,
+    financialImpactHigh: 22000000,
+    expectedMonetaryValue: 4200000,
+    capitalAllocation: 5000000,
+    ebitdaExposure: 8.4,
+    priority: 'high',
+    riskType: 'opportunity',
+    treatment: 'share',
+    responseStrategy: 'Joint venture with local partners, phased market entry, shared investment model',
+    contingencyPlan: 'Market exit strategy, partial divestment options, focus on most profitable segments',
+    insuranceCoverage: 0,
+    colour: 'green',
   },
 ];
 
@@ -397,12 +481,23 @@ function getStatusColour(status: string): string {
 
 function getTreatmentColour(treatment: string): string {
   switch (treatment) {
+    // Negative risk (threat) strategies
     case 'avoid': return 'bg-red-500/20 text-red-400';
     case 'transfer': return 'bg-purple-500/20 text-purple-400';
     case 'mitigate': return 'bg-blue-500/20 text-blue-400';
     case 'accept': return 'bg-emerald-500/20 text-emerald-400';
+    // Positive risk (opportunity) strategies
+    case 'exploit': return 'bg-cyan-500/20 text-cyan-400';
+    case 'enhance': return 'bg-teal-500/20 text-teal-400';
+    case 'share': return 'bg-indigo-500/20 text-indigo-400';
     default: return 'bg-navy-700 text-navy-300';
   }
+}
+
+function getRiskTypeColour(riskType: string): string {
+  return riskType === 'opportunity'
+    ? 'bg-cyan-500/15 text-cyan-400 border-cyan-500/30'
+    : 'bg-red-500/15 text-red-400 border-red-500/30';
 }
 
 function getTrendIcon(trend: string): string {
@@ -559,11 +654,18 @@ export default function RiskRegister() {
           </div>
           <div className="h-4 w-px bg-navy-700" />
           <div className="flex items-center gap-4">
-            <span className="text-navy-400 font-medium">Treatment:</span>
+            <span className="text-navy-400 font-medium">Threats:</span>
             <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-red-400" /> Avoid</span>
             <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-purple-400" /> Transfer</span>
             <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-blue-400" /> Mitigate</span>
             <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-emerald-400" /> Accept</span>
+          </div>
+          <div className="h-4 w-px bg-navy-700" />
+          <div className="flex items-center gap-4">
+            <span className="text-navy-400 font-medium">Opportunities:</span>
+            <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-cyan-400" /> Exploit</span>
+            <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-teal-400" /> Enhance</span>
+            <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-indigo-400" /> Share</span>
           </div>
           <div className="h-4 w-px bg-navy-700" />
           <div className="flex items-center gap-4">
@@ -582,7 +684,7 @@ export default function RiskRegister() {
             <thead>
               {/* Section Headers */}
               <tr className="bg-navy-800/50">
-                <th colSpan={12} className="py-2 px-3 text-left text-accent-primary font-semibold border-b border-navy-700 border-r border-r-navy-600">
+                <th colSpan={13} className="py-2 px-3 text-left text-accent-primary font-semibold border-b border-navy-700 border-r border-r-navy-600">
                   A. QUALITATIVE RISK ASSESSMENT
                 </th>
                 <th colSpan={10} className="py-2 px-3 text-left text-amber-400 font-semibold border-b border-navy-700 border-r border-r-navy-600">
@@ -597,6 +699,7 @@ export default function RiskRegister() {
                 {/* Section A: Qualitative */}
                 <th className="py-2 px-2 text-left text-navy-300 font-medium sticky left-0 bg-navy-900 z-10 min-w-[70px]">ID</th>
                 <th className="py-2 px-2 text-left text-navy-300 font-medium min-w-[100px]">Category</th>
+                <th className="py-2 px-2 text-center text-navy-300 font-medium min-w-[80px]">Type</th>
                 <th className="py-2 px-2 text-left text-navy-300 font-medium min-w-[180px]">Title</th>
                 <th className="py-2 px-2 text-left text-navy-300 font-medium min-w-[200px]">Description</th>
                 <th className="py-2 px-2 text-left text-navy-300 font-medium min-w-[150px]">Cause</th>
@@ -647,6 +750,11 @@ export default function RiskRegister() {
                   {/* Section A: Qualitative */}
                   <td className="py-2 px-2 font-mono text-navy-200 sticky left-0 bg-navy-900 z-10">{risk.id}</td>
                   <td className="py-2 px-2 text-navy-300">{risk.category}</td>
+                  <td className="py-2 px-2 text-center">
+                    <span className={cn('px-1.5 py-0.5 rounded text-2xs font-medium uppercase border', getRiskTypeColour(risk.riskType))}>
+                      {risk.riskType === 'opportunity' ? '▲ Opp' : '▼ Threat'}
+                    </span>
+                  </td>
                   <td className="py-2 px-2 text-navy-100 font-medium">{risk.title}</td>
                   <td className="py-2 px-2 text-navy-400 max-w-[200px] truncate" title={risk.description}>{risk.description}</td>
                   <td className="py-2 px-2 text-navy-400 max-w-[150px] truncate" title={risk.cause}>{risk.cause}</td>

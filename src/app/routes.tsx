@@ -22,6 +22,10 @@ import AIAdvisor from '../pages/AIAdvisor';
 import Integrations from '../pages/ApiGateway';
 import Admin from '../pages/Admin';
 import StrategyRisk from '../pages/StrategyRisk';
+import ScenarioAnalysis from '../pages/ScenarioAnalysis';
+import ControlAssessment from '../pages/ControlAssessment';
+import LossEvents from '../pages/LossEvents';
+import ComplianceTracker from '../pages/ComplianceTracker';
 
 export const router = createBrowserRouter([
   // Landing page (no layout)
@@ -115,6 +119,22 @@ export const router = createBrowserRouter([
       {
         path: 'admin/*',
         element: <Admin />,
+      },
+      {
+        path: 'tools/scenario',
+        element: <ScenarioAnalysis />,
+      },
+      {
+        path: 'tools/controls',
+        element: <ControlAssessment />,
+      },
+      {
+        path: 'tools/loss-events',
+        element: <LossEvents />,
+      },
+      {
+        path: 'tools/compliance',
+        element: <ComplianceTracker />,
       },
       {
         path: 'tools/*',

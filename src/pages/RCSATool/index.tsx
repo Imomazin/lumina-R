@@ -1191,13 +1191,10 @@ export default function RCSATool() {
               <div className="mt-6 grid grid-cols-2 md:grid-cols-4 gap-3">
                 {(() => {
                   const allRatings = baseMatrix.flatMap(m => m.controls.map(c => c.effectiveness));
-                  const assessed = allRatings.filter(r => r !== 'not_assessed');
                   const effective = allRatings.filter(r => r === 'effective').length;
                   const partial = allRatings.filter(r => r === 'partially_effective').length;
                   const ineffective = allRatings.filter(r => r === 'ineffective').length;
                   const notAssessed = allRatings.filter(r => r === 'not_assessed').length;
-                  const coveragePct = assessed.length > 0 ? Math.round((effective / assessed.length) * 100) : 0;
-
                   return [
                     { label: 'Effective', value: effective, color: 'text-emerald-400', border: 'border-emerald-500/20' },
                     { label: 'Partially Effective', value: partial, color: 'text-amber-400', border: 'border-amber-500/20' },

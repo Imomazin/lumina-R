@@ -26,6 +26,12 @@ import ScenarioAnalysis from '../pages/ScenarioAnalysis';
 import ControlAssessment from '../pages/ControlAssessment';
 import LossEvents from '../pages/LossEvents';
 import ComplianceTracker from '../pages/ComplianceTracker';
+import RCSATool from '../pages/RCSATool';
+import VendorRisk from '../pages/VendorRisk';
+import CyberRisk from '../pages/CyberRisk';
+import FinancialRisk from '../pages/FinancialRisk';
+import OperationalRisk from '../pages/OperationalRisk';
+import StrategicRadar from '../pages/StrategicRadar';
 
 export const router = createBrowserRouter([
   // Landing page (no layout)
@@ -135,6 +141,30 @@ export const router = createBrowserRouter([
       {
         path: 'tools/compliance',
         element: <ComplianceTracker />,
+      },
+      {
+        path: 'tools/rcsa',
+        element: <RCSATool />,
+      },
+      {
+        path: 'tools/vendor',
+        element: <VendorRisk />,
+      },
+      {
+        path: 'tools/cyber',
+        element: <CyberRisk />,
+      },
+      {
+        path: 'tools/financial',
+        element: <FinancialRisk />,
+      },
+      {
+        path: 'tools/operational',
+        element: <OperationalRisk />,
+      },
+      {
+        path: 'tools/strategic',
+        element: <StrategicRadar />,
       },
       {
         path: 'tools/*',

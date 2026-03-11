@@ -137,8 +137,8 @@ export default function AIAdvisor() {
             setIsLoading(false);
           }
         );
-      } catch (err: any) {
-        const errorMsg = err?.message || 'Unknown error';
+      } catch (err) {
+        const errorMsg = err instanceof Error ? err.message : 'Unknown error';
         // If API key is invalid, show error and fall back
         if (errorMsg.includes('401') || errorMsg.includes('Incorrect API key')) {
           setAiError('Invalid API key. Please check and reconnect.');

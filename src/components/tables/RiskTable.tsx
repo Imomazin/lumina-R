@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { ChevronDown, ChevronUp } from 'lucide-react';
 import { cn } from '../../utils';
 import { formatDate } from '../../utils/formatters';
@@ -14,20 +14,42 @@ interface RiskTableProps {
 type SortField = 'id' | 'title' | 'severity' | 'riskScore' | 'owner' | 'nextReview';
 type SortDirection = 'asc' | 'desc';
 
+interface SortHeaderProps {
+  field: SortField;
+  children: React.ReactNode;
+  sortField: SortField;
+  sortDirection: SortDirection;
+  onSort: (field: SortField) => void;
+}
+
+function SortHeader({ field, children, sortField, sortDirection, onSort }: SortHeaderProps) {
+  return (
+    <button
+      onClick={() => onSort(field)}
+      className="flex items-center gap-1 hover:text-navy-200 transition-colors"
+    >
+      {children}
+      {sortField === field && (
+        sortDirection === 'asc' ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />
+      )}
+    </button>
+  );
+}
+
 export function RiskTable({ risks, onRowClick, className }: RiskTableProps) {
   const [sortField, setSortField] = useState<SortField>('riskScore');
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
   const [searchQuery, setSearchQuery] = useState('');
   const [filterSeverity, setFilterSeverity] = useState<string>('all');
 
-  const handleSort = (field: SortField) => {
+  const handleSort = useCallback((field: SortField) => {
     if (sortField === field) {
       setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
     } else {
       setSortField(field);
       setSortDirection('desc');
     }
-  };
+  }, [sortField, sortDirection]);
 
   const filteredAndSortedRisks = risks
     .filter((risk) => {
@@ -90,18 +112,6 @@ export function RiskTable({ risks, onRowClick, className }: RiskTableProps) {
     }
   };
 
-  const SortHeader = ({ field, children }: { field: SortField; children: React.ReactNode }) => (
-    <button
-      onClick={() => handleSort(field)}
-      className="flex items-center gap-1 hover:text-navy-200 transition-colors"
-    >
-      {children}
-      {sortField === field && (
-        sortDirection === 'asc' ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />
-      )}
-    </button>
-  );
-
   return (
     <div className={cn('', className)}>
       {/* Filters */}
@@ -136,14 +146,14 @@ export function RiskTable({ risks, onRowClick, className }: RiskTableProps) {
         <table className="table">
           <thead>
             <tr>
-              <th><SortHeader field="id">ID</SortHeader></th>
-              <th><SortHeader field="title">Risk</SortHeader></th>
-              <th><SortHeader field="severity">Severity</SortHeader></th>
+              <th><SortHeader field="id" sortField={sortField} sortDirection={sortDirection} onSort={handleSort}>ID</SortHeader></th>
+              <th><SortHeader field="title" sortField={sortField} sortDirection={sortDirection} onSort={handleSort}>Risk</SortHeader></th>
+              <th><SortHeader field="severity" sortField={sortField} sortDirection={sortDirection} onSort={handleSort}>Severity</SortHeader></th>
               <th>Status</th>
-              <th><SortHeader field="riskScore">Score</SortHeader></th>
+              <th><SortHeader field="riskScore" sortField={sortField} sortDirection={sortDirection} onSort={handleSort}>Score</SortHeader></th>
               <th>Trend</th>
-              <th><SortHeader field="owner">Owner</SortHeader></th>
-              <th><SortHeader field="nextReview">Next Review</SortHeader></th>
+              <th><SortHeader field="owner" sortField={sortField} sortDirection={sortDirection} onSort={handleSort}>Owner</SortHeader></th>
+              <th><SortHeader field="nextReview" sortField={sortField} sortDirection={sortDirection} onSort={handleSort}>Next Review</SortHeader></th>
             </tr>
           </thead>
           <tbody>

@@ -171,7 +171,7 @@ export default function Reports() {
   };
 
   // Handle template click
-  const handleTemplateClick = (_template: string) => {
+  const handleTemplateClick = () => {
     setShowNewReport(true);
   };
 
@@ -343,7 +343,7 @@ export default function Reports() {
               {['Board Risk Package', 'Regulatory Filing', 'Audit Summary', 'Risk Register Export'].map((template) => (
                 <button
                   key={template}
-                  onClick={() => handleTemplateClick(template)}
+                  onClick={() => handleTemplateClick()}
                   className="w-full flex items-center gap-3 p-3 rounded-lg bg-navy-800/30 hover:bg-navy-800/50 transition-colors text-left"
                 >
                   <span className="text-sm text-navy-200">→ {template}</span>

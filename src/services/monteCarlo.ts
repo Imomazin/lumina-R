@@ -109,11 +109,12 @@ export function runMonteCarloSimulation(
       let sample: number;
 
       switch (distributionType) {
-        case 'normal':
+        case 'normal': {
           const ev = calculateExpectedValue(estimate);
           const stdDev = Math.sqrt(calculateVariance(estimate));
           sample = normalSample(ev, stdDev);
           break;
+        }
         case 'uniform':
           sample = uniformSample(estimate.bestCase, estimate.worstCase);
           break;

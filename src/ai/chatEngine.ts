@@ -165,7 +165,8 @@ ${linkedKRIs.filter(k => k.status === 'Red').length > 0 ? `⚠️ ${linkedKRIs.f
   }
 
   // Check for specific category
-  const categories: Record<string, string> = {
+  type RiskCategory = 'Financial' | 'Operational' | 'Strategic' | 'Compliance' | 'Third Party' | 'Reputational' | 'AI Ethics' | 'People' | 'Cybersecurity';
+  const categories: Record<string, RiskCategory> = {
     'cyber': 'Cybersecurity', 'cybersecurity': 'Cybersecurity', 'financial': 'Financial',
     'operational': 'Operational', 'compliance': 'Compliance', 'strategic': 'Strategic',
     'reputational': 'Reputational', 'people': 'People', 'third party': 'Third Party',
@@ -174,7 +175,7 @@ ${linkedKRIs.filter(k => k.status === 'Red').length > 0 ? `⚠️ ${linkedKRIs.f
 
   for (const [key, value] of Object.entries(categories)) {
     if (q.includes(key)) {
-      const catRisks = getRisksByCategory(value as any);
+      const catRisks = getRisksByCategory(value);
       if (catRisks.length > 0) {
         const catEMV = catRisks.reduce((sum, r) => sum + calculateResidualEMV(r), 0);
         const catKRIs = enterpriseKRIs.filter(k => catRisks.some(r => r.riskId === k.riskId));
